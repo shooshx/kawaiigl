@@ -1,0 +1,6 @@
+varying vec3 intensity;
+void main()
+{
+   intensity = gl_Vertex.xyz;
+   gl_Position = ftransform();
+}

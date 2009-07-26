@@ -1,0 +1,5 @@
+
+
+inflate with normal
+	vec4 pos = gl_Vertex + vec4(gl_Normal,0.0) * offset;
+	gl_Position = gl_ModelViewProjectionMatrix * pos;		

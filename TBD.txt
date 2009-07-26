@@ -1,0 +1,1 @@
+BUG - move point after translate

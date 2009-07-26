@@ -1,0 +1,20 @@
+uniform float Time;
+
+varying vec3  ObjPos;
+varying float V;
+varying float LightIntensity;
+
+void main()
+{
+    ObjPos          = (vec3(gl_Vertex) + vec3(0.0, 0.0, Time)) * 0.2;
+
+    vec3 pos        = vec3(gl_ModelViewMatrix * gl_Vertex);
+    vec3 tnorm      = normalize(gl_NormalMatrix * gl_Normal);
+    vec3 lightVec   = normalize(gl_LightSource[0].position.xyz - pos);
+
+    LightIntensity  = max(dot(lightVec, tnorm), 0.0);
+
+    V = gl_MultiTexCoord0.t;  // try .s for vertical stripes
+
+    gl_Position = ftransform();
+}

@@ -1,0 +1,24 @@
+#version 130
+
+varying vec2 vTexCoord;
+uniform sampler2D img;
+
+ivec2 offsets[9] = ivec2[](
+	ivec2(-1,-1), ivec2(0,-1), ivec2(1,-1),
+	ivec2(-1,0),  ivec2(0,0),  ivec2(1,0),
+	ivec2(-1,1),  ivec2(0,1),  ivec2(1,1)
+);
+	
+
+void main()
+{	
+	ivec2 base = ivec2(gl_FragCoord.xy);
+	vec4 sum = vec4(0);
+	for(int i = 0; i < 9; ++i)
+	{
+		sum += texelFetch(img, base + offsets[i], 0);
+	}
+	sum /= 9.0;
+
+	gl_FragColor = sum;
+} 

@@ -1,0 +1,54 @@
+varying vec3 normal;
+varying vec3 lightVec;
+varying vec3 eyeVec;
+
+uniform float space;
+uniform float colorRatio;
+
+vec4 lightIntensity()
+{
+	vec3 N = normalize(normal);
+	vec3 L = normalize(lightVec);
+	
+	float lambertTerm = max(dot(N,L), 0.0);
+	
+ 	float prod = dot(gl_LightSource[0].halfVector.xyz, N); 
+
+	float specularTerm = pow( max(prod, 0.0), gl_FrontMaterial.shininess );
+
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_LightSource[0].diffuse * lambertTerm;	
+	vec4 specular = gl_LightSource[0].specular * 
+	                gl_FrontMaterial.specular * specularTerm;	
+
+	return (ambient + diffuse) * gl_Color + specular;
+
+}
+
+#define RATIO 1.0
+
+void main (void)
+{					
+	vec4 c = lightIntensity();
+	vec2 fg = vec2(gl_FragCoord);
+	
+	vec2 sp = vec2( round(fg.x / space) * space,
+				  round(fg.y / (space * RATIO)) * space * RATIO);
+	vec2 sp2 = vec2( round(fg.x / space) * space,
+				  round(fg.y / (space * RATIO * 2.0)) * space * RATIO * 2.0);
+	vec2 sp3 = vec2( floor(fg.x / space) * space,
+			       round(fg.y / (space * RATIO)) * space * RATIO);
+	sp3.x += space / 2.0;
+
+	float d;
+	if (sp == sp2)
+		d = distance(vec2(gl_FragCoord), sp3);
+	else
+		d = distance(vec2(gl_FragCoord), sp);
+	
+	float step = d - c.r * space * colorRatio;
+
+	float inten = smoothstep(1.0, 0.0, step);
+	gl_FragColor = vec4(inten);
+}
+

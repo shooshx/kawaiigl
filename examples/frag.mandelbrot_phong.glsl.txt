@@ -1,0 +1,55 @@
+uniform vec4 insideColor;
+uniform sampler2D outsideColorTable;
+uniform float maxIterations;
+uniform vec2 offset;
+uniform float scale;
+
+varying vec3 normal;
+varying vec3 lightVec;
+varying vec3 eyeVec;
+
+vec4 phongShade()
+{
+	vec3 N = normalize(normal);
+	vec3 L = normalize(lightVec);
+	
+	float lambertTerm = max(dot(N,L), 0.0);
+	
+ 	// ** phong
+	// vec3 E = normalize(eyeVec);
+	// float prod = dot(reflect(L, N), E);
+	// ** blinn
+	float prod = dot(gl_LightSource[0].halfVector.xyz, N); 
+
+	float specularTerm = pow( max(prod, 0.0), gl_FrontMaterial.shininess );
+
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_LightSource[0].diffuse * lambertTerm;	
+	vec4 specular = gl_LightSource[0].specular * 
+	                gl_FrontMaterial.specular * specularTerm;	
+
+	// mimicing GL_COLOR_MATERIAL
+	return (ambient + diffuse) * gl_Color + specular;			
+}
+
+void main ()
+{
+	vec2 c = gl_TexCoord[0].xy;
+	c += vec2(-0.5,-0.5) + offset;
+	c *= 2.0 * scale;
+
+	vec2 z = c;
+	gl_FragColor = insideColor;
+	for (float i = 0.0; i < maxIterations; i += 1.0)
+	{
+		z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + c;
+		if (dot(z, z) > 16.0)
+		{
+			gl_FragColor = texture2D(outsideColorTable, 
+				vec2(i / 15.0, 0.0));
+			break;
+		}
+	}
+
+	gl_FragColor *= phongShade();
+}

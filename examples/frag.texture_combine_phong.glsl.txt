@@ -1,0 +1,40 @@
+varying vec2 tex_coord;
+uniform sampler2D my_tex1; 
+uniform sampler2D my_tex2; 
+uniform float ratio;
+
+varying vec3 normal;
+varying vec3 lightVec;
+varying vec3 eyeVec;
+
+vec4 phongShade()
+{
+	vec3 N = normalize(normal);
+	vec3 L = normalize(lightVec);
+	
+	float lambertTerm = max(dot(N,L), 0.0);
+	
+ 	// ** phong
+	// vec3 E = normalize(eyeVec);
+	// float prod = dot(reflect(L, N), E);
+	// ** blinn
+	float prod = dot(gl_LightSource[0].halfVector.xyz, N); 
+
+	float specularTerm = pow( max(prod, 0.0), gl_FrontMaterial.shininess );
+
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_LightSource[0].diffuse * lambertTerm;	
+	vec4 specular = gl_LightSource[0].specular * 
+	                gl_FrontMaterial.specular * specularTerm;	
+
+	// mimicing GL_COLOR_MATERIAL
+	return (ambient + diffuse) * gl_Color + specular;			
+}
+
+
+void main()
+{
+	gl_FragColor = ratio * texture2D(my_tex1, gl_TexCoord[0].xy)
+				+ (1.0-ratio) * texture2D(my_tex2, gl_TexCoord[0].xy);
+	gl_FragColor *= phongShade();
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<conf>
+	<shapes_edit>
+		<file display="Cube">model.cube.txt</file>
+		<file display="Teapot" type="mesh">models/teapot.gsd</file>
+		<file display="Bunny" type="mesh">models/bunny_tex.obj</file>
+		<file display="Tetrahedron">model.tetrahedron.txt</file>
+		<file display="Holed-Cube">model.holed_cube.txt</file>
+		<file display="Holed-Tetrahedron">model.holed_tetrahedron.txt</file>
+		<file display="Torus" type="mesh">models/scene.gsd</file>
+		<file display="Square-Torus">model.sq_torus.txt</file>
+		<file display="Screen-Quad">model.screenQuad.txt</file>
+	</shapes_edit>
+</conf>

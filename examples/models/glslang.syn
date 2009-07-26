@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Language Name="Visual vertex shader" Startblock="vertex shader Code">
+<FileTypes>
+	<FileType Extension=".vert" Name="vertex shader code file"/>
+</FileTypes>
+	<Block Name="vertex shader Code" Style="vertex shader Code" EscapeChar="" IsMultiline="true">
+		<Scope Start="{" End="}" Style="vertex shader Scope" Text="{...}" CauseIndent="true"/>
+		<Scope Start="#region" End="#endregion" Style="vertex shader Region" Text="" DefaultExpanded="false" />
+		<!-- Keywords that can exist inside this block -->
+		<Keywords>
+			<PatternGroup Name="Keywords" Style="vertex shader Keyword" CaseSensitive="true">
+				<Patterns>
+				attribute const uniform varying break continue do for while if else in out inout
+				float int void bool true false discard return mat2 mat3 mat4 vec2 vec3 vec4 ivec2
+				ivec3 ivec4 bvec2 bvec3 bvec4 sampler1D sampler2D sampler3D samplerCube sampler1DShadow 
+				sampler2DShadow struct packed this interface sampler2DRectShadow warn enable require disable
+				</Patterns>
+			</PatternGroup>
+			
+			<PatternGroup Name="Numbers" Style="vertex shader Number">
+				<Pattern Text="(0x[0-9,a-f,A-F]+)" IsComplex="true" />
+				<Pattern Text="([0-9]+)" IsComplex="true" />
+			</PatternGroup>
+						
+			<PatternGroup Name="Keywords2" Style="vertex shader Keyword2" CaseSensitive="true">
+				<Patterns> gl_Position gl_PointSize gl_ClipVertex  gl_Color gl_SecondaryColor gl_Normal gl_Vertex gl_MultiTexCoord0 gl_MultiTexCoord1 gl_MultiTexCoord2 gl_MultiTexCoord3
+					gl_MultiTexCoord4 gl_MultiTexCoord5 gl_MultiTexCoord6 gl_MultiTexCoord7 gl_FogCoord gl_MaxLights 
+					gl_MaxClipPlanes gl_MaxTextureUnits gl_MaxTextureCoordsARB gl_MaxVertexAttributesGL2 gl_MaxVertexUniformFloatsGL2
+					gl_MaxVaryingFloatsGL2 gl_MaxVertexTextureUnitsGL2 gl_MaxFragmentTextureUnitsGL2 gl_MaxFragmentUniformFloatsGL2
+ 					gl_ModelViewMatrix gl_ProjectionMatrix gl_ModelViewProjectionMatrix gl_NormalMatrix gl_TextureMatrix  gl_NormalScale
+ 					gl_DepthRange gl_ClipPlane gl_Point gl_FrontMaterial gl_BackMaterial gl_LightSource gl_LightModel gl_FrontLightModelProduct
+					gl_BackLightModelProduct gl_FrontLightProduct gl_BackLightProduct gl_TextureEnvColor gl_EyePlaneS gl_EyePlaneT 
+					gl_EyePlaneR gl_EyePlaneQ gl_ObjectPlaneS gl_ObjectPlaneT gl_ObjectPlaneR gl_ObjectPlaneQ gl_Fog
+					gl_FrontColor gl_BackColor gl_FrontSecondaryColor gl_BackSecondaryColor gl_TexCoord gl_FogFragCoord
+					gl_FBColor gl_FBDepth gl_FBStencil gl_FBData
+					gl_Color gl_SecondaryColor gl_TexCoord gl_FogFragCoord gl_FragColor gl_FragCoord gl_FragData gl_MaxDrawBuffers
+					gl_ModelViewMatrixInverse gl_ProjectionMatrixInverse gl_ModelViewProjectionMatrixInverse gl_TextureMatrixInverse
+					gl_ModelViewMatrixTranspose gl_ProjectionMatrixTranspose gl_ModelViewProjectionMatrixTranspose
+					gl_TextureMatrixTranspose gl_ModelViewMatrixInverseTranspose gl_ProjectionMatrixInverseTranspose
+					gl_ModelViewProjectionMatrixInverseTranspose gl_TextureMatrixInverseTranspose
+			</Patterns>
+			</PatternGroup>
+			
+			<PatternGroup Name="Keywords4" Style="vertex shader Keyword4" CaseSensitive="true">
+				<Patterns> radians degrees sin cos tan asin acos atan pow exp2 log2 sqrt inversesqrt 
+						   abs sign floor ceil fract mod min max mix clamp step smoothstep length
+						   distance dot cross normalize ftransform faceforward reflect matrixCompMult
+						   lessThan lesThanEqual greaterThan greaterThanEqual equal notEqual any
+						   all not texture1D texture1DProj texture1DLod texture1DProjLod
+						   texture2D texture2DProj texture2DLod texture2DProjLod
+						   texture3D texture3DProj texture3DLod texture3DProjLod textureCube textureCubeLod
+						   shadow1D shadow2D shadow1DProj shadow2DProj shadow1DLod shadow2DLod
+						   shadow1DProjLod shadow2DProjLod dFdx dFdy fwidth noise1 noise2 noise3 noise4
+						   sampler2DRect texture2DRect refract exp log
+				</Patterns>
+			</PatternGroup>
+			<PatternGroup Name="Keywords3" Style="vertex shader Keyword3" CaseSensitive="true">
+				<Pattern Text="(#)" 	IsComplex="true"/>
+				<Pattern Text="(#define)" 	IsComplex="true"/>
+				<Pattern Text="(#extension)" 	IsComplex="true"/>
+				<Pattern Text="(#undef)" 	IsComplex="true"/>   
+				<Pattern Text="(#if)" 		IsComplex="true"/>
+				<Pattern Text="(#ifdef)" 	IsComplex="true"/>
+				<Pattern Text="(#ifndef)" 	IsComplex="true"/>
+				<Pattern Text="(#else)" 	IsComplex="true"/>
+				<Pattern Text="(#elif)" 	IsComplex="true"/>
+				<Pattern Text="(#endif)" 	IsComplex="true"/>
+				<Pattern Text="(#error)" 	IsComplex="true"/>
+				<Pattern Text="(#pragma)" 	IsComplex="true"/>
+				<Pattern Text="(#line)" 	IsComplex="true"/>
+				<Pattern Text="(__LINE__)" 	IsComplex="true"/>
+				<Pattern Text="(__FILE__)" 	IsComplex="true"/>
+				<Pattern Text="(__VERSION__)" 	IsComplex="true"/>
+			</PatternGroup>
+		</Keywords>
+		<!-- Operators that can exist inside this block -->
+		<Operators>
+			<PatternGroup name="Operators" Style="vertex shader Operator">
+				<Pattern Text="." />
+				<Pattern Text="!" />
+				<Pattern Text=":" />
+				<Pattern Text="^" />
+				<Pattern Text="*" />
+				<Pattern Text="/" />
+				<Pattern Text="+" />
+				<Pattern Text="-" />
+				<Pattern Text="=" />
+				<Pattern Text="|" />
+				<Pattern Text="~" />
+				<Pattern Text="&amp;" />
+				<Pattern Text="~" />
+				<Pattern Text="&gt;" />
+				<Pattern Text="&lt;" />
+			</PatternGroup>
+		</Operators>
+		<!-- Blocks that can exist inside this block -->
+		<ChildBlocks>
+			<Child Name="vertex shader XML Comment" />
+			<Child Name="vertex shader Multiline Comment" />
+			<Child Name="vertex shader Singleline Comment" />			
+			<Child Name="vertex shader Code" />
+		</ChildBlocks>
+	</Block>
+	<Block Name="vertex shader XML Comment" Style="vertex shader Comment" EscapeChar="" IsMultiline="false">
+		<Scope Start="///" End="" Style="vertex shader XML Comment" />
+		<!-- this block can contain xml tags -->
+		<ChildBlocks>
+			<Child Name="vertex shader XML Comment Tag" />
+		</ChildBlocks>
+	</Block>
+	<!-- this block is the xml tags in xml comments-->
+	<Block Name="vertex shader XML Comment Tag" Style="vertex shader XML Tag Text" EscapeChar="" IsMultiline="false">
+		<Scope Start="&lt;" End="&gt;" Style="vertex shader XML Tag" />
+		<Operators>
+			<PatternGroup name="vertex shader XML Attrib" Style="vertex shader XML Attrib">
+				<!-- operator is the attributes that can exist within xml tags-->
+				<Pattern Text="( [a-z,A-Z,:]+)" IsComplex="true" />
+			</PatternGroup>
+		</Operators>		
+	</Block>	
+	<Block Name="vertex shader Multiline Comment" Style="vertex shader Comment" EscapeChar="" IsMultiline="true">
+		<Scope Start="/*" End="*/" Style="vertex shader Comment" Text="/*...*/"/>
+		<Operators>
+			<PatternGroup name="URL" Style="vertex shader URL">
+				<Pattern Text="http://([\w-]+\.)+[\w-]+(/[\w- ./?%&amp;=]*)?" IsComplex="true" />
+			</PatternGroup>
+		</Operators>
+	</Block>
+	<Block Name="vertex shader Singleline Comment" Style="vertex shader Comment" EscapeChar="" IsMultiline="false">
+		<Scope Start="//" End="" Style="vertex shader Comment" />
+	</Block>	
+
+
+	<Style Name="vertex shader Code" ForeColor="" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader Scope" ForeColor="" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader Region" ForeColor="blue" BackColor="" Bold="true" Italic="false" Underline="false" />
+	<Style Name="vertex shader XML Comment" ForeColor="gray" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader XML Tag" ForeColor="gray" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader XML Tag Text" ForeColor="gray" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader XML Attrib" ForeColor="gray" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader XML String" ForeColor="gray" BackColor="lightyellow" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader Comment" ForeColor="Green" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader String" ForeColor="Teal" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader Number" ForeColor="Teal" BackColor="" Bold="true" Italic="false" Underline="false" />
+	<Style Name="vertex shader Operator" ForeColor="Red" BackColor="" Bold="false" Italic="false" Underline="false" />
+	<Style Name="vertex shader Keyword" ForeColor="Blue" BackColor="" Bold="true" Italic="false" Underline="false" />
+	<Style Name="vertex shader Keyword2" ForeColor="Grey" BackColor="" Bold="true" Italic="false" Underline="false" />
+	<Style Name="vertex shader Keyword3" ForeColor="blue" BackColor="" Bold="false" Italic="false" Underline="false" />	
+    <Style Name="vertex shader Keyword4" ForeColor="DarkRed" BackColor="" Bold="true" Italic="false" Underline="false" />	
+	<Style Name="vertex shader Datatype" ForeColor="DarkBlue" BackColor="" Bold="true" Italic="false" Underline="false" />
+	<Style Name="vertex shader URL" ForeColor="Blue" BackColor="" Bold="false" Italic="false" Underline="true" />
+	
+</Language>

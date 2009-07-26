@@ -1,0 +1,26 @@
+a={1,2,3}
+add(a,a,a,a)
+
+a=({1,2,3})
+
+a=({1,2,3} + {1,2,3})
+
+a={1,1,1}
+add(a,a,a)
+
+a={1,1,1}
+b=a+{1,0,0}
+
+a={1,1,1}
+b=a+a
+hhh
+
+void main()
+{
+	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
+}
+
+void main()
+{
+	gl_FragColor = vec4(0.4,0.4,0.8,1.0);
+}

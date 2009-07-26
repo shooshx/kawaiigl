@@ -1,0 +1,10 @@
+varying vec2 tex_coord;
+uniform sampler2D my_tex1; 
+uniform sampler2D my_tex2; 
+uniform float ratio;
+
+void main()
+{
+	gl_FragColor = ratio * texture2D(my_tex1, tex_coord)
+				+ (1.0-ratio) * texture2D(my_tex2, tex_coord);
+}

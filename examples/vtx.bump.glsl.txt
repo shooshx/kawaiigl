@@ -1,0 +1,27 @@
+varying vec3 lightVec; 
+varying vec3 eyeVec, halfVec;
+varying vec3 normal;
+attribute vec3 tangent;
+attribute vec3 bitangent;
+
+void main(void)
+{
+	gl_Position = ftransform();
+	gl_FrontColor = gl_Color;
+	normal = gl_Normal;
+
+	gl_TexCoord[0] = gl_MultiTexCoord0;
+	
+	vec3 vVertex = vec3(gl_ModelViewMatrix * gl_Vertex);
+	lightVec = gl_LightSource[0].position.xyz - vVertex;
+	eyeVec = -vVertex;
+
+	vec3 n = normalize(gl_NormalMatrix * gl_Normal);
+
+	mat3 toVtx = mat3(gl_NormalMatrix * tangent, 
+			  gl_NormalMatrix * bitangent, n);
+
+	lightVec = lightVec * toVtx;
+	eyeVec = eyeVec * toVtx;
+	halfVec = gl_LightSource[0].halfVector.xyz * toVtx;
+}

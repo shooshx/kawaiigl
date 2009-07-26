@@ -1,0 +1,10 @@
+uniform float ratio;
+
+void main()
+{
+	vec4 pos = gl_Vertex;
+	pos.x *= ratio;
+	pos.y /= ratio;
+	gl_Position = gl_ModelViewProjectionMatrix * pos;
+} 
+

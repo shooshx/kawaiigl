@@ -1,0 +1,17 @@
+varying float LightIntensity;
+varying vec3  MCposition;
+
+uniform sampler3D Noise;
+uniform float Scale;
+uniform float time;
+
+void main()
+{
+	vec4  noisevec  = texture3D(Noise, MCposition * Scale
+				+ vec3(time / 3.0, 0.0, time / 6.0));
+
+	float intensity = noisevec[2];
+
+	vec3 color   = vec3(intensity) * LightIntensity;
+	gl_FragColor = vec4(color, 1.0);
+}

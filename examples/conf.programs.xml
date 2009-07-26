@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<programs>
+	<group display="Simple">
+		<program display="Plain">
+			<vtxtext>vtx.plain.glsl.txt</vtxtext>
+			<fragtext>frag.plain.glsl.txt</fragtext>
+		</program>
+		<program display="Plain-Color">
+			<vtxtext>vtx.plain.glsl.txt</vtxtext>
+			<fragtext>frag.plain_color.glsl.txt</fragtext>
+			<param name="color" type="vec3color">{1.0,1.0,1.0}</param>
+		</program>
+		<program display="Squash">
+			<vtxtext>vtx.squash.glsl.txt</vtxtext>
+			<fragtext>frag.plain_color.glsl.txt</fragtext>
+			<param name="color" type="vec3color">{1.0,1.0,1.0}</param>
+			<param name="ratio" type="float01">1.0</param>
+		</program>
+		<program display="Varying-Color">
+			<vtxtext>vtx.varying_color.glsl.txt</vtxtext>
+			<fragtext>frag.varying_color.glsl.txt</fragtext>
+		</program>
+		<program display="Varying-Tangent">
+			<vtxtext>vtx.see_tangent.glsl.txt</vtxtext>
+			<fragtext>frag.varying_color.glsl.txt</fragtext>
+			<param name="tangent" type="vec3" kind="attrib">tangent()</param>
+		</program>
+	</group>
+	<group display="Texture">
+		<program display="Texture">
+			<vtxtext>vtx.texture.glsl.txt</vtxtext>
+			<fragtext>frag.texture.glsl.txt</fragtext>
+			<param name="my_tex" type="texture">0</param>
+		</program>
+		<program display="Tex-Color">
+			<vtxtext>vtx.texture.glsl.txt</vtxtext>
+			<fragtext>frag.texture_color.glsl.txt</fragtext>
+			<param name="my_tex" type="texture">0</param>
+			<param name="color" type="vec3color">{1,1,0}</param>
+		</program>
+		<program display="Combine">
+			<vtxtext>vtx.texture.glsl.txt</vtxtext>
+			<fragtext>frag.texture_combine.glsl.txt</fragtext>
+			<param name="my_tex1" type="texture">0</param>
+			<param name="my_tex2" type="texture">1</param>
+			<param name="ratio" type="float01">0.5</param>
+		</program>
+		<program display="Combine-Anim">
+			<vtxtext>vtx.texture_anim.glsl.txt</vtxtext>
+			<fragtext>frag.texture_anim.glsl.txt</fragtext>
+			<param name="my_tex1" type="texture">0</param>
+			<param name="my_tex2" type="texture">1</param>
+			<param name="ratio" type="float01">0.5</param>
+			<param name="scale2" type="floatRange" gui="0.0,2.0">1.0</param>
+			<param name="time" type="floatTime">0.0</param>
+		</program>
+		<program display="Combine-Shaded">
+			<vtxtext>vtx.phong_withTex.glsl.txt</vtxtext>
+			<fragtext>frag.texture_combine_phong.glsl.txt</fragtext>
+			<param name="my_tex1" type="texture">0</param>
+			<param name="my_tex2" type="texture">1</param>
+			<param name="ratio" type="float01">0.5</param>
+		</program>
+		<program display="Bump-Map">
+			<vtxtext>vtx.bump.glsl.txt</vtxtext>
+			<fragtext>frag.bump.glsl.txt</fragtext>
+			<param name="colorMap" type="texture">0</param>
+			<param name="normalMap" type="texture">1</param>
+			<param name="tangent" type="vec3" kind="attrib">tangent()</param>
+			<param name="bitangent" type="vec3" kind="attrib">bitangent()</param>
+			<arg name="texFile0">./textures/rockbump.jpg</arg>
+			<arg name="texFile1">./textures/rockbump_norm.png</arg>
+			<arg name="texAct">0</arg>
+		</program>
+	</group>
+	<group display="Built-In">
+		<program display="Plain-Built-In">
+			<vtxtext>vtx.builtin_plain.glsl.txt</vtxtext>
+			<fragtext>frag.builtin_plain.glsl.txt</fragtext>
+		</program>
+		<program display="Phong">
+			<vtxtext>vtx.phong.glsl.txt</vtxtext>
+			<fragtext>frag.phong.glsl.txt</fragtext>
+		</program>
+	</group>
+	<group display="Procedural">
+		<program display="Mandel-No-Param">
+			<fragtext>frag.mandelbrot_plain.glsl.txt</fragtext>
+		</program>
+		<program display="Mandel-Phong">
+			<vtxtext>vtx.phong_withTex.glsl.txt</vtxtext>
+			<fragtext>frag.mandelbrot_phong.glsl.txt</fragtext>
+			<param name="outsideColorTable" type="texture">0</param>
+			<param name="insideColor" type="vec4color">{0.2, 0.2, 0.4, 1.0}</param>
+			<param name="maxIterations" type="float">50</param>
+			<param name="offset" type="vec2">{-0.7, -0.7}</param> 
+				<!-- this is good for teapot. for square use {0,0} -->
+			<param name="scale" type="float">1</param>
+			<arg name="texFile0">./textures/spectrum2d.png</arg>
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Noise-Plot">
+			<vtxtext>vtx.proc.glsl.txt</vtxtext>
+			<fragtext>frag.plain_noise.glsl.txt</fragtext>
+			<param name="Noise" type="texture">0</param>
+			<param name="Scale" type="floatRange" gui="0,2">1.0</param>
+			<param name="time" type="floatTime">0.0</param>
+			<arg name="texFile0">noise(128,1,1)</arg>
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Noise-Sky">
+			<vtxtext>vtx.proc.glsl.txt</vtxtext>
+			<fragtext>frag.proc_sky.glsl.txt</fragtext>
+			<param name="Noise" type="texture">0</param>
+			<param name="SkyColor" type="vec3color">{0.0, 0.0, 0.8}</param>
+			<param name="CloudColor" type="vec3color">{0.8, 0.8, 0.8}</param>
+			<param name="Scale" type="floatRange" gui="0,2">1.0</param>
+			<param name="time" type="floatTime">0.0</param>
+			<arg name="texFile0">noise()</arg>
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Noise-Sun">
+			<vtxtext>vtx.proc.glsl.txt</vtxtext>
+			<fragtext>frag.proc_sun.glsl.txt</fragtext>
+			<param name="Noise" type="texture">0</param>
+			<param name="Color1" type="vec3color">{0.8, 0.7, 0.0}</param>
+			<param name="Color2" type="vec3color">{0.6, 0.1, 0.0}</param>
+			<param name="Scale" type="floatRange" gui="0,2">1.0</param>
+			<param name="time" type="floatTime">0.0</param>
+			<arg name="texFile0">noise()</arg>
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Wood">
+			<vtxtext>vtx.proc.glsl.txt</vtxtext>
+			<fragtext>frag.proc_wood.glsl.txt</fragtext>
+			<param name="Noise" type="texture">0</param>
+			<arg name="texFile0">noise()</arg> <!-- use noise(256) for better quality. -->
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Hatching">
+			<vtxtext>vtx.proc_hatching.glsl.txt</vtxtext>
+			<fragtext>frag.proc_hatching.glsl.txt</fragtext>
+			<param name="Noise" type="texture">0</param>
+			<param name="Time" type="floatTime">0</param>
+			<arg name="texFile0">noise()</arg> <!-- use noise(256) for better quality. -->
+			<arg name="texAct">0</arg>
+		</program>
+		<program display="Half-toning">
+			<vtxtext>vtx.phong.glsl.txt</vtxtext>
+			<fragtext>frag.halftone.glsl.txt</fragtext>
+			<param name="space" type="floatRange" gui="1,30">20.0</param>
+			<param name="colorRatio" type="floatRange">0.5</param>
+		</program>
+	</group>
+	<program display="Deform">
+		<vtxtext>vtx.deform.glsl.txt</vtxtext>
+		<fragtext>frag.deform.glsl.txt</fragtext>
+		<param name="time" type="floatTime">0</param>
+	</program>
+	<group display="Image">
+		<program display="Pass-through">
+			<vtxtext>vtx.scrquad.glsl.txt</vtxtext>
+			<fragtext>frag.img_pass.glsl.txt</fragtext>
+			<param name="img" type="texture">0</param>
+			<quadproc>1</quadproc>
+		</program>
+		<program display="Pixelate">
+			<fragtext>frag.img_pixelate.glsl.txt</fragtext>
+			<param name="img" type="texture">0</param>
+			<param name="f" type="float">10</param>
+			<quadproc>1</quadproc>
+		</program>
+		<program display="Average-3x3">
+			<vtxtext>vtx.scrquad.glsl.txt</vtxtext>
+			<fragtext>frag.img_avg9.glsl.txt</fragtext>
+			<param name="img" type="texture">0</param>
+			<quadproc>1</quadproc>
+		</program>
+		<program display="Twirl-ScreenQuad">
+			<fragtext>frag.img_twirl.glsl.txt</fragtext>
+			<param name="img" type="texture">0</param>
+			<param name="offset" type="vec2" gui="relative">{0.5,0.5}</param> <!-- other opetion is "screen" -->
+		</program>
+		<program display="Twirl-3D">
+			<fragtext>frag.img_twirl.glsl.txt</fragtext>
+			<param name="img" type="texture">0</param>
+			<param name="offset" type="vec2">{0.5,0.5}</param>
+			<quadproc>1</quadproc>
+		</program>
+	</group>
+
+</programs>

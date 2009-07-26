@@ -1,0 +1,13 @@
+#version 130
+
+varying vec2 vTexCoord;
+uniform sampler2D img;
+
+void main()
+{	
+	//gl_FragColor = texture2D(img, vTexCoord);
+
+	ivec2 pos = ivec2(gl_FragCoord.xy);
+	gl_FragColor = texelFetch(img, pos, 0);
+} 
+

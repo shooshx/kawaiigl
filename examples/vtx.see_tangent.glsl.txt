@@ -1,0 +1,8 @@
+varying vec3 intensity;
+attribute vec3 tangent;
+void main()
+{
+	intensity = tangent.xyz;
+	//intensity = gl_Normal.xyz;
+	gl_Position = ftransform();
+}
