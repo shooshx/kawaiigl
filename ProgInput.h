@@ -29,17 +29,32 @@ template<typename T>
 bool isEType(EParamType t, const T& v);
 EParamType getBaseType(EParamType t);
 
+
+struct GuiConf
+{};
+struct Vec2GuiConf : public GuiConf
+{
+	Vec2GuiConf() : relative(true), xmin(0.0), xmax(1.0), ymin(0.0), ymax(1.0) {}
+	bool relative;
+	float xmin, xmax, ymin, ymax;
+};
+struct FloatGuiConf : public GuiConf
+{
+	FloatGuiConf() : vmin(0.0), vmax(1.0) {}
+	float vmin, vmax;
+};
+
 struct ParamInput
 {
 	ParamInput() {}
 	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform)
-		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiA(0.0), guiB(0.0) {}
+		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL) {}
 	QString name;
 	QString value;
 	EParamType type;
 	bool isUniform; // false if attribute
 
-	float guiA, guiB; // gui arguments [Vec2:A->0.0 relative,1.0 absolute] [float:min, max]
+	GuiConf* guiconf; // gui arguments 
 
 	mutable int index; // in the program registry.
 };

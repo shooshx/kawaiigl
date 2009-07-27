@@ -48,7 +48,7 @@ class SliderPui : public PuiCont
 {
 	Q_OBJECT;
 public:
-	SliderPui(ParamUi *pui, float val, float _vmin, float _vmax);
+	SliderPui(ParamUi *pui, float val, FloatGuiConf* conf);
 	virtual void config();
 	float vmin, vmax;
 public slots:
@@ -60,11 +60,13 @@ class TrackPui : public PuiCont
 {
 	Q_OBJECT;
 public:
-	TrackPui(ParamUi *pui, bool _relative);
+	TrackPui(ParamUi *pui, Vec2GuiConf* conf);
 	virtual void config();
 	bool relative;
+	float xmin, xmax, ymin, ymax;
 public slots:
 	void mouseTrack(QMouseEvent* event);
+	//void trackEnable();
 };
 
 class TimePui : public PuiCont

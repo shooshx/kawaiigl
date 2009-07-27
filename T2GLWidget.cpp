@@ -145,7 +145,8 @@ void T2GLWidget::reconfCull()
 }
 void T2GLWidget::updateMouseTracking()
 {
-	setMouseTracking(conf.trackForParam);
+	//setMouseTracking(conf.trackForParam > 0);
+	setMouseTracking(true);
 }
 
 
@@ -836,7 +837,7 @@ void T2GLWidget::wheelEvent(QWheelEvent *event)
 
 void T2GLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-	if ((event->modifiers() & Qt::ControlModifier) != 0 && conf.trackForParam)
+	if ((event->modifiers() & Qt::ControlModifier) != 0)
 	{
 		emit mouseMove(event);
 	}

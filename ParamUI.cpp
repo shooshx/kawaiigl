@@ -34,14 +34,19 @@ ColorPui::ColorPui(ParamUi *pui) : PuiCont(pui)
 }
 
 
-SliderPui::SliderPui(ParamUi *pui, float val, float _vmin, float _vmax) : PuiCont(pui)
-	,vmin(_vmin), vmax(_vmax)
+SliderPui::SliderPui(ParamUi *pui, float val, FloatGuiConf* conf) : PuiCont(pui)
+	,vmin(0.0), vmax(1.0)
 {
 	QSlider *slp = new QSlider(Qt::Horizontal);
 	slp->setMinimumWidth(100);
 	pui->moreContainer->layout()->addWidget(slp);
 	pui->moreContainer->show();
 
+	if (conf != NULL)
+	{
+		vmin = conf->vmin;
+		vmax = conf->vmax;
+	}
 	if (vmin == vmax)
 		vmax = vmin + 1.0; // so for 0.0 in both this will become [0,1]
 
@@ -60,25 +65,40 @@ void SliderPui::config()
 	((TypeProp<float>*)prop)->setRange(vmin, vmax);
 }
 
-TrackPui::TrackPui(ParamUi *pui, bool _relative) : PuiCont(pui)
-	,relative(_relative)
+TrackPui::TrackPui(ParamUi *pui, Vec2GuiConf* conf) : PuiCont(pui)
+	,relative(true), xmin(0.0), xmax(1.0), ymin(0.0), ymax(1.0)
 {
+	if (conf != NULL)
+	{
+		relative = conf->relative;
+		xmin = conf->xmin; xmax = conf->xmax; ymin = conf->ymin; ymax = conf->ymax;
+	}
 	QPushButton *chp = new QPushButton();
 	chp->setMaximumSize(20, 20);
 	QFont f = chp->font(); f.setFamily("Arial Unicode MS"); f.setPixelSize(14); chp->setFont(f);
 	chp->setText(QString(QChar(0x2295))); // circle
 	pui->moreContainer->layout()->addWidget(chp);
 	pui->moreContainer->show();
-	win = new CheckBoxIn(&pui->m_kwEdit->conf().trackForParam, chp);
+	TypeProp<bool> *cprop = new TypeProp<bool>(NULL, NULL, "_c", false);
+	prop = cprop;
+	win = new CheckBoxIn(cprop, chp); // pui->m_kwEdit->conf().trackForParam
 	win->reload();
 	connect(pui->m_kwEdit->view(), SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseTrack(QMouseEvent*)));
 	pui->confGui->show();
 }
 
+
 void TrackPui::config()
 {
-	if (!MyInputDlg::getValue("Relative Coordinates [0,1]x[0,1]", relative, "GUI Config", pui->m_kwEdit))
+	ParamTemp dummy("track"); 
+	TypeProp<bool> abs(&dummy, "_abs", "Absolute Coordinates", !relative);
+	DTypeProp2(float, minv, float, maxv) x(&dummy, "X range", xmin, xmax), y(&dummy, "Y range", ymin, ymax);
+	dummy.reset();
+	if (!MyInputDlg::getValues(pui->m_kwEdit, abs, x, y, "Vec2 tracking"))
 		return;
+	relative = !abs.val();
+	xmin = x.minv; xmax = x.maxv;
+	ymin = y.minv; ymax = y.maxv;
 }
 
 TimePui::TimePui(ParamUi *pui) : PuiCont(pui)
@@ -130,6 +150,7 @@ void TimePui::reset()
 	curmsec = -interval; // going to be added
 	timeout();
 }
+
 
 void TimePui::config()
 {
@@ -185,6 +206,8 @@ void TrackPui::mouseTrack(QMouseEvent* event)
 {
 	if (pui->m_dtype != EPVec2)
 		return; // shouldn't happen
+	if (!((TypeProp<bool>*)prop)->val())
+		return; // not enabled
 
 	Vec2 c;
 	c.x = (float)event->x() ; // map to texture coordinates space
@@ -192,8 +215,8 @@ void TrackPui::mouseTrack(QMouseEvent* event)
 
 	if (relative) // relative coordinates
 	{
-		c.x /= pui->m_kwEdit->view()->width(); // map to texture coordinates space
-		c.y /= pui->m_kwEdit->view()->height();
+		c.x = c.x / pui->m_kwEdit->view()->width() * (xmax - xmin) + xmin; // map to texture coordinates space
+		c.y = c.y / pui->m_kwEdit->view()->height() * (ymax - ymin) + ymin;
 	}
 
 	pui->value->setText("{" + c.toStringNoParen() + "}");
@@ -223,9 +246,9 @@ void ParamUi::initMoreWidget(const ParamInput* pi)
 	else if (m_dtype == EPFloatRange)
 	{
 		if (pi != NULL)
-			moreCont = new SliderPui(this, pi->value.toFloat(), pi->guiA, pi->guiB);
+			moreCont = new SliderPui(this, pi->value.toFloat(), (FloatGuiConf*)pi->guiconf);
 		else
-			moreCont = new SliderPui(this, 0.6f, 0.0f, 1.0f);
+			moreCont = new SliderPui(this, 0.6f, NULL);
 	}
 	else if (m_dtype == EPFloatTime)
 	{
@@ -234,9 +257,9 @@ void ParamUi::initMoreWidget(const ParamInput* pi)
 	else if (m_dtype == EPVec2)
 	{
 		if (pi != NULL)
-			moreCont = new TrackPui(this, pi->guiA == 0.0);
+			moreCont = new TrackPui(this, (Vec2GuiConf*)pi->guiconf);
 		else
-			moreCont = new TrackPui(this, false);
+			moreCont = new TrackPui(this, NULL);
 	}
 	else
 	{

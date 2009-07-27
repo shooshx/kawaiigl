@@ -132,7 +132,11 @@ void GLWidget::doBindTexture(int index, QImage* img)
 	while (index >= m_textures.size())
 		m_textures.append(shared_ptr<GlTexture>());
 
-	m_textures[index].reset(); // deletes the old one
+	if (m_textures[index].get() != NULL)
+	{
+		m_textures[index]->unbind(); // it might not be deleted because it is help by someone else, unbind it anyway.
+		m_textures[index].reset(); // deletes the old one
+	}
 
 	if (img != NULL && !img->isNull())
 	{

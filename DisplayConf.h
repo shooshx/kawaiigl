@@ -32,7 +32,7 @@ public:
 	TypeProp<int> editFontSize;
 
 	TypeProp<bool> addFace;
-	TypeProp<bool> trackForParam; // should the mouse be tracked for param updates
+	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
 	TypeProp<QString> lastDir;
 
 	DisplayConf() 
@@ -65,7 +65,7 @@ public:
 		,selectedCol(this, "selectedCol", "Selected Point Color", QColor(0,0,0))
 		,editFontSize(this, "editFontSize", "Edit Font Size", 10)
 		,addFace(this, "addFace", "addFace", false)
-		,trackForParam(this, "trackForParam", "trackForParam", false)
+		,trackForParam(this, "trackForParam", "trackForParam", 0)
 		,lastDir(this, "lastDir", "lastDir", "")
 		
 	{
@@ -81,7 +81,7 @@ public:
 			texFile[i]->index() = i;
 		}
 		addFace.shouldStore(false);
-		//trackForParam.shouldStore(false);
+		trackForParam.shouldStore(false);
 
 	}
 };

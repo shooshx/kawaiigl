@@ -122,18 +122,36 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			if (!guia.isNull())
 			{
 				QString guival = guia.value().toLower().trimmed();
-				if (guival == "screen")
-					pi.guiA = 1.0;
-				else if (guival == "relative")
-					pi.guiA = 0.0;
-				else
+				if (etype == EPVec2)
 				{
+					Vec2GuiConf *g = new Vec2GuiConf;
+					if (guival == "screen")
+						g->relative = false;
+					else if (guival == "relative")
+						g->relative = true;
+					else
+					{
+						QStringList mm = guival.split(",", QString::SkipEmptyParts);
+						if (mm.size() == 4)
+						{
+							g->xmin = mm[0].toFloat();
+							g->xmax = mm[1].toFloat();
+							g->ymin = mm[2].toFloat();
+							g->ymax = mm[3].toFloat();
+						}
+					}
+					pi.guiconf = g;
+				}
+				else if (etype == EPFloatRange)
+				{
+					FloatGuiConf *g = new FloatGuiConf;
 					QStringList mm = guival.split(",", QString::SkipEmptyParts);
 					if (mm.size() == 2)
 					{
-						pi.guiA = mm[0].toFloat();
-						pi.guiB = mm[1].toFloat();
+						g->vmin = mm[0].toFloat();
+						g->vmax = mm[1].toFloat();
 					}
+					pi.guiconf = g;
 				}
 			}
 

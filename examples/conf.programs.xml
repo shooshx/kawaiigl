@@ -87,7 +87,7 @@
 		<program display="Mandel-No-Param">
 			<fragtext>frag.mandelbrot_plain.glsl.txt</fragtext>
 		</program>
-		<program display="Mandel-Phong">
+		<program display="Mandel-Phong-Tex">
 			<vtxtext>vtx.phong_withTex.glsl.txt</vtxtext>
 			<fragtext>frag.mandelbrot_phong.glsl.txt</fragtext>
 			<param name="outsideColorTable" type="texture">0</param>
@@ -98,6 +98,17 @@
 			<param name="scale" type="float">1</param>
 			<arg name="texFile0">./textures/spectrum2d.png</arg>
 			<arg name="texAct">0</arg>
+		</program>
+		<program display="Julia-Color">
+			<vtxtext>vtx.mandel_color.glsl.txt</vtxtext>
+			<fragtext>frag.mandel_color.glsl.txt</fragtext>
+			<param name="MaxIterations" type="float">50.0</param>
+			<param name="Zoom" type="floatRange" gui="0,2">1.0</param>
+			<param name="Center" type="vec2" gui="-1,1,-1,1">{-0.7,-0.7}</param>
+			<param name="InnerColor" type="vec3color">{0.00, 0.00, 0.3}</param>
+			<param name="OuterColor1" type="vec3color">{1.00, 0.00, 0.55}</param>
+			<param name="OuterColor2" type="vec3color">{0.00, 0.10, 1.00}</param>
+			<param name="juliaConst" type="vec2" gui="-1,1,-1,1">{-1.36,0.11}</param>
 		</program>
 		<program display="Noise-Plot">
 			<vtxtext>vtx.proc.glsl.txt</vtxtext>
@@ -137,6 +148,15 @@
 			<arg name="texFile0">noise()</arg> <!-- use noise(256) for better quality. -->
 			<arg name="texAct">0</arg>
 		</program>
+		<program display="Marble">
+			<vtxtext>vtx.proc.glsl.txt</vtxtext>
+			<fragtext>frag.proc_marble.glsl.txt</fragtext>
+			<param name="MarbleColor" type="vec3color">{0.8,0.8,0.8}</param>
+			<param name="VeinColor" type="vec3color">{0.8,0.2,0.2}</param>
+			<param name="Noise" type="texture">0</param>
+			<arg name="texFile0">noise()</arg> <!-- use noise(256) for better quality. -->
+			<arg name="texAct">0</arg>
+		</program>
 		<program display="Hatching">
 			<vtxtext>vtx.proc_hatching.glsl.txt</vtxtext>
 			<fragtext>frag.proc_hatching.glsl.txt</fragtext>
@@ -157,6 +177,21 @@
 		<fragtext>frag.deform.glsl.txt</fragtext>
 		<param name="time" type="floatTime">0</param>
 	</program>
+	<group display="Cell-Shading">
+		<program display="Cell-Shading (direct light)">
+			<vtxtext>vtx.cell_direct.glsl.txt</vtxtext>
+			<fragtext>frag.cell_direct.glsl.txt</fragtext>			
+		</program>		
+		<program display="Cell-Shading (point light)">
+			<vtxtext>vtx.cell_point.glsl.txt</vtxtext>
+			<fragtext>frag.cell_point.glsl.txt</fragtext>						
+		</program>				
+		<program display="Cell-Shading (with silhouettes)">
+			<vtxtext>vtx.cell_point_line.glsl.txt</vtxtext>
+			<fragtext>frag.cell_point_line.glsl.txt</fragtext>
+			<param name="silhouetteThreshold" type="float01">0.2</param>
+		</program>	
+	</group>
 	<group display="Image">
 		<program display="Pass-through">
 			<vtxtext>vtx.scrquad.glsl.txt</vtxtext>
@@ -185,6 +220,12 @@
 			<fragtext>frag.img_twirl.glsl.txt</fragtext>
 			<param name="img" type="texture">0</param>
 			<param name="offset" type="vec2">{0.5,0.5}</param>
+			<quadproc>1</quadproc>
+		</program>
+		<program display="Halftone-Image">
+			<fragtext>frag.img_halftone.glsl.txt</fragtext>
+			<param name="halftoneResolution" type="vec2">{100,100}</param>
+			<param name="halftoneTexture" type="texture">0</param>
 			<quadproc>1</quadproc>
 		</program>
 	</group>
