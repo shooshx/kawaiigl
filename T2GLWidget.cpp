@@ -684,7 +684,7 @@ struct PointTextDrawer : public PointDrawer
 
 		glRasterPos3d(p.x, p.y, p.z);
 
-		QString ct;
+		QString ct = "   ";
 		if (m_conf.bCoordName)
 			ct += QString("%1").arg(name.c_str());
 		if (m_conf.bCoordName && m_conf.bCoordNum)
@@ -692,10 +692,10 @@ struct PointTextDrawer : public PointDrawer
 		if (m_conf.bCoordNum)
 			ct += QString("(%2,%3,%4)").arg(p[0], 0, 'g', 2).arg(p[1], 0, 'g', 2).arg(p[2], 0, 'g', 2);
 
-		glDisable(GL_DEPTH_TEST);// not working.
+		//glDisable(GL_DEPTH_TEST);// not working.
 
 		m_glw->mglPrint(ct, 1); 
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_DEPTH_TEST);
 	}
 
 };

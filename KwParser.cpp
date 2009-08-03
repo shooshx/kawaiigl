@@ -495,9 +495,11 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			{
 				string& pname = pol[p];
 				symbol_ast* va = vecsym.lookup()->find(pname.begin(), pname.end());
-				
-				pnts.push_back(va);
-				va->used = true;
+				if (va != NULL)
+				{
+					pnts.push_back(va);
+					va->used = true;
+				}
 			}
 
 			(*adder)(pnts);

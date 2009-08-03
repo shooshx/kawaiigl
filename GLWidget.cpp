@@ -846,7 +846,7 @@ void GLWidget::killFont(int fontIndex)	//TBD-call this?
 
 void GLWidget::mglPrint(const QString &str, int fontIndex)
 {
-	if (str == NULL)									// If There's No Text
+	if (str.isEmpty())									// If There's No Text
 		return;											// Do Nothing
 
 	glPushAttrib(GL_LIST_BIT);							// Pushes The Display List Bits

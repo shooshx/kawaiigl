@@ -276,8 +276,9 @@ bool MyObject::buildHalfEdges(THalfEdgeList& lst)
 
 	TPointPairHash m_pntmap;
 	m_pntmap.reserve(150);
-	// the pointer is the half edge already between these points
+	// map two points to the pointer is the half edge already between these points
 
+	// create half edges for every polygon
 	for(pli = 0; pli < nPolys; ++pli)
 	{
 		MyPolygon *pol = poly[pli];
@@ -293,7 +294,7 @@ bool MyObject::buildHalfEdges(THalfEdgeList& lst)
 			if (lasthe == NULL)
 				lasthe = he;
 
-			if (pol->vtx[i]->he == NULL)
+			if (pol->vtx[i]->he == NULL) // this vertex doesn't have a half-edge yet
 				pol->vtx[i]->he = he;
 
 		}
@@ -318,6 +319,37 @@ bool MyObject::buildHalfEdges(THalfEdgeList& lst)
 			he = he->next;
 		}
 		// maximum size of m_pntmap is 134
+	}
+
+	// fill holes
+	while (!m_pntmap.empty())
+	{
+		HalfEdge *starthe = m_pntmap.begin().value();
+		HalfEdge *he = starthe;
+		HalfEdge *nprev = NULL, *nhe = NULL;
+
+		HalfEdge *henext = he->next;
+		while (henext->pair != NULL)  // search for the next one in the hole
+			henext = henext->pair->next; 
+
+		do {
+
+			nhe = m_alloc->m_hePool.allocate();
+			nhe->init(he->poly, henext->point, nprev);
+			he->pair = nhe;
+			nhe->pair = he;
+			m_pntmap.remove(PointPair(he->point, henext->point));
+			nprev = nhe;
+
+			he = henext;
+			henext = he->next;
+			while (henext->pair != NULL && he != starthe && henext != starthe)  // search for the next one in the hole
+				henext = henext->pair->next; 
+		}
+		while (he != starthe);
+
+		he->pair->next = nhe;
+
 	}
 
 	return (m_pntmap.empty());
@@ -379,6 +411,7 @@ bool MyObject::subdivide(bool smooth)
 		basicAddPoint(he->edgePoint);
 	}
 
+	// create new polygons
 	for(int pli = 0; pli < nPolys; ++pli)
 	{
 		MyPolygon &pol = *poly[pli];
@@ -455,14 +488,6 @@ bool MyObject::subdivide(bool smooth)
 		TexAnchor tv[] = { pol.texAncs[0], pol.texAncs[1], pol.texAncs[2], pol.texAncs[3] }; // original texture anchors
 		TexAnchor tf = (tv[0] + tv[2]) / 2.0;
 		TexAnchor te[] = { (tv[0] + tv[1]) / 2.0f, (tv[1] + tv[2]) / 2.0f, (tv[2] + tv[3]) / 2.0f, (tv[3] + tv[0])/2.0f };
-
-		//TexAnchor tv[] = { pol.texAncs[0], pol.texAncs[1], pol.texAncs[2], pol.texAncs[3] }; // original texture anchors
-		//TexAnchor tf((tv[0].x + tv[2].x) / 2.0, (tv[0].y + tv[2].y) / 2.0);
-// 		TexAnchor te[] = { TexAnchor((tv[0].x + tv[1].x) / 2.0, (tv[0].y + tv[1].y) / 2.0), 
-// 			TexAnchor((tv[1].x + tv[2].x) / 2.0, (tv[1].y + tv[2].y) / 2.0),
-// 			TexAnchor((tv[2].x + tv[3].x) / 2.0, (tv[2].y + tv[3].y) / 2.0),
-// 			TexAnchor((tv[3].x + tv[0].x) / 2.0, (tv[3].y + tv[0].y) / 2.0) };
-
 
 		TexAnchor lastte = te[pol.pnum - 1];
 		TexAnchor tx1[] = { tv[0], te[0], tf, lastte };

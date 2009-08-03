@@ -87,6 +87,8 @@ struct MyObjAdder : public PolyAdder
 	{}
 	virtual void operator()(vector<IPoint*>& v)
 	{
+		if (v.size() < 3)
+			return;
 		MyPolygon *poly = m_obj->AddPoly(&v[0]->getCoord(), &v[1]->getCoord(), &v[2]->getCoord(), (v.size() > 3)?(&v[3]->getCoord()):NULL, constAncs);
 		for(size_t i = 0; i < v.size(); ++i)
 		{

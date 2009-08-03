@@ -1,0 +1,6 @@
+varying vec2 Position;
+
+void main() {
+	Position = vec2(gl_MultiTexCoord0 - 0.5) * 2.0;
+	gl_Position = ftransform();
+}

@@ -23,18 +23,26 @@
 class MyPoint;
 class MyPolygon;
 
+// a half edge originates from a point and points to a point
 class HalfEdge
 {
 public:
 	HalfEdge() :point(NULL), pair(NULL), poly(NULL), next(NULL), edgePoint(NULL) {}
 	HalfEdge(MyPolygon *_poly, MyPoint *_pnt, HalfEdge *_next)
-		:point(_pnt), pair(NULL), poly(_poly), next(_next), edgePoint(NULL) {}
+		:point(_pnt), pair(NULL), poly(_poly), next(_next), edgePoint(NULL) 
+	{}
 	void init(MyPolygon *_poly, MyPoint *_pnt, HalfEdge *_next)
-	{ point = _pnt; pair = NULL; poly = _poly; next = _next; edgePoint = NULL; }
+	{ 
+		point = _pnt; 
+		pair = NULL; 
+		poly = _poly; 
+		next = _next; 
+		edgePoint = NULL; 
+	}
 
-	MyPoint* point;
+	MyPoint* point; // originates from
 	HalfEdge* pair;
-	MyPolygon* poly;
+	MyPolygon* poly; 
 	HalfEdge* next;
 
 	MyPoint* edgePoint; // always shared between two edges.

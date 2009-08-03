@@ -1,0 +1,27 @@
+varying vec3 normal;
+uniform vec3 color;
+	
+void main()
+{
+	float intensity;
+	vec3 n = normalize(normal);
+	vec3 l = normalize(gl_LightSource[0].position).xyz;
+	
+	intensity = max(dot(l,n),0.0);
+		
+	
+	if (intensity > 0.95)
+		intensity = 0.8;		
+	else if (intensity > 0.5)
+		intensity = 0.6;
+	else if (intensity > 0.25)
+		intensity = 0.3;
+	else
+		intensity = 0.1;
+		
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_LightSource[0].diffuse * intensity;	
+
+	// mimicing GL_COLOR_MATERIAL
+	gl_FragColor = (ambient + diffuse) * gl_Color;			
+} 

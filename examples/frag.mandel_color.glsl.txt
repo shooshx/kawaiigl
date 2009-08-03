@@ -1,0 +1,39 @@
+varying vec2 Position;
+
+uniform float MaxIterations;
+uniform float Zoom;
+uniform vec2 Center;
+uniform vec3 InnerColor;
+uniform vec3 OuterColor1;
+uniform vec3 OuterColor2;
+uniform vec2 juliaConst;
+
+void main ()
+{	
+	vec2 z = Position * Zoom - Center;	
+	
+ 	// Mandelbrot
+	//vec2 c = z; 
+	// Julia
+	vec2 c = juliaConst; //vec2(-1.36,0.11);
+
+	float r2 = 0.0;
+	float i;
+	for (i = 0.0; i < MaxIterations ; i += 1.0)
+	{
+		z = vec2(z.x*z.x - z.y*z.y, 2.0*z.x*z.y) + c;
+		r2 = dot(z, z);
+		if (r2 > 4.0)
+		{
+			break;
+		}
+	}
+	
+	vec3 color;
+	if (r2 < 4.0)
+		color = InnerColor;
+	else
+		color = mix(OuterColor1, OuterColor2, fract(i * 0.05));
+		
+	gl_FragColor = vec4(color, 1.0);
+}
