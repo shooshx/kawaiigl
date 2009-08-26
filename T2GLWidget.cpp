@@ -53,6 +53,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	,conf(parent->sett().disp)
 	,m_doc(doc), m_offbuf(NULL), m_offbuf2(NULL), m_useProg(true)
 	,m_rubberBand(NULL)
+	,m_framesThisSecond(0), m_framesLast(0)
 {
 	m_bBackFaceCulling = false; // needed or else upsidedown faces are bad.
 	m_bSkewReset = false;
@@ -96,6 +97,9 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 
 	connect(&conf.bCull, SIGNAL(changed()), this, SLOT(reconfCull()));
 	connect(&conf.trackForParam, SIGNAL(changed()), this, SLOT(updateMouseTracking()));
+	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(changedFps()));
+	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(fpsTimeout()));
+
 
 	setFocusPolicy(Qt::StrongFocus); // for key presses
 
@@ -105,6 +109,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	reconfProj();
 	reconfCull();
 	updateMouseTracking();
+	changedFps();
 
 
 	for(int i = 0; i < N_TEX; ++i)
@@ -174,6 +179,27 @@ void T2GLWidget::initializeGL()
 	glEnable(GL_POINT_SMOOTH);
 
 }
+
+void T2GLWidget::changedFps()
+{
+	if (conf.fullFps)
+	{
+		m_framesLast = 0;
+		m_framesThisSecond = 0;
+		m_fpsTimer.start(1000);
+		updateGL();
+	}
+	else
+	{
+		m_fpsTimer.stop();
+	}
+}
+void T2GLWidget::fpsTimeout()
+{
+	m_framesLast = m_framesThisSecond;
+	m_framesThisSecond = 0;
+}
+
 
 shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd)
 {
@@ -284,7 +310,10 @@ void T2GLWidget::drawAddTracker(AddTracker& at)
 	glLineWidth(1.0f);
 }
 
+void T2GLWidget::drawSideText()
+{
 
+}
 
 void T2GLWidget::paintFlat()
 {
@@ -339,6 +368,10 @@ void T2GLWidget::paintFlat()
 	glRasterPos2f(-0.95f, -0.92f);
 
 	mglPrint(QString("%1/%2").arg(m_doc->numPoints()).arg(m_doc->numPoly()), 0);
+	if (conf.fullFps)
+	{
+		mglPrint(QString(" %1 FPS").arg(m_framesLast), 0);
+	}
 
 	GL_END_TEXT();
 
@@ -402,8 +435,6 @@ void T2GLWidget::paint3DScene()
 	if (!m_bShowHiddenPoints)
 	{ // this is faster
 		paintFlat();
-		//if (conf.bLines)
-		//	glFlush();
 		paintPoly();
 	}
 	else
@@ -488,6 +519,12 @@ void T2GLWidget::myPaintGL()
 		else
 		{
 			paint3DScene();
+		}
+
+		if (conf.fullFps)
+		{
+			++m_framesThisSecond;
+			update();
 		}
 
 	} 

@@ -52,7 +52,8 @@ private slots:
 
 	void updateSelPointColor();
 	void changedSelectedCol();
-
+	void changedFps();
+	void fpsTimeout();
 
 signals:
 	void decompProgChanged(const QString& txt);
@@ -79,6 +80,8 @@ private:
 	TIPoints m_dragPnts;
 	QPoint m_rubberOrigin;
 	QRubberBand *m_rubberBand;
+	int m_framesThisSecond, m_framesLast;
+	QTimer m_fpsTimer;
 
 	bool m_bShowHiddenPoints;
 

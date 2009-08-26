@@ -93,6 +93,11 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	QMenu *view = new QMenu("View");
 	viewBot->setMenu(view);
 
+	QPushButton *fpsBot = new QPushButton("O");
+	fpsBot->setMaximumSize(20, 19);
+	statusBar()->addPermanentWidget(fpsBot);
+	(new CheckBoxIn(&m_sett.disp.fullFps, fpsBot))->reload();
+
 	QAction *confVis = new QAction("Display", view);
 	view->addAction(confVis);
 	m_contDlg->connectAction(confVis);

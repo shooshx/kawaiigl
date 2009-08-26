@@ -30,6 +30,7 @@ public:
 	TypeProp<int> materialShine;
 	TypeProp<QColor> backCol, materialCol, selectedCol, lineColor;
 	TypeProp<int> editFontSize;
+	TypeProp<bool> fullFps;
 
 	TypeProp<bool> addFace;
 	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
@@ -67,6 +68,7 @@ public:
 		,addFace(this, "addFace", "addFace", false)
 		,trackForParam(this, "trackForParam", "trackForParam", 0)
 		,lastDir(this, "lastDir", "lastDir", "")
+		,fullFps(this, "fullFps", "fullFps", false)
 		
 	{
 		for(int i = 0; i < N_PASS; ++i)
@@ -82,7 +84,6 @@ public:
 		}
 		addFace.shouldStore(false);
 		trackForParam.shouldStore(false);
-
 	}
 };
 

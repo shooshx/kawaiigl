@@ -240,6 +240,7 @@ void Document::updateTrack(IPoint* sel)
 			line += ")\n";
 
 			m_curtext += line;
+			m_addTrack.reset();
 			emit textChanged(m_curtext);
 		}
 
@@ -342,6 +343,7 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 				m_prog.setUniform(i, pi.index);
 			}
 		}
+		break;
 	case EPVec2:
 		{
 			Vec2 v;
