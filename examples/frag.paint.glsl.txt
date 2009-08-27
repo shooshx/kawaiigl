@@ -1,0 +1,10 @@
+uniform vec2 curs;
+uniform sampler2D img;
+
+void main()
+{
+	if (distance(gl_FragCoord.xy,curs)<5.0)
+		gl_FragColor = vec4(0.0,0.0,0.0,0.0);
+	else	
+		gl_FragColor = texelFetch(img, ivec2(gl_FragCoord.xy), 0) + 0.1;
+}

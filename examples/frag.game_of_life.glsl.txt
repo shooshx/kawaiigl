@@ -1,0 +1,64 @@
+#version 130
+#extension GL_EXT_gpu_shader4 : enable
+
+
+uniform vec2 curs;
+uniform sampler2D img;
+uniform int run;
+
+ivec2 around[] = ivec2[]( ivec2(-1,-1), ivec2(0,-1), ivec2(1,-1),
+			    ivec2(-1,0), ivec2(1,0),
+			    ivec2(-1,1), ivec2(0,1), ivec2(1,1) );
+
+void main()
+{
+	if (distance(curs.x, 0.0) < 10.0)
+	{ // create random
+		int v = int(curs.y/curs.x * 32.0 * 
+			(gl_FragCoord.x * gl_FragCoord.y) * pow(gl_TexCoord[0].x, gl_TexCoord[0].y) ) % 6000;
+		if (v < 1000)
+			gl_FragColor = vec4(1.0, 1.0, 0.0, 0.0);
+		else if (v < 2000)
+			gl_FragColor = vec4(0.0, 1.0, 1.0, 0.0);
+		else if (v < 3000)
+			gl_FragColor = vec4(1.0, 0.0, 1.0, 0.0);
+		else
+			gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+	}
+	else	
+	{
+		if (!bool(run))
+		{
+			gl_FragColor = texelFetch(img, ivec2(gl_FragCoord.xy), 0);
+			return;
+		}
+		int nei = 0;
+		vec4 ncol = vec4(0.0);
+		for(int i = 0; i < 8; ++i)
+		{
+			vec4 c = texelFetch(img, ivec2(gl_FragCoord.xy) + around[i], 0);
+			if (c != vec4(0.0))
+			{
+				++nei;
+				ncol += c;
+			}
+		}
+		ncol /= nei; // average color
+
+		if (texelFetch(img, ivec2(gl_FragCoord.xy), 0) == vec4(0.0))
+		{ // this cell is deal
+			if (nei == 3)
+				gl_FragColor = ncol;
+			else
+				gl_FragColor = vec4(0); // stay dead
+		}
+		else // this cell is alive
+		{
+			if (nei == 2 || nei == 3)
+				gl_FragColor = ncol;
+			else
+				gl_FragColor = vec4(0); // die
+		}
+	
+	}
+}

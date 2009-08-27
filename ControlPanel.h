@@ -7,6 +7,7 @@
 #include "MyLib/MyDialog.h"
 #include "GLWidget.h"
 #include "DisplayConf.h"
+#include "ProgInput.h"
 
 class Document;
 class KawaiiGL;
@@ -28,7 +29,7 @@ private slots:
 	//void texSelChanged(int i);
 
 public slots:
-	void progChange();
+	void runTypeChange();
 
 signals:
 	void changedRend(); // changed rendering stuff
@@ -37,7 +38,9 @@ signals:
 	void resetView();
 	void resetLight();
 	void changedTexFile(int which);
+	void reassertTex(int which);
 	void saveMesh();
+	void doUpdate();
 	
 public:
 	Ui::DispContDlg ui;
@@ -58,8 +61,6 @@ private:
 		QLineEdit *file;
 		QPushButton *bot;
 	} m_W_Tex[N_TEX];
-
-	bool m_lastQuad; // TBD: this is a hack.
 
 
 	DisplayConf *conf;

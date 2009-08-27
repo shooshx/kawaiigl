@@ -46,8 +46,9 @@ EParamType getBaseType(EParamType t)
 
 
 Document::Document(KawaiiGL* mainc)
-	:m_nPoly(0), m_nPoints(0), m_errAct(NULL), m_frameObj(NULL), m_obj(NULL),
-	 conf(mainc->sett().disp), m_main(mainc), m_quadProcess(false)
+	:m_nPoly(0), m_nPoints(0), m_errAct(NULL), m_frameObj(NULL), m_obj(NULL)
+	,conf(mainc->sett().disp), m_main(mainc)
+	,m_inputUnit(-1), m_outputUnit(-1)
 {
 	connect(&conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
 
@@ -180,7 +181,7 @@ void Document::calc(const QString& qstr, bool doParse, QString saveAs)
 
 	MyObjAdder adder(m_frameObj, conf);
 	m_kparser.creator()->createPolygons(&adder);
-	updateParams(); // if there's a prog active, it might depend on the variables.
+	updateParams(m_onCalcEvals); // if there's a prog active, it might depend on the variables.
 
 	//	currentDecompile.clear();
 
@@ -255,14 +256,22 @@ void Document::compileShaders(const ProgInput& in)
 {
 	m_prog.clear();
 
+	if (!isValid())
+	{ // we did not parse any model yet so the parser is invalid. wake it up.
+		calc("");
+	}
+
 	if (!in.vtxProg.isEmpty())
 		m_prog.vtxprogs() += in.vtxProg;
 	if (!in.fragProg.isEmpty())
 		m_prog.fragprogs() += in.fragProg;
 
-	m_quadProcess = in.quadProcess;
+	conf.runType = in.runType;
 
-	m_paramsEvals.clear();
+	m_onCalcEvals.clear();
+	m_onCalcEvals.resize(in.params.size());
+	m_onFrameEvals.clear();
+	m_onFrameEvals.resize(in.params.size());
 	m_attribEval.clear();
 
 	for(int i = 0; i < in.params.size(); ++i)
@@ -274,7 +283,6 @@ void Document::compileShaders(const ProgInput& in)
 		else
 			sp = new AttribParam(pi.name);
 		m_prog.addParam(sp, i);
-		m_paramsEvals.append(ParamAdapter(NULL, i));
 		pi.index = i;
 	}
 
@@ -307,6 +315,7 @@ bool Document::parseSingleParam(const ParamInput& pi, Prop* toprop, bool update)
 	return ok;
 }
 
+// parse uniform. this defines what a uniform variable can be.
 bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 {
 	if (!pi.isUniform)
@@ -359,11 +368,10 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 			IPoint *v = NULL;
 			if (ok = m_kparser.kparseVec(iter, end, nameend, v))
 			{
-				ParamAdapter& pa = m_paramsEvals[pi.index];
-				pa.pe = v;
-				pa.toprop = toprop;
+				shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, toprop, pi.index));
+				m_onCalcEvals[pi.index] = pa;
 
-				pa.updateVec(m_prog);
+				pa->update(m_prog);
 			}
 		}
 		break;
@@ -383,6 +391,19 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 			if (ok)
 			{
 				m_prog.setUniform(ti, pi.index);
+				m_onFrameEvals[pi.index].reset();
+			}
+			else
+			{
+				QString v = pi.value.trimmed().toLower();
+				if (v.startsWith("input"))
+				{
+					shared_ptr<ParamAdapter> pa(new TexParamAdapter(this, pi.index));
+					m_onFrameEvals[pi.index] = pa;
+
+					pa->update(m_prog);
+					ok = true;
+				}
 			}
 		}
 		break;
@@ -392,7 +413,7 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 }
 
 
-void Document::ParamAdapter::updateVec(GenericShader &prog) const
+void Document::VecParamAdapter::update(GenericShader &prog) const
 {
 	if (pe == NULL)
 		return;
@@ -407,21 +428,29 @@ void Document::ParamAdapter::updateVec(GenericShader &prog) const
 	}
 }
 
+void Document::TexParamAdapter::update(GenericShader &prog) const
+{
+	int tex = m_doc->m_inputUnit;
+	if (tex == -1)
+		return;
+	prog.setUniform(tex, index);
+}
 
-void Document::updateParams()
+
+void Document::updateParams(TAdaptersList &adapters)
 {
 	mglCheckErrorsC("startUpdateParams");
 	{
 		ProgramUser use(&m_prog);
-		foreach(const ParamAdapter& pa, m_paramsEvals)
+		foreach(const shared_ptr<ParamAdapter>& pa, adapters)
 		{
-			pa.updateVec(m_prog); // there are only Vec that need updates at the moment.
+			if (pa.get() != NULL)
+				pa->update(m_prog); // there are only Vec that need updates at the moment.
 		}
 	}
 
 	mglCheckErrorsC("updateParams");
 }
-
 
 
 
@@ -467,6 +496,7 @@ struct BiTangentAttribEval : public Document::AttribEval
 	bool m_enabled;
 };
 
+// parse attribute text. this defines what an attribute can be.
 bool Document::parseAttrib(const ParamInput &pi)
 {
 	QString func = pi.value.trimmed().toLower();

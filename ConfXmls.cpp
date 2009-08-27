@@ -162,7 +162,19 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 		else if (e.tagName() == "quadproc")
 		{
 			int op = e.text().toInt();
-			prog->quadProcess = (bool)op;
+			prog->runType = ((bool)op)?DisplayConf::RunQuadProcess:DisplayConf::RunNormal;
+		}
+		else if (e.tagName() == "runtype")
+		{
+			QString opt = e.text().toLower().trimmed();
+			if (opt == "quadproc")
+				prog->runType = DisplayConf::RunQuadProcess;
+			else if (opt == "normal")
+				prog->runType = DisplayConf::RunNormal;
+			else if (opt == "tex2tex")
+				prog->runType = DisplayConf::RunTex2Tex;
+			else
+				printf("unknown runType option %s\n", opt.toAscii().data());
 		}
 		else if (e.tagName() == "arg")
 		{

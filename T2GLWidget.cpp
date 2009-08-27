@@ -81,7 +81,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.lineColor, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
-	connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
 
 	//connect(&conf.selectedCol, SIGNAL(changed()), this, SLOT(updateGL()));
 
@@ -99,6 +99,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.trackForParam, SIGNAL(changed()), this, SLOT(updateMouseTracking()));
 	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(changedFps()));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(fpsTimeout()));
+	connect(&conf.runType, SIGNAL(changed()), this, SLOT(changedRunType()));
 
 
 	setFocusPolicy(Qt::StrongFocus); // for key presses
@@ -227,6 +228,13 @@ shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd)
 	return *it;
 }
 
+void T2GLWidget::rebindTexture(int which)
+{
+	if (!isTextureValid(which))
+		return;
+	glActiveTexture(GL_TEXTURE0 + which);
+	m_textures[which]->bind();
+}
 
 
 void T2GLWidget::setTexture(int which)
@@ -310,10 +318,6 @@ void T2GLWidget::drawAddTracker(AddTracker& at)
 	glLineWidth(1.0f);
 }
 
-void T2GLWidget::drawSideText()
-{
-
-}
 
 void T2GLWidget::paintFlat()
 {
@@ -425,12 +429,15 @@ void T2GLWidget::drawSolids(bool colorize)
 }
 
 
-void T2GLWidget::paint3DScene()
+void T2GLWidget::paint3DScene(bool clearBack)
 {
 	Vec backCol = Vec(conf.backCol);
 	glClearColor(backCol.r, backCol.g, backCol.b, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (clearBack)
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (!m_doc->isValid())
+		return;
 
 	if (!m_bShowHiddenPoints)
 	{ // this is faster
@@ -450,39 +457,77 @@ void T2GLWidget::paint3DScene()
 }
 
 
+void T2GLWidget::resizeGL(int width, int height)
+{
+	GLWidget::resizeGL(width, height);
+	changedRunType();
+}
+
+void T2GLWidget::changedRunType()
+{
+	delete m_offbuf; m_offbuf = NULL;
+	delete m_offbuf2; m_offbuf2 = NULL;
+
+	if (conf.runType == DisplayConf::RunQuadProcess)
+	{
+		//glActiveTexture(GL_TEXTURE0);
+		bool doMulti = GLEW_EXT_framebuffer_blit && conf.quadMultiSamp;
+
+		//if (m_offbuf == NULL || m_offbuf->size() != size() || conf.quadMultiSamp.checkChanged())
+
+		if (doMulti)
+		{
+			m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 4);
+			m_offbuf2 = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 0, MyFramebufferObject::FI_LINEAR);
+			printf("created multisample off-screen buffer (%d,%d)\n", width(), height());
+		}
+		else
+		{
+			m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
+			printf("created off-screen buffer (%d,%d)\n", width(), height());
+		}
+
+	}
+	else if (conf.runType == DisplayConf::RunTex2Tex)
+	{
+
+		delete m_offbuf; m_offbuf = NULL;
+		delete m_offbuf2; m_offbuf2 = NULL;
+		m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
+		m_offbuf2 = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
+		printf("created two off-screen buffers (%d,%d)\n", width(), height());
+
+		glActiveTexture(GL_TEXTURE0);
+		m_offbuf->texture()->bind();
+		glActiveTexture(GL_TEXTURE1);
+		m_offbuf2->texture()->bind();
+
+		m_doc->m_inputUnit = 1;
+		m_doc->m_outputUnit = 0;
+	
+
+	}
+	else if (conf.runType == DisplayConf::RunNormal)
+	{
+		
+	}
+	updateGL();
+}
+
 
 void T2GLWidget::myPaintGL()
 {
-	if (!m_doc->isValid())
-		return;
-	
+
 	try {
 
-		if (m_doc->m_quadProcess)
+		if (conf.runType == DisplayConf::RunQuadProcess)
 		{
-			//glActiveTexture(GL_TEXTURE0);
+
 			bool doMulti = GLEW_EXT_framebuffer_blit && conf.quadMultiSamp;
-			
-			if (m_offbuf == NULL || m_offbuf->size() != size() || conf.quadMultiSamp.checkChanged())
-			{
-				delete m_offbuf; m_offbuf = NULL;
-				delete m_offbuf2; m_offbuf2 = NULL;
-				
-				if (doMulti)
-				{
-					m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 4);
-					m_offbuf2 = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 0, MyFramebufferObject::FI_LINEAR);
-					printf("created multisample off-screen buffer (%d,%d)\n", width(), height());
-				}
-				else
-				{
-					m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
-				}
-			}
 
 			m_offbuf->bind();
 			m_useProg = false;
-			paint3DScene();
+			paint3DScene(); // paint 3d scene on texture
 			m_useProg = true;
 			m_offbuf->release();
 			
@@ -502,10 +547,11 @@ void T2GLWidget::myPaintGL()
 				drawTex = m_offbuf->texture();
 			}
 
+			glActiveTexture(GL_TEXTURE0);
 			glEnable(GL_TEXTURE_2D);
-			//glBindTexture(GL_TEXTURE_2D, m_offbuf->texture()); // stepping on 0...
-			drawTex->bind();
-			ProgramUser proguser;
+			
+			drawTex->bind(); // we're going to draw a quad with this texture.
+			ProgramUser proguser;  //... through the program
 			if (m_useProg && m_doc->m_prog.isOk())
 				proguser.use(&m_doc->m_prog);
 			
@@ -516,7 +562,38 @@ void T2GLWidget::myPaintGL()
 			glDisable(GL_TEXTURE_2D);
 			
 		}
-		else
+		else if (conf.runType == DisplayConf::RunTex2Tex)
+		{
+			m_offbuf->bind(); // draw into buffer
+			
+			WholeScreenQuad wsq(this, Vec(conf.backCol));
+			{
+				ProgramUser proguser;
+				if (m_useProg && m_doc->m_prog.isOk())
+					proguser.use(&m_doc->m_prog);
+				m_doc->updateFrameParams(); // set the input texture uniform if it exists.
+				
+				wsq.render();
+			}
+		
+			m_useProg = false;
+			paint3DScene(false); // paint 3d scene on texture
+			m_useProg = true;
+
+			m_offbuf->release();
+
+			// draw buffer to screen
+			glActiveTexture(GL_TEXTURE0 + m_doc->m_outputUnit);
+			glEnable(GL_TEXTURE_2D);
+			WholeScreenQuad wsq2(this);
+			wsq2.render();
+			glDisable(GL_TEXTURE_2D);
+
+			qSwap(m_offbuf, m_offbuf2);
+			qSwap(m_doc->m_inputUnit, m_doc->m_outputUnit);
+
+		}
+		else if (conf.runType == DisplayConf::RunNormal)
 		{
 			paint3DScene();
 		}

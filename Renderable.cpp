@@ -17,15 +17,19 @@ void WholeScreenQuad::render()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 
-	glColor3f(1.0f, 1.0f, 1.0f);
+	glColor3fv(backCol.v);
 	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f); // talking to unit 0 because the frame buffer is in texture 0
+	glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f); 
+	glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f); 
 	glVertex2f(-1.0f, -1.0f);
-	glTexCoord2f(1.0f, 0.0f);
+	glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
+	glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
 	glVertex2f(1.0f, -1.0f);
-	glTexCoord2f(1.0f, 1.0f);
+	glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
+	glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
 	glVertex2f(1.0f, 1.0f);
-	glTexCoord2f(0.0f, 1.0f);
+	glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
+	glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
 	glVertex2f(-1.0f, 1.0f);
 	glEnd();
 

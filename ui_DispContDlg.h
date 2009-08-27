@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'DispContDlg.ui'
 **
-** Created: Mon 20. Jul 12:42:33 2009
+** Created: Thu 27. Aug 17:02:57 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -99,7 +99,12 @@ public:
     QLabel *label_3;
     QLineEdit *tex1NameLabel;
     QPushButton *tex1FileBot;
+    QWidget *tex1Fake;
     QHBoxLayout *horizontalLayout_3;
+    QLabel *label_9;
+    QLineEdit *tex0FakeLabek_2;
+    QWidget *tex1cont;
+    QHBoxLayout *horizontalLayout_4;
     QLabel *label_4;
     QLineEdit *tex2NameLabel;
     QPushButton *tex2FileBot;
@@ -112,7 +117,7 @@ public:
     {
         if (DispContDlg->objectName().isEmpty())
             DispContDlg->setObjectName(QString::fromUtf8("DispContDlg"));
-        DispContDlg->resize(208, 496);
+        DispContDlg->resize(208, 517);
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
         verticalLayout->setMargin(4);
@@ -377,27 +382,52 @@ public:
 
         verticalLayout->addWidget(tex0cont);
 
-        horizontalLayout_3 = new QHBoxLayout();
+        tex1Fake = new QWidget(DispContDlg);
+        tex1Fake->setObjectName(QString::fromUtf8("tex1Fake"));
+        horizontalLayout_3 = new QHBoxLayout(tex1Fake);
         horizontalLayout_3->setSpacing(3);
+        horizontalLayout_3->setMargin(0);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
-        label_4 = new QLabel(DispContDlg);
+        label_9 = new QLabel(tex1Fake);
+        label_9->setObjectName(QString::fromUtf8("label_9"));
+
+        horizontalLayout_3->addWidget(label_9);
+
+        tex0FakeLabek_2 = new QLineEdit(tex1Fake);
+        tex0FakeLabek_2->setObjectName(QString::fromUtf8("tex0FakeLabek_2"));
+        tex0FakeLabek_2->setEnabled(false);
+        tex0FakeLabek_2->setAcceptDrops(false);
+        tex0FakeLabek_2->setReadOnly(true);
+
+        horizontalLayout_3->addWidget(tex0FakeLabek_2);
+
+
+        verticalLayout->addWidget(tex1Fake);
+
+        tex1cont = new QWidget(DispContDlg);
+        tex1cont->setObjectName(QString::fromUtf8("tex1cont"));
+        horizontalLayout_4 = new QHBoxLayout(tex1cont);
+        horizontalLayout_4->setSpacing(3);
+        horizontalLayout_4->setMargin(0);
+        horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
+        label_4 = new QLabel(tex1cont);
         label_4->setObjectName(QString::fromUtf8("label_4"));
 
-        horizontalLayout_3->addWidget(label_4);
+        horizontalLayout_4->addWidget(label_4);
 
-        tex2NameLabel = new QLineEdit(DispContDlg);
+        tex2NameLabel = new QLineEdit(tex1cont);
         tex2NameLabel->setObjectName(QString::fromUtf8("tex2NameLabel"));
 
-        horizontalLayout_3->addWidget(tex2NameLabel);
+        horizontalLayout_4->addWidget(tex2NameLabel);
 
-        tex2FileBot = new QPushButton(DispContDlg);
+        tex2FileBot = new QPushButton(tex1cont);
         tex2FileBot->setObjectName(QString::fromUtf8("tex2FileBot"));
         tex2FileBot->setMaximumSize(QSize(21, 21));
 
-        horizontalLayout_3->addWidget(tex2FileBot);
+        horizontalLayout_4->addWidget(tex2FileBot);
 
 
-        verticalLayout->addLayout(horizontalLayout_3);
+        verticalLayout->addWidget(tex1cont);
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setSpacing(3);
@@ -476,6 +506,8 @@ public:
         multiSampQuad->setText(QApplication::translate("DispContDlg", "Multi-Samp", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
         tex1FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
+        label_9->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
+        tex0FakeLabek_2->setText(QApplication::translate("DispContDlg", "[SCREEN]", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("DispContDlg", "1.", 0, QApplication::UnicodeUTF8));
         tex2FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
         label_5->setText(QApplication::translate("DispContDlg", "2.", 0, QApplication::UnicodeUTF8));

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Mon 20. Jul 11:53:27 2009
+** Created: Wed 26. Aug 18:14:54 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -15,6 +15,7 @@
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QCheckBox>
+#include <QtGui/QComboBox>
 #include <QtGui/QDialog>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
@@ -53,7 +54,7 @@ public:
     QLabel *infoLabel;
     QHBoxLayout *horizontalLayout_4;
     QCheckBox *shaderEnable;
-    QCheckBox *quadBox;
+    QComboBox *runTypeBox;
     QSpacerItem *horizontalSpacer;
     QPushButton *addParam;
 
@@ -185,10 +186,10 @@ public:
 
         horizontalLayout_4->addWidget(shaderEnable);
 
-        quadBox = new QCheckBox(shaderControl);
-        quadBox->setObjectName(QString::fromUtf8("quadBox"));
+        runTypeBox = new QComboBox(shaderControl);
+        runTypeBox->setObjectName(QString::fromUtf8("runTypeBox"));
 
-        horizontalLayout_4->addWidget(quadBox);
+        horizontalLayout_4->addWidget(runTypeBox);
 
         horizontalSpacer = new QSpacerItem(40, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -209,7 +210,7 @@ public:
 
         retranslateUi(KwEdit);
 
-        tabs->setCurrentIndex(0);
+        tabs->setCurrentIndex(1);
 
 
         QMetaObject::connectSlotsByName(KwEdit);
@@ -238,7 +239,6 @@ public:
 #endif // QT_NO_TOOLTIP
         reloadBot->setText(QApplication::translate("KwEdit", "Reload", 0, QApplication::UnicodeUTF8));
         shaderEnable->setText(QApplication::translate("KwEdit", "Enable Shaders", 0, QApplication::UnicodeUTF8));
-        quadBox->setText(QApplication::translate("KwEdit", "Quad Process", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         addParam->setStatusTip(QApplication::translate("KwEdit", "Add Parameter", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP

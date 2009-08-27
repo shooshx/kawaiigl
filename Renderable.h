@@ -2,6 +2,8 @@
 #ifndef KRENDERABLE_H_INCLUDED
 #define KRENDERABLE_H_INCLUDED
 
+#include "MyLib/Vec.h"
+
 class GLWidget;
 
 
@@ -22,8 +24,11 @@ protected:
 class WholeScreenQuad : public Renderable
 {
 public:
-	WholeScreenQuad(GLWidget *glw) : Renderable(glw) {}
+	WholeScreenQuad(GLWidget *glw, const Vec& _backCol = Vec(1.0, 1.0, 1.0)) 
+		: Renderable(glw), backCol(_backCol) {}
 	virtual void render();
+
+	Vec backCol;
 };
 
 

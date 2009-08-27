@@ -69,21 +69,21 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_doc, SIGNAL(modelChanged()), m_kView, SLOT(updateGL()));
 	connect(m_doc, SIGNAL(progChanged()), m_kView, SLOT(updateGL()));
 	connect(m_doc, SIGNAL(progParamChanged()), m_kView, SLOT(updateGL()));
-	connect(m_doc, SIGNAL(progChanged()), m_contDlg, SLOT(progChange()));
 	connect(m_doc, SIGNAL(textChanged(const QString&)), m_edDlg, SLOT(setText(const QString&)));
 
 	connect(m_contDlg, SIGNAL(changedRend()), m_doc, SLOT(calcNoParse())); // passes update
 	connect(m_contDlg, SIGNAL(changedFont()), m_kView, SLOT(updateCoordFont()));
+	connect(m_contDlg, SIGNAL(doUpdate()), m_kView, SLOT(updateGL())); // passes update
 
 	connect(m_contDlg, SIGNAL(resetView()), m_kView, SLOT(resetState()));
 	connect(m_contDlg, SIGNAL(resetLight()), m_kView, SLOT(resetLight()));
 	connect(m_contDlg, SIGNAL(changedTexFile(int)), m_kView, SLOT(setTexture(int)));
+	connect(m_contDlg, SIGNAL(reassertTex(int)), m_kView, SLOT(rebindTexture(int)));
 	connect(m_contDlg, SIGNAL(saveMesh()), m_doc, SLOT(calcSave()));
 
 	connect(&m_sett.disp.bVtxNormals, SIGNAL(changed()), m_doc, SLOT(calcNoParse())); // TBD - this is bad.
 
 	connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
-	
 
 	m_kView->setContextMenuPolicy(Qt::ActionsContextMenu);
 

@@ -101,9 +101,14 @@ KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *vi
 	ui.vtxEd->setMenu(m_progmenu);
 	ui.fragEd->setMenu(m_progmenu);
 
+	//ui.runTypeBox->addItem("Run Normal", (int)RunNormal);
+	//ui.runTypeBox->addItem("Run From Quad", (int)RunQuadProcess);
+	//ui.runTypeBox->addItem("Run Tex2Tex", (int)RunTex2Tex);
+	(new ComboBoxIn<DisplayConf::RunType>(&conf.runType, ui.runTypeBox))->reload();
+
 	connect(ui.update_shader, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.shaderEnable, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
-	connect(ui.quadBox, SIGNAL(clicked()), this, SLOT(doShadersUpdate())); // rather wasteful. recompiles the thing
+	//connect(ui.runTypeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(doShadersUpdate())); // rather wasteful. recompiles the thing
 
 	m_high = new MySyntaxHighlighter(ui.ed->document(), this);
 
@@ -155,6 +160,7 @@ void KwEdit::activateAction(const QString& name)
 }
 
 
+
 void KwEdit::doShadersUpdate()
 {
 	m_in.params.clear();
@@ -180,7 +186,7 @@ void KwEdit::doShadersUpdate()
 		m_in.fragProg.clear();
 	}
 
-	m_in.quadProcess = ui.quadBox->isChecked();
+	m_in.runType = conf().runType;
 
 	emit updateShaders(m_in); // calls compile
 
@@ -492,7 +498,7 @@ void KwEdit::readProg()
 		addParam(ppi);
 	}
 
-	ui.quadBox->setChecked(prog->quadProcess);
+	conf().runType = prog->runType;
 	ui.shaderEnable->setChecked(true);
 
 	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)

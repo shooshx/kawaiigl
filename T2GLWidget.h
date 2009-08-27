@@ -28,9 +28,10 @@ public:
 
 protected:
 	virtual void myPaintGL();
-	virtual void paint3DScene();
+	virtual void paint3DScene(bool crearBack = true);
 	virtual void drawTargets(bool inChoise);
 	virtual void initializeGL();
+	virtual void resizeGL(int width, int height);
 
 	virtual void mousePressEvent(QMouseEvent *event);
 	virtual void mouseReleaseEvent(QMouseEvent *event);
@@ -54,6 +55,10 @@ private slots:
 	void changedSelectedCol();
 	void changedFps();
 	void fpsTimeout();
+
+public slots:
+	void changedRunType();
+	void rebindTexture(int which);
 
 signals:
 	void decompProgChanged(const QString& txt);

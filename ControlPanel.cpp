@@ -11,7 +11,6 @@
 
 ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 :MyDialog(parent), conf(_conf), m_doc(doc)
-,m_lastQuad(false)
 {
 	ui.setupUi(this);
 
@@ -70,6 +69,7 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 
 	connect(&conf->bCoordName, SIGNAL(changed()), this, SLOT(chFontEnable()));
 	connect(&conf->bCoordNum, SIGNAL(changed()), this, SLOT(chFontEnable()));
+	connect(&conf->runType, SIGNAL(changed()), this, SLOT(runTypeChange()));
 
 	//(new WidgetTIn<int>::LineEditIn(&conf->coordFontSize, ui.coordFontSize))->reload();
 	connect(ui.coordFontSize, SIGNAL(valueChanged(int)), this, SLOT(coordFontSizeChanged(int)));
@@ -82,7 +82,7 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 
 	updateSDlowLevel(*conf);
 	ui.tex0Fake->hide();
-
+	ui.tex1Fake->hide();
 }
 
 
@@ -179,23 +179,32 @@ void ControlPanel::texSelChanged(int i)
 */
 
 
-void ControlPanel::progChange()
+void ControlPanel::runTypeChange()
 {
-	if (m_lastQuad == m_doc->m_quadProcess)
-		return;
-
-	if (m_doc->m_quadProcess)
+	if (conf->runType == DisplayConf::RunQuadProcess)
 	{
 		ui.tex0Fake->show();
 		ui.tex0cont->hide();
+		ui.multiSampQuad->show();
+		emit reassertTex(1);
+	}
+	else if (conf->runType == DisplayConf::RunTex2Tex)
+	{
+		ui.tex0Fake->show();
+		ui.tex0cont->hide();
+		ui.multiSampQuad->hide();
+		ui.tex1Fake->show();
+		ui.tex1cont->hide();
 	}
 	else
 	{
 		ui.tex0Fake->hide();
 		ui.tex0cont->show();
-		changedTexFile(0);
+		ui.tex1Fake->hide();
+		ui.tex1cont->show();
+		emit reassertTex(0);
+		emit reassertTex(1);
 	}
-
-	m_lastQuad = m_doc->m_quadProcess;
+	emit doUpdate();
 }
 

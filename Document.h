@@ -64,7 +64,6 @@ public:
 		emit progParamChanged(); // causes updateGL
 	}
 
-
 public slots:
 	void calc(const QString& qstr, bool doParse = true, QString saveAs = QString());
 	void calcNoParse();
@@ -74,7 +73,6 @@ public slots:
 
 	bool parseSingleParam(const ParamInput& in, Prop* toprop, bool update);
 
-	void updateParams(); // updates the values of all the parsed params according to the new cache.
 	
 	void updateTrack(IPoint* sel);
 
@@ -111,17 +109,32 @@ public:
 	// this connects the parser with the program. changes in the parser to the program
 	struct ParamAdapter
 	{
-		ParamAdapter() : pe(NULL), toprop(NULL), index(-1) {}
-		ParamAdapter(IPoint* _pe, int _i) : pe(_pe), index(_i) {}
+		ParamAdapter(int _index) :index(_index) {}
+		virtual ~ParamAdapter() {}
+		virtual void update(GenericShader &prog) const = 0;
+
+		int index; // index of the program parameter we need to update.
+	};
+
+	struct VecParamAdapter : public ParamAdapter
+	{
+		VecParamAdapter(IPoint* _pe, Prop* _prop, int _i) : pe(_pe), toprop(_prop), ParamAdapter(_i) {}
 		IPoint* pe;
 		Prop* toprop; // if not NULL this prop should get the value as well.
 		
-		int index; // index of the program parameter we need to update.
+		virtual void update(GenericShader &prog) const;
+	};
+	struct TexParamAdapter : public ParamAdapter
+	{
+		TexParamAdapter(Document* doc, int _i) : m_doc(doc), ParamAdapter(_i) {}
+		virtual void update(GenericShader &prog) const;
 
-		void updateVec(GenericShader &prog) const;
+		Document* m_doc;
 	};
 
-	QVector<ParamAdapter> m_paramsEvals;
+	typedef QVector<boost::shared_ptr<ParamAdapter> > TAdaptersList;
+	TAdaptersList m_onCalcEvals; // things that are re-evaluated when there's a calc() call
+	TAdaptersList m_onFrameEvals; // things that are reeveluated every frame
 
 	struct AttribEval
 	{
@@ -150,7 +163,19 @@ public:
 	KwParser m_kparser;
 
 	GenericShader m_prog;
-	bool m_quadProcess;
+
+	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
+	// these are here since they need to be sent as uniforms and we need access to them.
+
+
+public:
+	void updateParams(TAdaptersList& list); // updates the values of all the parsed params according to the new cache.
+	void updateFrameParams()
+	{
+		updateParams(m_onFrameEvals);
+	}
+
+
 };
 
 #endif // DOCUMENT_H_INCLUDED

@@ -4,6 +4,8 @@
 #include <QString>
 #include <QMap>
 
+#include "DisplayConf.h"
+
 // properties in rmesh we're using
 #define MPROP_TEXCOORD (0)
 #define MPROP_TANGENT (1)
@@ -59,14 +61,16 @@ struct ParamInput
 	mutable int index; // in the program registry.
 };
 
+
+
 struct ProgInput
 {
-	ProgInput() : quadProcess(false) {}
+	ProgInput() : runType(DisplayConf::RunNormal) {}
 
 	QString vtxProg;
 	QString fragProg;
 	QVector<ParamInput> params; 
-	bool quadProcess;
+	DisplayConf::RunType runType;
 };
 
 // a program that is loaded from the XML

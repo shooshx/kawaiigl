@@ -62,6 +62,9 @@ signals:
 	void updateShaders(const ProgInput& in);
 	void updateVars(const ProgInput& in);
 
+public:
+	Ui::KwEdit ui;
+
 private:
 	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
 	QAction* confAddProg(const QString& display, ProgKeep* prog); // taking over this.
@@ -74,7 +77,6 @@ private:
 	void initMoreWidget(ParamUi *pui);
 
 	QVector<ParamUi*> m_paramUi;
-	Ui::KwEdit ui;
 
 	QTextEdit* m_curEd;
 	QMenu *m_progmenu;

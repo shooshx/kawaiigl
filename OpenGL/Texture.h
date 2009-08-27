@@ -41,7 +41,7 @@ public:
 
 	const Vec& size() const { return m_size; }
 	bool isValid() const { return m_obj != -1; }
-	GLenum target() { return m_target; }
+	GLenum target() const { return m_target; }
 
 	void bind() const;
 	void unbind() const;

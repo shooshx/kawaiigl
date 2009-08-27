@@ -14,6 +14,13 @@ class DisplayConf : public ParamBase
 public:
 	enum ETexAct { Tex_None = -1, Tex_File0, Tex_File1, Tex_File2 };
 	Q_ENUMS(ETexAct)
+	enum RunType
+	{
+		RunNormal, // 3d Scene rendered to the screen with prog
+		RunQuadProcess,  // 3d scene rendered to texture 0, texture 0 rendered to a quad with prog
+		RunTex2Tex
+	};
+	Q_ENUMS(RunType)
 
 	TypeProp<int> numberOfPasses; // 0, 1, 2, 3, 4, 5
 	TypeProp<bool> *passRound[N_PASS];
@@ -35,6 +42,7 @@ public:
 	TypeProp<bool> addFace;
 	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
 	TypeProp<QString> lastDir;
+	TypeProp<RunType> runType;
 
 	DisplayConf() 
 		:numberOfPasses(this, "numberOfPasses", "Number Of Passes", 0)
@@ -69,7 +77,7 @@ public:
 		,trackForParam(this, "trackForParam", "trackForParam", 0)
 		,lastDir(this, "lastDir", "lastDir", "")
 		,fullFps(this, "fullFps", "fullFps", false)
-		
+		,runType(this, "runType", "runType", RunNormal)
 	{
 		for(int i = 0; i < N_PASS; ++i)
 		{
@@ -84,11 +92,12 @@ public:
 		}
 		addFace.shouldStore(false);
 		trackForParam.shouldStore(false);
+		runType.shouldStore(false);
 	}
 };
 
 Q_DECLARE_METATYPE(DisplayConf::ETexAct);
-
+Q_DECLARE_METATYPE(DisplayConf::RunType);
 
 class KwSettings : public MySettings
 {

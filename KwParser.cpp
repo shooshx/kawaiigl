@@ -119,7 +119,7 @@ struct vec_ast
 	vec_ast()
 		: expr(new EvalablePtr(NULL)), used(false), isCached(false) {}
 
-
+	vec_ast(const vec_ast& a) : expr(a.expr), isCached(false), used(false) {}
 	vec_ast(const Vec& expr);
 	vec_ast(const float& expr);
 

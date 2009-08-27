@@ -1,0 +1,19 @@
+uniform vec2 curs;
+uniform sampler2D img;
+
+void main()
+{
+	if (distance(gl_FragCoord.xy,curs)<5.0)
+		gl_FragColor = vec4(1.0,0.0,0.0,0.0);
+	else	
+	{
+		gl_FragColor = 
+			(texelFetch(img, ivec2(gl_FragCoord.xy), 0)
+			+texelFetch(img, ivec2(gl_FragCoord.xy) + ivec2(0,1), 0)
+			+texelFetch(img, ivec2(gl_FragCoord.xy) + ivec2(1,0), 0)
+			+texelFetch(img, ivec2(gl_FragCoord.xy) + ivec2(0,-1), 0)
+			+texelFetch(img, ivec2(gl_FragCoord.xy) + ivec2(-1,0), 0))/5.0;
+
+		gl_FragColor -= 0.01;
+	}
+}
