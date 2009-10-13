@@ -12,7 +12,7 @@
 class Document;
 class KawaiiGL;
 
-class ControlPanel : public MyDialog
+class ControlPanel : public QWidget //MyDialog
 {
 	Q_OBJECT
 public:

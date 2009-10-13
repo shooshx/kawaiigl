@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Wed 26. Aug 18:14:54 2009
+** Created: Wed Oct 14 01:34:29 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -25,7 +25,6 @@
 #include <QtGui/QTabWidget>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QWidget>
-#include "ProgTextEdit.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -36,22 +35,17 @@ public:
     QTabWidget *tabs;
     QWidget *tab;
     QVBoxLayout *verticalLayout_2;
-    ProgTextEdit *ed;
-    QHBoxLayout *horizontalLayout;
+    QWidget *modelControl;
+    QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer_2;
     QPushButton *addFaceBot;
-    QWidget *tab_2;
-    QVBoxLayout *verticalLayout_3;
-    ProgTextEdit *vtxEd;
-    QWidget *tab_3;
-    QVBoxLayout *verticalLayout_4;
-    ProgTextEdit *fragEd;
+    QPushButton *saveBot1;
     QWidget *shaderControl;
     QVBoxLayout *verticalLayout_6;
     QHBoxLayout *horizontalLayout_2;
     QPushButton *update_shader;
-    QPushButton *reloadBot;
     QLabel *infoLabel;
+    QPushButton *saveBot2;
     QHBoxLayout *horizontalLayout_4;
     QCheckBox *shaderEnable;
     QComboBox *runTypeBox;
@@ -64,7 +58,7 @@ public:
             KwEdit->setObjectName(QString::fromUtf8("KwEdit"));
         KwEdit->resize(364, 511);
         verticalLayout = new QVBoxLayout(KwEdit);
-        verticalLayout->setSpacing(0);
+        verticalLayout->setSpacing(5);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         verticalLayout->setContentsMargins(0, 0, 0, 2);
         tabs = new QTabWidget(KwEdit);
@@ -75,84 +69,43 @@ public:
         verticalLayout_2 = new QVBoxLayout(tab);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         verticalLayout_2->setContentsMargins(0, 3, 0, 0);
-        ed = new ProgTextEdit(tab);
-        ed->setObjectName(QString::fromUtf8("ed"));
-        QFont font;
-        font.setFamily(QString::fromUtf8("Courier"));
-        font.setPointSize(10);
-        ed->setFont(font);
-        ed->setLineWrapMode(QTextEdit::NoWrap);
-        ed->setTabStopWidth(40);
-        ed->setAcceptRichText(false);
-
-        verticalLayout_2->addWidget(ed);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        horizontalLayout->setContentsMargins(-1, -1, -1, 0);
-        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-
-        horizontalLayout->addItem(horizontalSpacer_2);
-
-        addFaceBot = new QPushButton(tab);
-        addFaceBot->setObjectName(QString::fromUtf8("addFaceBot"));
-        addFaceBot->setMaximumSize(QSize(60, 16777215));
-        addFaceBot->setCheckable(true);
-
-        horizontalLayout->addWidget(addFaceBot);
-
-
-        verticalLayout_2->addLayout(horizontalLayout);
-
         tabs->addTab(tab, QString());
-        tab_2 = new QWidget();
-        tab_2->setObjectName(QString::fromUtf8("tab_2"));
-        verticalLayout_3 = new QVBoxLayout(tab_2);
-        verticalLayout_3->setSpacing(3);
-        verticalLayout_3->setObjectName(QString::fromUtf8("verticalLayout_3"));
-        verticalLayout_3->setContentsMargins(0, 3, 0, 0);
-        vtxEd = new ProgTextEdit(tab_2);
-        vtxEd->setObjectName(QString::fromUtf8("vtxEd"));
-        QFont font1;
-        font1.setFamily(QString::fromUtf8("Courier"));
-        font1.setPointSize(10);
-        font1.setBold(false);
-        font1.setItalic(false);
-        font1.setUnderline(false);
-        font1.setWeight(50);
-        font1.setStrikeOut(false);
-        vtxEd->setFont(font1);
-        vtxEd->setLineWrapMode(QTextEdit::NoWrap);
-        vtxEd->setTabStopWidth(40);
-        vtxEd->setAcceptRichText(false);
-
-        verticalLayout_3->addWidget(vtxEd);
-
-        tabs->addTab(tab_2, QString());
-        tab_3 = new QWidget();
-        tab_3->setObjectName(QString::fromUtf8("tab_3"));
-        verticalLayout_4 = new QVBoxLayout(tab_3);
-        verticalLayout_4->setSpacing(3);
-        verticalLayout_4->setObjectName(QString::fromUtf8("verticalLayout_4"));
-        verticalLayout_4->setContentsMargins(0, 3, 0, 0);
-        fragEd = new ProgTextEdit(tab_3);
-        fragEd->setObjectName(QString::fromUtf8("fragEd"));
-        fragEd->setFont(font1);
-        fragEd->setLineWrapMode(QTextEdit::NoWrap);
-        fragEd->setTabStopWidth(40);
-        fragEd->setAcceptRichText(false);
-
-        verticalLayout_4->addWidget(fragEd);
-
-        tabs->addTab(tab_3, QString());
 
         verticalLayout->addWidget(tabs);
+
+        modelControl = new QWidget(KwEdit);
+        modelControl->setObjectName(QString::fromUtf8("modelControl"));
+        horizontalLayout_3 = new QHBoxLayout(modelControl);
+        horizontalLayout_3->setMargin(0);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalSpacer_2 = new QSpacerItem(23, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+        horizontalLayout_3->addItem(horizontalSpacer_2);
+
+        addFaceBot = new QPushButton(modelControl);
+        addFaceBot->setObjectName(QString::fromUtf8("addFaceBot"));
+        addFaceBot->setMaximumSize(QSize(60, 23));
+        addFaceBot->setCheckable(true);
+
+        horizontalLayout_3->addWidget(addFaceBot);
+
+        saveBot1 = new QPushButton(modelControl);
+        saveBot1->setObjectName(QString::fromUtf8("saveBot1"));
+        saveBot1->setMaximumSize(QSize(28, 23));
+        QIcon icon;
+        icon.addPixmap(QPixmap(QString::fromUtf8("://images/save.png")), QIcon::Normal, QIcon::Off);
+        saveBot1->setIcon(icon);
+
+        horizontalLayout_3->addWidget(saveBot1);
+
+
+        verticalLayout->addWidget(modelControl);
 
         shaderControl = new QWidget(KwEdit);
         shaderControl->setObjectName(QString::fromUtf8("shaderControl"));
         verticalLayout_6 = new QVBoxLayout(shaderControl);
+        verticalLayout_6->setMargin(0);
         verticalLayout_6->setObjectName(QString::fromUtf8("verticalLayout_6"));
-        verticalLayout_6->setContentsMargins(3, 0, 3, 0);
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
         horizontalLayout_2->setContentsMargins(-1, 0, -1, -1);
@@ -162,18 +115,19 @@ public:
 
         horizontalLayout_2->addWidget(update_shader);
 
-        reloadBot = new QPushButton(shaderControl);
-        reloadBot->setObjectName(QString::fromUtf8("reloadBot"));
-        reloadBot->setMaximumSize(QSize(50, 23));
-
-        horizontalLayout_2->addWidget(reloadBot);
-
         infoLabel = new QLabel(shaderControl);
         infoLabel->setObjectName(QString::fromUtf8("infoLabel"));
         infoLabel->setMinimumSize(QSize(0, 20));
         infoLabel->setFrameShape(QFrame::StyledPanel);
 
         horizontalLayout_2->addWidget(infoLabel);
+
+        saveBot2 = new QPushButton(shaderControl);
+        saveBot2->setObjectName(QString::fromUtf8("saveBot2"));
+        saveBot2->setMaximumSize(QSize(28, 23));
+        saveBot2->setIcon(icon);
+
+        horizontalLayout_2->addWidget(saveBot2);
 
 
         verticalLayout_6->addLayout(horizontalLayout_2);
@@ -210,7 +164,7 @@ public:
 
         retranslateUi(KwEdit);
 
-        tabs->setCurrentIndex(1);
+        tabs->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(KwEdit);
@@ -219,25 +173,15 @@ public:
     void retranslateUi(QDialog *KwEdit)
     {
         KwEdit->setWindowTitle(QApplication::translate("KwEdit", "KawaiiGL Control", 0, QApplication::UnicodeUTF8));
-        ed->setHtml(QApplication::translate("KwEdit", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Courier'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"></p></body></html>", 0, QApplication::UnicodeUTF8));
-        addFaceBot->setText(QApplication::translate("KwEdit", "Add", 0, QApplication::UnicodeUTF8));
         tabs->setTabText(tabs->indexOf(tab), QApplication::translate("KwEdit", "Model", 0, QApplication::UnicodeUTF8));
-        vtxEd->setHtml(QApplication::translate("KwEdit", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Courier'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8pt;\"></p></body></html>", 0, QApplication::UnicodeUTF8));
-        tabs->setTabText(tabs->indexOf(tab_2), QApplication::translate("KwEdit", "Vertex Shader", 0, QApplication::UnicodeUTF8));
-        tabs->setTabText(tabs->indexOf(tab_3), QApplication::translate("KwEdit", "Fragment Shader", 0, QApplication::UnicodeUTF8));
+        addFaceBot->setText(QApplication::translate("KwEdit", "Add", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        saveBot1->setStatusTip(QApplication::translate("KwEdit", "Save", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         update_shader->setText(QApplication::translate("KwEdit", "Compile", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_TOOLTIP
-        reloadBot->setToolTip(QApplication::translate("KwEdit", "Reload the last program loaded", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_TOOLTIP
-        reloadBot->setText(QApplication::translate("KwEdit", "Reload", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_STATUSTIP
+        saveBot2->setStatusTip(QApplication::translate("KwEdit", "Save", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_STATUSTIP
         shaderEnable->setText(QApplication::translate("KwEdit", "Enable Shaders", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         addParam->setStatusTip(QApplication::translate("KwEdit", "Add Parameter", 0, QApplication::UnicodeUTF8));

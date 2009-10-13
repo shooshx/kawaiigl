@@ -5,6 +5,9 @@
 #include <QDialog>
 #include <QTextEdit>
 
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+
 #include "ui_KwEdit.h"
 #include "MyLib/MyDialog.h"
 #include "ProgInput.h"
@@ -21,44 +24,74 @@ class WidgetIn;
 class KwEdit;
 class T2GLWidget;
 class ParamUi;
+class DocSrc;
+class ProgTextEdit;
 
+
+struct EditPage
+{
+	EditPage() : src(NULL), ed(NULL), tab(NULL) {}
+	virtual ~EditPage();
+	void commitText(); // commit the changes in the edit widget to the DocSrc
+
+	DocSrc* src;
+	ProgTextEdit* ed;
+	QWidget* tab;
+	MySyntaxHighlighter *m_high; // the edit widget deletes this.
+};
+
+typedef boost::shared_ptr<EditPage> EditPagePtr;
 
 class KwEdit : public MyDialog
 {
 	Q_OBJECT
 public:
 	KwEdit(QWidget *parent, DisplayConf& conf, Document* doc, T2GLWidget *view);
-	void addError(int start, int count);
-	void clearErrors();
-	void finishErrors();
-	void loadMenus(QWidget*, const QString& filename);
-	void loadProgMenu(QMenu* menu, const QString& filename);
+	~KwEdit()
+	{
+		foreach(const EditPagePtr& page, m_pages)
+			page->tab = NULL; // throw hands in air and cry out "fuck this shit"
+		m_pages.clear();
+	}
+
+	void addError(DocSrc* src, int start, int count);
+	void clearErrors(DocSrc* src);
+	void finishErrors(DocSrc* src);
 
 	DisplayConf& conf() { return m_conf; }
 	T2GLWidget* view() { return m_view; }
-	bool isEnabled() { return m_isEnabled; }
+	bool isEnabled();
 
 public slots:
-	void edChanged();
-	void setToPre();
-	void readProg();
+	void readModel(DocSrc* src);
+	void readProg(ProgKeep* prog);
 	void doShadersUpdate();
 	void doVarsUpdate();
 	void setText(const QString& text);
-	void activateAction(const QString& name);
+
+	void addPage(DocSrc*, int index = -1);
+	void removePage(DocSrc* src);
 
 private slots:
-	void on_reloadBot_clicked();
+	// void on_reloadBot_clicked();
 	void on_addParam_clicked();
 	void on_tabs_currentChanged(int);
+	void on_tabs_tabCloseRequested(int index);
+
+	void tabsBarClose();
+	void pageNameChanged(const QString&);
+	void saveCurDoc();
+
 	void updateCursorPosLine();
 	void zoomEdits(int delta);
 	void removeParam();
 
 	void doVarUpdate(); // sent from the LineEdit
+	void editTextChanged(int pos, int rem, int add);
+	void modificateChanged(bool modif);
 
 signals:
-	void changed(const QString& txt);
+	void changedModel(DocSrc* txt);
 	void updateShaders(const ProgInput& in);
 	void updateVars(const ProgInput& in);
 
@@ -69,6 +102,8 @@ private:
 	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
 	QAction* confAddProg(const QString& display, ProgKeep* prog); // taking over this.
 
+	EditPagePtr findPage(int tabi);
+	EditPagePtr findPage(DocSrc* src);
 
 	void addParam(const ParamInput& pi);
 	void removeParam(ParamUi *pui);
@@ -77,29 +112,24 @@ private:
 	void initMoreWidget(ParamUi *pui);
 
 	QVector<ParamUi*> m_paramUi;
+	QMap<DocSrc*, EditPagePtr> m_pages;
 
-	QTextEdit* m_curEd;
-	QMenu *m_progmenu;
+	boost::weak_ptr<EditPage> m_curEd;
 	QString m_lastLoadedProg;
 
 	Document *m_doc;
 	T2GLWidget *m_view;
 
-	QList<ProgKeep*> m_progrep;
 
 	DisplayConf &m_conf;
 
-	bool m_isEnabled;
 
 	ProgInput m_in;
 
-	typedef QMap<QString, QAction*> TActionMap;
-	TActionMap m_userActions;
 
 	QString generateFromFile();
 
-	QString curText;
-	MySyntaxHighlighter *m_high;
+	
 	QList<int> errorBlockNumbers;
 
 	friend class ConfXmls;

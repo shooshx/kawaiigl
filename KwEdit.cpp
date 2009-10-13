@@ -17,6 +17,13 @@
 #include "ConfXmls.h"
 #include "T2GLWidget.h"
 #include "ParamUI.h"
+#include "ProgTextEdit.h"
+
+#include "MyLib/QtAdd/CloseButton.h"
+
+#include <boost/shared_ptr.hpp>
+
+using namespace boost;
 
 
 class OffsetData : public QTextBlockUserData
@@ -60,115 +67,70 @@ private:
 static QFont fixedFont("Courier", 10);
 
 
-#define EDIT_CONF_FILE ("conf.edit.xml")
-#define PROG_CONF_FILE ("conf.programs.xml")
-
 
 KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *view)
-:MyDialog(parent), m_conf(conf), m_doc(doc), m_view(view), m_isEnabled(false)
+:MyDialog(parent), m_conf(conf), m_doc(doc), m_view(view)
 {
 	setWindowTitle("Kawaii Script");
 	ui.setupUi(this);
+	ui.tabs->clear();
+	//ui.tabs->setContex
+
 	on_tabs_currentChanged(ui.tabs->currentIndex());
+
+	//ui.tabs->setTabsClosable(true);
+	QAbstractButton *close = new CloseButton();
+	ui.tabs->setCornerWidget(close);
+	connect(close, SIGNAL(clicked()), this, SLOT(tabsBarClose()));
 
 	(new CheckBoxIn(&conf.addFace, ui.addFaceBot))->reload();
 
-	connect(ui.vtxEd, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosLine()));
-	connect(ui.fragEd, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosLine()));
-	connect(ui.ed, SIGNAL(zoomChange(int)), this, SLOT(zoomEdits(int)));
-	connect(ui.vtxEd, SIGNAL(zoomChange(int)), this, SLOT(zoomEdits(int)));
-	connect(ui.fragEd, SIGNAL(zoomChange(int)), this, SLOT(zoomEdits(int)));
-
-
-	ConfXmls confxmls(EDIT_CONF_FILE, PROG_CONF_FILE, this);
-
-	confxmls.loadModelsFile(ui.ed);
-
-	ui.ed->setContextMenuPolicy(Qt::ActionsContextMenu);
- 	QAction *act;
-	ui.ed->addAction(act = new QAction("", ui.ed));
-	act->setSeparator(true);
-	ui.ed->addAction(act = new QAction("clear", ui.ed));
-	connect(act, SIGNAL(triggered(bool)), this, SLOT(setToPre()));
-	ui.ed->addAction(act = new QAction("Generate from File", ui.ed));
-	connect(act, SIGNAL(triggered(bool)), this, SLOT(setToPre()));
-	ui.ed->addAction(act = new QAction("Load File", ui.ed));
-	connect(act, SIGNAL(triggered(bool)), this, SLOT(setToPre()));
-
-	m_progmenu = new QMenu(this);
-	confxmls.loadProgramsFile(m_progmenu);
-
-	ui.vtxEd->setMenu(m_progmenu);
-	ui.fragEd->setMenu(m_progmenu);
-
-	//ui.runTypeBox->addItem("Run Normal", (int)RunNormal);
-	//ui.runTypeBox->addItem("Run From Quad", (int)RunQuadProcess);
-	//ui.runTypeBox->addItem("Run Tex2Tex", (int)RunTex2Tex);
 	(new ComboBoxIn<DisplayConf::RunType>(&conf.runType, ui.runTypeBox))->reload();
 
 	connect(ui.update_shader, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.shaderEnable, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
-	//connect(ui.runTypeBox, SIGNAL(currentIndexChanged(int)), this, SLOT(doShadersUpdate())); // rather wasteful. recompiles the thing
+	connect(ui.saveBot1, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
+	connect(ui.saveBot2, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
 
-	m_high = new MySyntaxHighlighter(ui.ed->document(), this);
+	//resize(300, 500);
+	//move(pos().x()+500, pos().y());
+	//connect(ui.ed, SIGNAL(textChanged()), this, SLOT(edChanged()));
 
-	resize(300, 500);
-	move(pos().x()+500, pos().y());
-	connect(ui.ed, SIGNAL(textChanged()), this, SLOT(edChanged()));
+	// open the default windows
+	readModel(NULL);
+	readProg(NULL);
 
 }
 
-struct ModelData
-{
-	ModelData() {}
-	ModelData(QString name, bool _isMesh) :filename(name), isMesh(_isMesh) {}
-	QString filename;
-	bool isMesh;
-};
-Q_DECLARE_METATYPE(ModelData);
 
 
-QAction* KwEdit::confAddModel(const QString& display, const QString& filename, bool isMesh)
-{
-	QAction *act = new QAction(display, this);
-
-	act->setData(QVariant::fromValue(ModelData(filename, isMesh)));
-	connect(act, SIGNAL(triggered(bool)), this, SLOT(setToPre()));
-
-	m_userActions[display.toLower()] = act;
-	return act;
+bool KwEdit::isEnabled() 
+{ 
+	return m_doc->m_shaderEnabled; 
 }
 
-QAction* KwEdit::confAddProg(const QString& display, ProgKeep* prog)
+EditPage::~EditPage()
 {
-	m_progrep.append(prog);
-
-	QAction *act = new QAction(display, this);
-	act->setData((int)prog);
-	connect(act, SIGNAL(triggered(bool)), this, SLOT(readProg()));
-
-	m_userActions[display.toLower()] = act;
-	return act;
+	delete tab; // remove the tab from the tabs
 }
 
-void KwEdit::activateAction(const QString& name)
+void EditPage::commitText()
 {
-	TActionMap::iterator it = m_userActions.find(name.toLower());
-	if (it == m_userActions.end())
-		return;
-	(*it)->trigger();
+	src->text = ed->toPlainText();
 }
-
 
 
 void KwEdit::doShadersUpdate()
 {
 	m_in.params.clear();
-	m_isEnabled = ui.shaderEnable->isChecked();
-	if (m_isEnabled)
+	m_doc->m_shaderEnabled = ui.shaderEnable->isChecked();
+	if (m_doc->m_shaderEnabled)
 	{
-		m_in.vtxProg = ui.vtxEd->toPlainText();
-		m_in.fragProg = ui.fragEd->toPlainText();
+		// go over all opened docs and commit the change in the GUI to the document
+		foreach(const EditPagePtr& page, m_pages)
+		{
+			page->commitText();
+		}
 
 		foreach(ParamUi* pui, m_paramUi)
 		{
@@ -179,11 +141,6 @@ void KwEdit::doShadersUpdate()
 			m_in.params.append(pi);
 			
 		}
-	}
-	else
-	{
-		m_in.vtxProg.clear();
-		m_in.fragProg.clear();
 	}
 
 	m_in.runType = conf().runType;
@@ -196,7 +153,7 @@ void KwEdit::doShadersUpdate()
 
 void KwEdit::doVarsUpdate()
 {
-	if (!m_isEnabled)
+	if (!m_doc->m_shaderEnabled)
 		return; // no need to do anything if not enabled.
 
 	for(int i = 0; i < m_paramUi.size(); ++i)
@@ -253,7 +210,11 @@ void KwEdit::doVarUpdate()
 
 void KwEdit::updateCursorPosLine()
 {
-	int i = m_curEd->textCursor().block().firstLineNumber();
+	EditPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+
+	int i = curEd->ed->textCursor().block().firstLineNumber();
 	ui.infoLabel->setText(QString("Line %1").arg(i + 1));
 }
 
@@ -261,92 +222,108 @@ void KwEdit::zoomEdits(int delta)
 {
 	int size = m_conf.editFontSize + delta;;
 	m_conf.editFontSize = size;
-	ui.ed->setFontSize(size);
-	ui.vtxEd->setFontSize(size);
-	ui.fragEd->setFontSize(size);
+
+	//ui.ed->setFontSize(size);
+
+	foreach(const EditPagePtr& page, m_pages) 
+	{
+		page->ed->setFontSize(size);
+	}
 }
 
-
-
-
-void KwEdit::edChanged()
+void KwEdit::editTextChanged(int pos, int rem, int add)
 {
-	if (ui.ed->toPlainText() == curText)
+	if (rem == 0 && add == 0)
+		return; // text did not change.
+
+	shared_ptr<EditPage> curEd;
+	if (!(curEd = m_curEd.lock()))
 		return;
-	curText = ui.ed->toPlainText();
-	emit changed(curText);
+
+	// model requires immediate action
+	if (curEd->src->type == SRC_MODEL)
+	{
+		curEd->commitText();
+		emit changedModel(curEd->src);
+	}
 }
 
-void KwEdit::addError(int start, int count)
+void KwEdit::saveCurDoc()
 {
-	QTextBlock b = ui.ed->document()->findBlock(start);
+	EditPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+
+	DocSrc *src = curEd->src;
+
+	if (!src->isFilename)
+	{
+		QString filename = QFileDialog::getSaveFileName(this, "Save Shader", "", "glsl files (*.glsl.txt)");
+		if (filename.isEmpty())
+			return;
+		filename = QFileInfo(filename).fileName(); // ignore directories for now
+		src->setName(filename);
+		src->isFilename = true;
+	}
+
+	curEd->commitText();
+	Document::writeToFile(src->text, src->name());
+	src->setChangedSinceLoad(false);
+}
+
+void KwEdit::modificateChanged(bool modif)
+{
+	EditPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+
+	curEd->src->setChangedSinceLoad(modif);
+}
+
+void KwEdit::pageNameChanged(const QString& name)
+{
+	DocSrc *src = static_cast<DocSrc*>(sender());
+	EditPagePtr page = findPage(src);
+	ui.tabs->setTabText(ui.tabs->indexOf(page->tab), name);
+}
+
+
+void KwEdit::addError(DocSrc* src, int start, int count)
+{
+	if (src == NULL)
+		return;
+	EditPagePtr page = findPage(src);
+	if (page.get() == NULL)
+		return;
+	QTextBlock b = page->ed->document()->findBlock(start);
 	b.setUserData(new OffsetData(start - b.position(), count));
 	errorBlockNumbers.append(b.blockNumber());
 }
 
-void KwEdit::clearErrors()
+
+void KwEdit::clearErrors(DocSrc* src)
 {
-	foreach(int i, errorBlockNumbers)
-		ui.ed->document()->findBlockByNumber(i).setUserData(NULL);
+	if (src != NULL)
+	{
+		EditPagePtr page = findPage(src);
+		if (page.get() != NULL) // might not be open
+		{
+			QTextDocument *d = page->ed->document();
+			foreach(int i, errorBlockNumbers)
+				d->findBlockByNumber(i).setUserData(NULL);
+		}
+	}
 	errorBlockNumbers.clear();
 }
 
-void KwEdit::finishErrors()
+void KwEdit::finishErrors(DocSrc* src)
 {
-	//if (!errorBlockNumbers.isEmpty())
-	m_high->rehighlight();
-}
-
-QString KwEdit::generateFromFile()
-{
-	QString filename = QFileDialog::getOpenFileName(this, "Load Obj", m_conf.lastDir, "points files (*.obj)");
-	if (filename.isEmpty())
-		return "";
-	m_conf.lastDir = QFileInfo(filename).absolutePath();
-	
-
-	QString prog;
-
-
-	QFile file(filename);
-	file.open(QFile::ReadOnly);
-	file.setTextModeEnabled(true);
-	QTextStream in(&file);
-
-	int vi = 1;
-	while (!in.atEnd())
-	{
-		QString line = in.readLine();
-		QStringList sl = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-		if (sl.isEmpty())
-			continue;
-
-		if (sl[0] == "v")
-		{
-			float x = sl[1].toFloat();
-			float y = sl[2].toFloat();
-			float z = sl[3].toFloat();
-
-			prog += QString().sprintf("p%d={%1.2f, %1.2f, %1.2f}\n", vi++, x, y, z);
-		}
-		else if (sl[0] == "f")
-		{
-			QVector<int> ii;
-			for (int i = 1; i < sl.size(); ++i)
-			{
-				QStringList sls = sl[i].split('/');
-				ii.append(sls[0].toInt());
-			}
-			if (ii.size() == 4)
-				prog += QString().sprintf("add(p%d,p%d,p%d,p%d)\n", ii[0], ii[1], ii[2], ii[3]);
-			else if (ii.size() == 3)
-				prog += QString().sprintf("add(p%d,p%d,p%d)\n", ii[0], ii[1], ii[2]);
-		}
-
-
-	}
-
-	return prog;
+	if (src == NULL)
+		return;
+	EditPagePtr page = findPage(src);
+	if (page.get() == NULL || page->m_high == NULL)
+		return;
+	page->m_high->rehighlight();
 }
 
 
@@ -420,108 +397,137 @@ void ProgTextEdit::setFontSize(int size)
 
 
 ///////////////////////////////// pre-configured shapes ///////////////
-void readToString(const QString& filename, QString& into)
+
+
+void KwEdit::readModel(DocSrc* src)
 {
-	if (filename.isEmpty())
-		return;
-	QFile file(filename);
-	if (!file.open(QIODevice::ReadOnly))
+	// automatically
+	if (!m_doc->m_passes.isEmpty())
 	{
-		printf("can't open %s\n", filename.toAscii().data());
-		into = "can't open " + filename + "\n";
-	}
-	file.setTextModeEnabled(true);
-	QTextStream in(&file);
-	into = in.readAll();
-}
+		const Pass &pass = m_doc->m_passes[0];
+		addPage(pass.model.get());
 
-void readToEdit(const QString& filename, QTextEdit* edit)
-{
-	QString txt;
-	readToString(filename, txt);
-	edit->setText(txt);
-}
-
-
-
-void KwEdit::setToPre()
-{
-	QAction *send = qobject_cast<QAction*>(sender());
-	QString name = send->text();
-	QString prog;
-	if (name == "Generate from File")
-	{
-		prog = generateFromFile();
+		//	if (ui.tabs->count() > oldIndex)
+		//		ui.tabs->setCurrentIndex(oldIndex);
 	}
-	else if (name == "Load File")
-	{
-		QString filename = QFileDialog::getOpenFileName(this, "Load Model", m_conf.lastDir, "model files (*.obj *.off *.ply2 *.gsd)");
-		if (filename.isEmpty())
-			return;
-		m_conf.lastDir = QFileInfo(filename).absolutePath();
-		filename = QDir::current().relativeFilePath(filename);
 
-		prog = "load(" + filename + ")";
-	}
-	else if (name == "clear")
-	{
-		prog = "";
-	}
-	else
-	{
-		ModelData md = send->data().value<ModelData>();
-		if (!md.isMesh)
-			readToString(md.filename, prog);
-		else
-			prog = "load(" + md.filename + ")";
-	}
-	ui.ed->setPlainText(prog);
 }
 
 void KwEdit::setText(const QString& text)
 {
-	ui.ed->setPlainText(text);
+	//ui.ed->setPlainText(text);
 }
 
-void KwEdit::readProg()
+
+void KwEdit::removePage(DocSrc* src)
 {
-	QAction *send = qobject_cast<QAction*>(sender());
-	ProgKeep *prog = (ProgKeep*)send->data().toInt();
-	m_lastLoadedProg = prog->name;
+	m_pages.remove(src);
+}
 
-	readToEdit(prog->vtxProg, ui.vtxEd);
-	readToEdit(prog->fragProg, ui.fragEd);
+// read a program from the reposityry
+void KwEdit::readProg(ProgKeep* prog)
+{
 
+	//int oldIndex = ui.tabs->currentIndex();
+	
+	// automatically open the progs of pass 1
+	if (!m_doc->m_passes.isEmpty()) 
+	{
+		const Pass &pass = m_doc->m_passes[0];
+		foreach(const shared_ptr<DocSrc>& s, pass.shaders)
+		{
+			if (s->type != SRC_GEOM) // don't open geometry by default
+				addPage(s.get());
+		}
+	//	if (ui.tabs->count() > oldIndex)
+	//		ui.tabs->setCurrentIndex(oldIndex);
+	}
+
+	// set uniform and attributes from prog
 	clearParam();
-	foreach(const ParamInput& ppi, prog->params)
+
+	if (prog != NULL)
 	{
-		addParam(ppi);
+		m_lastLoadedProg = prog->name; // for reload
+		foreach(const ParamInput& ppi, prog->params)
+		{
+			addParam(ppi);
+		}
 	}
 
-	conf().runType = prog->runType;
 	ui.shaderEnable->setChecked(true);
-
-	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)
-	{
-		Prop* prop = m_conf.propByName(it.key());
-		prop->fromString(*it);
-	}
 
 	doShadersUpdate();
 }
 
-
-void KwEdit::on_tabs_currentChanged(int ti)
+// find an edit page by its index
+EditPagePtr KwEdit::findPage(int tabi)
 {
-	ui.shaderControl->setVisible(ti != 0);
-	switch (ui.tabs->currentIndex()) 
+	QWidget *tab = ui.tabs->widget(tabi);
+	foreach(const EditPagePtr& p, m_pages)
 	{
-	case 0: m_curEd = ui.ed; break;
-	case 1: m_curEd = ui.vtxEd; break;
-	case 2: m_curEd = ui.fragEd; break;
+		if (tab == p->tab)
+		{
+			return p;
+		}
 	}
+	return EditPagePtr();
+}
+
+EditPagePtr KwEdit::findPage(DocSrc* src)
+{
+	QMap<DocSrc*, EditPagePtr>::iterator it = m_pages.find(src);
+	if (it == m_pages.end())
+		return EditPagePtr();
+	return it.value();
+}
+
+
+void KwEdit::on_tabs_currentChanged(int ti) 
+{
+	// search the page
+	if (ti == -1)
+		return;  // no tabs left. 
+
+	EditPagePtr page = findPage(ti);  
+
+	ui.shaderControl->setVisible(page.get() != NULL && page->src->type != SRC_MODEL);
+	ui.modelControl->setVisible(page.get() != NULL && page->src->type == SRC_MODEL);
+
+	m_curEd = page;
+
 	updateCursorPosLine();
 }
+
+bool operator==(const EditPage& a, const EditPage& b)
+{
+	return a.src == b.src && a.ed == b.ed && a.tab == b.tab;
+}
+
+void KwEdit::on_tabs_tabCloseRequested(int index)
+{
+	{
+		EditPagePtr page = findPage(index);
+		page->commitText();
+
+		//ui.tabs->removeTab(index);
+		m_pages.remove(page->src);
+	}	
+}
+
+void KwEdit::tabsBarClose()
+{
+	EditPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+	{
+		curEd->commitText();
+
+		//ui.tabs->removeTab(index);
+		m_pages.remove(curEd->src);
+	}	
+}
+
 
 void KwEdit::on_addParam_clicked()
 {
@@ -631,7 +637,69 @@ void KwEdit::clearParam()
 		removeParam(*m_paramUi.begin());
 }
 
-void KwEdit::on_reloadBot_clicked()
+// void KwEdit::on_reloadBot_clicked()
+// {
+// 	m_doc->m_confxmls.activateAction(m_lastLoadedProg);
+// }
+
+
+void KwEdit::addPage(DocSrc* src, int index)
 {
-	activateAction(m_lastLoadedProg);
+	// check if it's already open
+	foreach(const EditPagePtr& page, m_pages)
+	{
+		if (src == page->src) // points to the same original
+		{
+			ui.tabs->setCurrentWidget(page->tab);
+			return;
+		}
+	}
+
+	// open a new page
+	EditPagePtr page(new EditPage());
+	page->src = src;
+
+	page->tab = new QWidget();
+	QVBoxLayout *tabLayout = new QVBoxLayout(page->tab);
+	tabLayout->setContentsMargins(0, 3, 0, 0);
+	page->ed = new ProgTextEdit(page->tab);
+	QFont font;
+	font.setFamily(QString::fromUtf8("Courier"));
+	font.setPointSize(10);
+	page->ed->setFont(font);
+	page->ed->setLineWrapMode(QTextEdit::NoWrap);
+	page->ed->setTabStopWidth(40);
+	page->ed->setAcceptRichText(false);
+
+	page->ed->setPlainText(page->src->text);
+	page->ed->document()->setModified(false);
+
+	tabLayout->addWidget(page->ed);
+
+	if (src->type != SRC_MODEL)
+	{
+		page->ed->setMenu(m_doc->m_confxmls.m_progMenu);
+	}
+	else
+	{
+		page->ed->setMenu(m_doc->m_confxmls.m_modelsMenu);
+		page->m_high = new MySyntaxHighlighter(page->ed->document(), this);
+		index = 0;
+	}
+
+
+	connect(page->ed, SIGNAL(zoomChange(int)), this, SLOT(zoomEdits(int)));
+	connect(page->ed, SIGNAL(cursorPositionChanged()), this, SLOT(updateCursorPosLine()));
+	connect(page->ed->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(editTextChanged(int,int,int)));
+	connect(page->ed->document(), SIGNAL(modificationChanged(bool)), this, SLOT(modificateChanged(bool)));
+
+	connect(page->src, SIGNAL(removed(DocSrc*)), this, SLOT(removePage(DocSrc*)));
+	connect(page->src, SIGNAL(nameChanged(const QString&)), this, SLOT(pageNameChanged(const QString&)));
+
+	m_pages.insert(page->src, page);
+	if (index == -1)
+		ui.tabs->addTab(page->tab, Document::getTypeIcon(page->src->type), page->src->displayName());
+	else
+		ui.tabs->insertTab(index, page->tab, Document::getTypeIcon(page->src->type), page->src->displayName());
+	ui.tabs->setCurrentWidget(page->tab);
 }

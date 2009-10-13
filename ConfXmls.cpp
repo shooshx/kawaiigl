@@ -6,8 +6,25 @@
 
 #include "KwEdit.h"
 #include "DisplayConf.h"
+#include "KawaiiGL.h"
 
-void ConfXmls::loadModelsFile(QWidget *w)
+
+ConfXmls::ConfXmls(KawaiiGL* mainc) :m_conf(mainc->sett().disp), m_parent(mainc) {}
+
+
+void ConfXmls::init(const QString& modelsFile, const QString& progFiles)
+{
+	m_modelsFile = modelsFile;
+	m_progFiles = progFiles;
+
+	m_progMenu = new QMenu(m_parent);
+	m_modelsMenu = new QMenu(m_parent);
+
+	loadModelsFile();
+	loadProgramsFile(m_progMenu);
+}
+
+void ConfXmls::loadModelsFile()
 {
 	QFile file(m_modelsFile);
 	if (!file.open(QIODevice::ReadOnly))
@@ -54,10 +71,20 @@ void ConfXmls::loadModelsFile(QWidget *w)
 		QString display = disa.value();
 		QString filename = fe.text();
 
-		w->addAction(m_host->confAddModel(display, filename, isMesh));
-
-
+		m_modelsMenu->addAction(confAddModel(display, filename, isMesh));
 	}
+
+	// other actions
+	QAction *act;
+	m_modelsMenu->addAction(act = new QAction("", m_parent));
+	act->setSeparator(true);
+	m_modelsMenu->addAction(act = new QAction("clear", m_parent));
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
+	m_modelsMenu->addAction(act = new QAction("Generate from File", m_parent));
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
+	m_modelsMenu->addAction(act = new QAction("Load File", m_parent));
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
+
 }
 
 
@@ -182,7 +209,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			if (namea.isNull())
 				continue;
 			QString name = namea.value();
-			if (m_host->m_conf.propByName(name) == NULL)
+			if (m_conf.propByName(name) == NULL)
 				printf("No such property %s\n", name.toAscii().data());
 			else
 				prog->args[name] = e.text();
@@ -190,7 +217,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 
 	}
 
-	menu->addAction(m_host->confAddProg(display, prog));
+	menu->addAction(confAddProg(display, prog));
 
 }
 
@@ -236,9 +263,9 @@ void ConfXmls::loadProgramsFile(QMenu* menu)
 	}
 
 	menu->clear();
-	foreach(ProgInput* pi, m_host->m_progrep)
+	foreach(ProgInput* pi, m_progrep)
 		delete pi;
-	m_host->m_progrep.clear();
+	m_progrep.clear();
 
 
 	QDomElement de = doc.documentElement();
@@ -247,3 +274,51 @@ void ConfXmls::loadProgramsFile(QMenu* menu)
 
 }
 
+
+
+QAction* ConfXmls::confAddModel(const QString& display, const QString& filename, bool isMesh)
+{
+	QAction *act = new QAction(display, m_parent);
+
+	act->setData(QVariant::fromValue(ModelData(filename, isMesh)));
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
+
+	m_userActions[display.toLower()] = act;
+	return act;
+}
+
+QAction* ConfXmls::confAddProg(const QString& display, ProgKeep* prog)
+{
+	m_progrep.append(prog);
+
+	QAction *act = new QAction(display, m_parent);
+	act->setData((int)prog);
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadProg()));
+
+	m_userActions[display.toLower()] = act;
+	return act;
+}
+
+
+void ConfXmls::myreadProg()
+{
+	QAction *send = qobject_cast<QAction*>(sender());
+	ProgKeep *prog = (ProgKeep*)send->data().toInt();
+	emit readProg(prog);
+}
+void ConfXmls::myreadModel()
+{
+	QAction *send = qobject_cast<QAction*>(sender());
+	QString name = send->text();
+	ModelData md = send->data().value<ModelData>();
+	emit readModel(name, md);
+}
+
+
+void ConfXmls::activateAction(const QString& name)
+{
+	TActionMap::iterator it = m_userActions.find(name.toLower());
+	if (it == m_userActions.end())
+		return;
+	(*it)->trigger();
+}

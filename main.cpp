@@ -10,6 +10,7 @@ extern QGLFormat g_format;
 
 
 
+
 int main(int argc, char *argv[])
 {
 
@@ -19,6 +20,9 @@ int main(int argc, char *argv[])
 
 	KawaiiGL window;
 	//window.show();
+
+	float v[10];
+	glGetFloatv(GL_SAMPLES_ARB, v);
 
 	return app.exec();
 }

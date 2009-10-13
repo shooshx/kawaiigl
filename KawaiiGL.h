@@ -8,6 +8,7 @@
 
 class KwEdit;
 class ControlPanel;
+class ProjBrowser;
 
 class KawaiiGL : public QMainWindow
 {
@@ -32,7 +33,9 @@ private:
 
 	T2GLWidget *m_kView;
 	KwEdit *m_edDlg;
-	ControlPanel *m_contDlg;
+	ControlPanel *m_contDlg; // this is actually render configuration
+	ProjBrowser *m_browse;
+	MyDialog *m_control;
 	Document *m_doc;
 
 };

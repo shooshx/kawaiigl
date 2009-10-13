@@ -3,25 +3,30 @@
 #include "KwEdit.h"
 #include "Document.h"
 #include "ControlPanel.h"
+#include "ProjBrowser.h"
 
-
+// this class connects the document and KwEdit
 struct ErrorHighlight : public ErrorActor
 {
-	ErrorHighlight(KwEdit* edw) : m_edw(edw) {}
+	ErrorHighlight(KwEdit* edw) : m_edw(edw), m_src(NULL) {}
 
-	virtual void clear()
+	virtual void clear(DocSrc* src) // in the context of src
 	{
-		m_edw->clearErrors();
+		m_src = src;
+		m_edw->clearErrors(m_src);
 	}
 	virtual void operator()(int start, int end)
 	{
-		m_edw->addError(start, end);
+		m_edw->addError(m_src, start, end);
 	}
 	virtual void finish()
 	{
-		m_edw->finishErrors();
+		m_edw->finishErrors(m_src);
+		m_src = NULL;
 	}
+
 	KwEdit *m_edw;
+	DocSrc *m_src;
 };
 
 #define EXAMPLES_DIR ("examples")
@@ -49,16 +54,29 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	m_edDlg->show();
 	m_edDlg->move(pos() + QPoint(width() - 20, 30));
 
-	m_contDlg = new ControlPanel(&m_sett.disp, this, m_doc);
-	m_contDlg->show();
-	m_contDlg->move(pos() + QPoint(-30, 20));
+	m_control = new MyDialog(this);
+	QBoxLayout *control_l = new QVBoxLayout();
+	m_control->setLayout(control_l);
+	control_l->setMargin(0);
+	control_l->setSpacing(0);
+	QTabWidget *tabs = new QTabWidget();
+	control_l->addWidget(tabs);
 
+	m_contDlg = new ControlPanel(&m_sett.disp, this, m_doc);
+	tabs->addTab(m_contDlg, "Config");
+	m_browse = new ProjBrowser(this, m_doc);
+	tabs->addTab(m_browse, "Browser");
+	tabs->setCurrentWidget(m_browse);
+
+	m_control->show();
+	m_control->move(pos() + QPoint(-30, 20));
+	m_control->resize(100, 100); // make it as small as possible
 
 	m_doc->m_errAct = new ErrorHighlight(m_edDlg);
 
 	connect(m_kView, SIGNAL(message(const QString&)), this, SLOT(message(const QString&)));
 
-	connect(m_edDlg, SIGNAL(changed(const QString&)), m_doc, SLOT(calc(const QString&)));
+	connect(m_edDlg, SIGNAL(changedModel(DocSrc*)), m_doc, SLOT(calc(DocSrc*)));
 	connect(m_edDlg, SIGNAL(updateShaders(const ProgInput&)), m_doc, SLOT(compileShaders(const ProgInput&)));
 //	connect(m_edDlg, SIGNAL(updateVars(const ProgInput&)), m_doc, SLOT(parseAllParams(const ProgInput&)));
 
@@ -81,6 +99,12 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_contDlg, SIGNAL(reassertTex(int)), m_kView, SLOT(rebindTexture(int)));
 	connect(m_contDlg, SIGNAL(saveMesh()), m_doc, SLOT(calcSave()));
 
+	connect(m_browse, SIGNAL(openDocText(DocSrc*)), m_edDlg, SLOT(addPage(DocSrc*)) );
+	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_edDlg, SLOT(readProg(ProgKeep*)) );
+	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_browse, SLOT(readProg(ProgKeep*)) );
+	connect(m_doc, SIGNAL(didReadModel(DocSrc*)), m_browse, SLOT(readModel()) );
+	connect(m_doc, SIGNAL(didReadModel(DocSrc*)), m_edDlg, SLOT(readModel(DocSrc*)));
+
 	connect(&m_sett.disp.bVtxNormals, SIGNAL(changed()), m_doc, SLOT(calcNoParse())); // TBD - this is bad.
 
 	connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
@@ -100,7 +124,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 
 	QAction *confVis = new QAction("Display", view);
 	view->addAction(confVis);
-	m_contDlg->connectAction(confVis);
+	m_control->connectAction(confVis);
 	QAction *editVis = new QAction("Edit", view);
 	view->addAction(editVis);
 	m_edDlg->connectAction(editVis);
@@ -130,7 +154,7 @@ void KawaiiGL::processCmdArgs()
 		return;
 	for(int i = 1; i < args.size(); ++i)
 	{
-		m_edDlg->activateAction(args[i]); // a model or a program name
+		m_doc->m_confxmls.activateAction(args[i]); // a model or a program name
 
 	}
 }

@@ -10,7 +10,7 @@
 
 
 ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
-:MyDialog(parent), conf(_conf), m_doc(doc)
+:QWidget(parent), conf(_conf), m_doc(doc)
 {
 	ui.setupUi(this);
 

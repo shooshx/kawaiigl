@@ -48,9 +48,10 @@ public:
 	virtual void foreachPoints(PointActor &actor) = 0;
 };
 
+class DocSrc;
 struct ErrorActor
 {
-	virtual void clear() = 0;
+	virtual void clear(DocSrc* src) = 0;
 	virtual void operator()(int start, int end) = 0;
 	virtual void finish() = 0;
 };

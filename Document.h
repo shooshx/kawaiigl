@@ -11,6 +11,8 @@
 
 #include "OpenGL/Shaders.h"
 #include "Renderable.h"
+#include "ConfXmls.h"
+
 
 class MyObject;
 class DisplayConf;
@@ -38,6 +40,76 @@ public:
 	QVector<IPoint*> m_added;
 };
 
+enum SrcType
+{
+	SRC_VTX,
+	SRC_GEOM,
+	SRC_FRAG,
+	SRC_MODEL
+};
+
+// DocSrc doesn't know in which Pass he is!
+class DocSrc : public QObject
+{
+	Q_OBJECT
+public:
+	DocSrc(const QString& _name, bool isFile, SrcType _type) 
+		:m_name(_name), isFilename(isFile), type(_type), changedSinceLoad(false)
+	{} 
+	DocSrc(const QString& _text, const QString& _name, bool isFile, SrcType _type) 
+		:text(_text), m_name(_name), isFilename(isFile), type(_type), changedSinceLoad(false)
+	{} 
+	~DocSrc()
+	{
+		emit removed(this);
+	}
+
+	QString displayName() const { return changedSinceLoad?(m_name + "*"):m_name; }
+	
+	// returns true if it really changed first now.
+	bool setChangedSinceLoad(bool v)
+	{
+		if (v == changedSinceLoad)
+			return false;
+		changedSinceLoad = v;
+		emit nameChanged(displayName());
+		return true;
+	}
+
+	void setName(const QString& newname)
+	{
+		if (m_name == newname)
+			return;
+		m_name = newname;
+		emit nameChanged(displayName());
+	}
+	const QString name() const { return m_name; }
+
+	bool isFilename;
+	QString text;
+	SrcType type;
+
+private:
+	QString m_name; // just name or filename;
+
+signals:
+	void nameChanged(const QString&);
+	void externalTextChange();
+	void removed(DocSrc*);
+
+private:
+	bool changedSinceLoad;
+};
+
+struct Pass // replaces ProgInput;
+{
+	typedef QList<boost::shared_ptr<DocSrc> > TDocSrcList;
+	TDocSrcList shaders;
+
+	boost::shared_ptr<DocSrc> model;
+	//QVector<ParamInput> params; 
+	//DisplayConf::RunType runType;
+};
 
 class Document : public QObject
 {
@@ -64,8 +136,13 @@ public:
 		emit progParamChanged(); // causes updateGL
 	}
 
+	static QIcon getTypeIcon(SrcType);
+
+	void addNewShader(Pass* pass, SrcType type);
+	void removeShader(Pass* pass, DocSrc* src);
+
 public slots:
-	void calc(const QString& qstr, bool doParse = true, QString saveAs = QString());
+	void calc(DocSrc* qstr, bool doParse = true, QString saveAs = QString());
 	void calcNoParse();
 	void calcSave();
 
@@ -83,6 +160,8 @@ public slots:
 
 private slots:
 	void setAddTrack();
+	void readProg(ProgKeep* prog); // fcom config
+	void readModel(const QString& name, const ModelData& md);
 
 signals:
 	void loaded();
@@ -91,11 +170,16 @@ signals:
 	void progParamChanged();
 	void textChanged(const QString& text);
 
+	void didReadProg(ProgKeep* prog);
+	void didReadModel(DocSrc* src);
+
 private:
 	bool parseParam(const ParamInput& in, Prop* toprop); // if not NULL this prop should get the value as well.
 
+	QString generateFromFile();
+
 	int m_nPoly, m_nPoints;
-	DisplayConf &conf;
+	DisplayConf &m_conf;
 	KawaiiGL *m_main;
 
 public:
@@ -159,13 +243,18 @@ public:
 	typedef QMap<QString, boost::shared_ptr<RMesh> > TMeshIndex;
 	TMeshIndex m_meshIndex;
 
-	QString m_curtext;
+	//QString m_curtext; // of model
 	KwParser m_kparser;
 
 	GenericShader m_prog;
 
 	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
 	// these are here since they need to be sent as uniforms and we need access to them.
+
+	QList<Pass> m_passes;
+	bool m_shaderEnabled;
+
+	ConfXmls m_confxmls;
 
 
 public:
@@ -175,6 +264,8 @@ public:
 		updateParams(m_onFrameEvals);
 	}
 
+	static void readToString(const QString& filename, QString& into);
+	static void writeToFile(const QString& text, const QString filename);
 
 };
 

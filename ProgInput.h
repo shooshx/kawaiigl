@@ -67,8 +67,6 @@ struct ProgInput
 {
 	ProgInput() : runType(DisplayConf::RunNormal) {}
 
-	QString vtxProg;
-	QString fragProg;
 	QVector<ParamInput> params; 
 	DisplayConf::RunType runType;
 };
@@ -77,9 +75,22 @@ struct ProgInput
 struct ProgKeep : public ProgInput
 {
 	typedef QMap<QString, QString> TArgsMap;
+
+	QString vtxProg, fragProg;
 	QString name;
 	TArgsMap args; // any name from DisplayConf and a value as string
 };
+
+
+struct ModelData
+{
+	ModelData() {}
+	ModelData(QString name, bool _isMesh) :filename(name), isMesh(_isMesh) {}
+	QString filename;
+	bool isMesh;
+};
+Q_DECLARE_METATYPE(ModelData);
+
 
 
 #endif // PROGINPUT_H_INCLUDED

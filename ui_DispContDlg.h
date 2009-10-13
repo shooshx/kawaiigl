@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'DispContDlg.ui'
 **
-** Created: Thu 27. Aug 17:02:57 2009
+** Created: Mon Oct 12 16:34:01 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -16,7 +16,6 @@
 #include <QtGui/QButtonGroup>
 #include <QtGui/QCheckBox>
 #include <QtGui/QComboBox>
-#include <QtGui/QDialog>
 #include <QtGui/QFrame>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
@@ -113,11 +112,12 @@ public:
     QLineEdit *tex3NameLabel;
     QPushButton *tex3FileBot;
 
-    void setupUi(QDialog *DispContDlg)
+    void setupUi(QWidget *DispContDlg)
     {
         if (DispContDlg->objectName().isEmpty())
             DispContDlg->setObjectName(QString::fromUtf8("DispContDlg"));
         DispContDlg->resize(208, 517);
+        DispContDlg->setMinimumSize(QSize(208, 0));
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
         verticalLayout->setMargin(4);
@@ -459,7 +459,7 @@ public:
         QMetaObject::connectSlotsByName(DispContDlg);
     } // setupUi
 
-    void retranslateUi(QDialog *DispContDlg)
+    void retranslateUi(QWidget *DispContDlg)
     {
         DispContDlg->setWindowTitle(QApplication::translate("DispContDlg", "KawaiiGL Control", 0, QApplication::UnicodeUTF8));
         SD_points->setText(QApplication::translate("DispContDlg", "Points", 0, QApplication::UnicodeUTF8));
