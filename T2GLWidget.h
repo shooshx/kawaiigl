@@ -5,6 +5,7 @@
 #include "ShapeIFS.h"
 #include "DisplayConf.h"
 #include "KwParser.h"
+#include "Pass.h"
 
 class T2GLWidget;
 class Document;
@@ -77,6 +78,8 @@ private:
 	void updateTrack(IPoint* sel);
 	boost::shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd);
 
+	void programConfig(const PassPtr& pass);
+
 	void emitDecompile();
 
 	Document *m_doc;
@@ -95,6 +98,8 @@ private:
 	bool m_useProg;
 
 	DisplayConf &conf;
+	PassPtr m_curPass;
+
 	QString currentDecompile;
 
 	typedef QMap<QString, boost::shared_ptr<GlTexture> > TNoiseCache;

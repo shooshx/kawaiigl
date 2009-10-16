@@ -12,7 +12,7 @@
 #include "OpenGL/Shaders.h"
 #include "Renderable.h"
 #include "ConfXmls.h"
-
+#include "Pass.h"
 
 class MyObject;
 class DisplayConf;
@@ -40,76 +40,8 @@ public:
 	QVector<IPoint*> m_added;
 };
 
-enum SrcType
-{
-	SRC_VTX,
-	SRC_GEOM,
-	SRC_FRAG,
-	SRC_MODEL
-};
 
-// DocSrc doesn't know in which Pass he is!
-class DocSrc : public QObject
-{
-	Q_OBJECT
-public:
-	DocSrc(const QString& _name, bool isFile, SrcType _type) 
-		:m_name(_name), isFilename(isFile), type(_type), changedSinceLoad(false)
-	{} 
-	DocSrc(const QString& _text, const QString& _name, bool isFile, SrcType _type) 
-		:text(_text), m_name(_name), isFilename(isFile), type(_type), changedSinceLoad(false)
-	{} 
-	~DocSrc()
-	{
-		emit removed(this);
-	}
 
-	QString displayName() const { return changedSinceLoad?(m_name + "*"):m_name; }
-	
-	// returns true if it really changed first now.
-	bool setChangedSinceLoad(bool v)
-	{
-		if (v == changedSinceLoad)
-			return false;
-		changedSinceLoad = v;
-		emit nameChanged(displayName());
-		return true;
-	}
-
-	void setName(const QString& newname)
-	{
-		if (m_name == newname)
-			return;
-		m_name = newname;
-		emit nameChanged(displayName());
-	}
-	const QString name() const { return m_name; }
-
-	bool isFilename;
-	QString text;
-	SrcType type;
-
-private:
-	QString m_name; // just name or filename;
-
-signals:
-	void nameChanged(const QString&);
-	void externalTextChange();
-	void removed(DocSrc*);
-
-private:
-	bool changedSinceLoad;
-};
-
-struct Pass // replaces ProgInput;
-{
-	typedef QList<boost::shared_ptr<DocSrc> > TDocSrcList;
-	TDocSrcList shaders;
-
-	boost::shared_ptr<DocSrc> model;
-	//QVector<ParamInput> params; 
-	//DisplayConf::RunType runType;
-};
 
 class Document : public QObject
 {
@@ -136,9 +68,9 @@ public:
 		emit progParamChanged(); // causes updateGL
 	}
 
-	static QIcon getTypeIcon(SrcType);
+	static QIcon getTypeIcon(ElementType);
 
-	void addNewShader(Pass* pass, SrcType type);
+	void addNewShader(Pass* pass, ElementType type);
 	void removeShader(Pass* pass, DocSrc* src);
 
 public slots:
@@ -175,6 +107,7 @@ signals:
 
 private:
 	bool parseParam(const ParamInput& in, Prop* toprop); // if not NULL this prop should get the value as well.
+	PassPtr newPass(const QString& name);
 
 	QString generateFromFile();
 
@@ -251,7 +184,7 @@ public:
 	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
 	// these are here since they need to be sent as uniforms and we need access to them.
 
-	QList<Pass> m_passes;
+	QList<PassPtr> m_passes;
 	bool m_shaderEnabled;
 
 	ConfXmls m_confxmls;

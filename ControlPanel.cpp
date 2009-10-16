@@ -185,6 +185,8 @@ void ControlPanel::runTypeChange()
 	{
 		ui.tex0Fake->show();
 		ui.tex0cont->hide();
+		ui.tex1Fake->hide();
+		ui.tex1cont->show();
 		ui.multiSampQuad->show();
 		emit reassertTex(1);
 	}

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Wed Oct 14 01:34:29 2009
+** Created: Wed Oct 14 22:17:07 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -15,7 +15,6 @@
 #include <QtGui/QApplication>
 #include <QtGui/QButtonGroup>
 #include <QtGui/QCheckBox>
-#include <QtGui/QComboBox>
 #include <QtGui/QDialog>
 #include <QtGui/QHBoxLayout>
 #include <QtGui/QHeaderView>
@@ -48,7 +47,6 @@ public:
     QPushButton *saveBot2;
     QHBoxLayout *horizontalLayout_4;
     QCheckBox *shaderEnable;
-    QComboBox *runTypeBox;
     QSpacerItem *horizontalSpacer;
     QPushButton *addParam;
 
@@ -56,7 +54,7 @@ public:
     {
         if (KwEdit->objectName().isEmpty())
             KwEdit->setObjectName(QString::fromUtf8("KwEdit"));
-        KwEdit->resize(364, 511);
+        KwEdit->resize(394, 511);
         verticalLayout = new QVBoxLayout(KwEdit);
         verticalLayout->setSpacing(5);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
@@ -139,11 +137,6 @@ public:
         shaderEnable->setObjectName(QString::fromUtf8("shaderEnable"));
 
         horizontalLayout_4->addWidget(shaderEnable);
-
-        runTypeBox = new QComboBox(shaderControl);
-        runTypeBox->setObjectName(QString::fromUtf8("runTypeBox"));
-
-        horizontalLayout_4->addWidget(runTypeBox);
 
         horizontalSpacer = new QSpacerItem(40, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

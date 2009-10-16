@@ -5,7 +5,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>364</width>
+    <width>394</width>
     <height>511</height>
    </rect>
   </property>
@@ -182,9 +182,6 @@
            <string>Enable Shaders</string>
           </property>
          </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="runTypeBox" />
         </item>
         <item>
          <spacer name="horizontalSpacer" >

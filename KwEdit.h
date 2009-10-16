@@ -26,21 +26,43 @@ class T2GLWidget;
 class ParamUi;
 class DocSrc;
 class ProgTextEdit;
+class DocElement;
+class ShaderConfigDlg;
+class Pass;
 
-
-struct EditPage
+struct KPage
 {
-	EditPage() : src(NULL), ed(NULL), tab(NULL) {}
-	virtual ~EditPage();
-	void commitText(); // commit the changes in the edit widget to the DocSrc
+	KPage() : tab(NULL), elem(NULL) {}
+	virtual ~KPage();
+	virtual void commit() {}
+	bool textual() const;
+
+	QWidget* tab;
+	DocElement* elem; // same as src or pass
+};
+
+struct EditPage : public KPage
+{
+	EditPage() : src(NULL), ed(NULL), m_high(NULL) {}
+	virtual void commit(); // commit the changes in the edit widget to the DocSrc
 
 	DocSrc* src;
 	ProgTextEdit* ed;
-	QWidget* tab;
 	MySyntaxHighlighter *m_high; // the edit widget deletes this.
 };
 
+struct DlgPage : public KPage
+{
+	DlgPage() : pass(NULL), dlg(NULL) {}
+
+	Pass* pass;
+	ShaderConfigDlg* dlg;
+};
+
+typedef boost::shared_ptr<KPage> KPagePtr;
 typedef boost::shared_ptr<EditPage> EditPagePtr;
+typedef boost::shared_ptr<DlgPage> DlgPagePtr;
+
 
 class KwEdit : public MyDialog
 {
@@ -49,7 +71,7 @@ public:
 	KwEdit(QWidget *parent, DisplayConf& conf, Document* doc, T2GLWidget *view);
 	~KwEdit()
 	{
-		foreach(const EditPagePtr& page, m_pages)
+		foreach(const KPagePtr& page, m_pages)
 			page->tab = NULL; // throw hands in air and cry out "fuck this shit"
 		m_pages.clear();
 	}
@@ -69,8 +91,9 @@ public slots:
 	void doVarsUpdate();
 	void setText(const QString& text);
 
-	void addPage(DocSrc*, int index = -1);
-	void removePage(DocSrc* src);
+	void addPage(DocElement*, int index = -1);
+
+	void removePage(DocElement* src);
 
 private slots:
 	// void on_reloadBot_clicked();
@@ -102,8 +125,9 @@ private:
 	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
 	QAction* confAddProg(const QString& display, ProgKeep* prog); // taking over this.
 
-	EditPagePtr findPage(int tabi);
-	EditPagePtr findPage(DocSrc* src);
+	KPagePtr findPage(int tabi);
+	KPagePtr findPage(DocElement* src);
+	EditPagePtr findEditPage(DocSrc* src);
 
 	void addParam(const ParamInput& pi);
 	void removeParam(ParamUi *pui);
@@ -111,10 +135,16 @@ private:
 	void doVarUpdate(const ParamUi* pui, bool update = true);
 	void initMoreWidget(ParamUi *pui);
 
-	QVector<ParamUi*> m_paramUi;
-	QMap<DocSrc*, EditPagePtr> m_pages;
+	KPagePtr addDlgPage(Pass* pass);
+	KPagePtr addTextPage(DocSrc* src, int& index);
+	
+private:
 
-	boost::weak_ptr<EditPage> m_curEd;
+	QVector<ParamUi*> m_paramUi;
+	typedef QMap<DocElement*, KPagePtr> TPages;
+	TPages m_pages;
+
+	boost::weak_ptr<KPage> m_curEd;
 	QString m_lastLoadedProg;
 
 	Document *m_doc;

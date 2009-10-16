@@ -65,20 +65,22 @@ struct ParamInput
 
 struct ProgInput
 {
-	ProgInput() : runType(DisplayConf::RunNormal) {}
+	ProgInput()  {}
 
 	QVector<ParamInput> params; 
-	DisplayConf::RunType runType;
+
 };
 
 // a program that is loaded from the XML
 struct ProgKeep : public ProgInput
 {
+	ProgKeep() : runType(DisplayConf::RunNormal) {}
 	typedef QMap<QString, QString> TArgsMap;
 
-	QString vtxProg, fragProg;
+	QString vtxProg, fragProg, geomProg;
 	QString name;
 	TArgsMap args; // any name from DisplayConf and a value as string
+	DisplayConf::RunType runType;
 };
 
 

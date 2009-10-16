@@ -68,6 +68,8 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	tabs->addTab(m_browse, "Browser");
 	tabs->setCurrentWidget(m_browse);
 
+	//tabs->setCurrentIndex(m_sett.gui.configWindowTab);
+
 	m_control->show();
 	m_control->move(pos() + QPoint(-30, 20));
 	m_control->resize(100, 100); // make it as small as possible
@@ -99,7 +101,9 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_contDlg, SIGNAL(reassertTex(int)), m_kView, SLOT(rebindTexture(int)));
 	connect(m_contDlg, SIGNAL(saveMesh()), m_doc, SLOT(calcSave()));
 
-	connect(m_browse, SIGNAL(openDocText(DocSrc*)), m_edDlg, SLOT(addPage(DocSrc*)) );
+	connect(m_browse, SIGNAL(openDocText(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
+	connect(m_browse, SIGNAL(openPassConf(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
+
 	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_edDlg, SLOT(readProg(ProgKeep*)) );
 	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_browse, SLOT(readProg(ProgKeep*)) );
 	connect(m_doc, SIGNAL(didReadModel(DocSrc*)), m_browse, SLOT(readModel()) );

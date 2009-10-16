@@ -82,7 +82,7 @@ void ShaderProgram::clear()
 	m_isOk = false; 
 } 
 
-bool ShaderProgram::init()
+bool ShaderProgram::init(const ProgCompileConf& conf)
 {
 	mglCheckErrorsC("clear errors");
 	const char* name = typeid(this).name();
@@ -94,19 +94,14 @@ bool ShaderProgram::init()
 	getCodes(); // populate the lists, set m_type.
 	m_isOk = false;
 
-	switch (m_type)
-	{
-	case PTYPE_POINTS:
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_INPUT_TYPE_EXT, GL_POINTS);
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_POINTS);
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_VERTICES_OUT_EXT, 6); // 6 points for every point
-		break;
-	case PTYPE_TRIANGLES:
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_INPUT_TYPE_EXT, GL_TRIANGLES);
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
-		glProgramParameteriEXT(m_progId, GL_GEOMETRY_VERTICES_OUT_EXT, 18); // 6 trinangles for every triangle
-		break;
+
+	if (!m_geomprog.isEmpty())
+	{ // has geometry shaders
+		glProgramParameteriEXT(m_progId, GL_GEOMETRY_INPUT_TYPE_EXT, conf.geomInput);
+		glProgramParameteriEXT(m_progId, GL_GEOMETRY_OUTPUT_TYPE_EXT, conf.geomOutput);
+		glProgramParameteriEXT(m_progId, GL_GEOMETRY_VERTICES_OUT_EXT, conf.geomVtxCount);	
 	}
+
 	mglCheckErrorsC(QString("codes %1").arg(name));
 
 

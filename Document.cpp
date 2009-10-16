@@ -64,11 +64,11 @@ Document::Document(KawaiiGL* mainc)
 	m_kparser.addFunction("wholeScreenQuad");
 
 	// default empty program
-	Pass p;
-	p.model = shared_ptr<DocSrc>(new DocSrc("Model", false, SRC_MODEL));
-	p.shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
-	p.shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
-	p.shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
+	PassPtr p = newPass("Pass 1");
+	p->model = shared_ptr<DocSrc>(new DocSrc("Model", false, SRC_MODEL));
+	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
+	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
+	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
 	m_passes.append(p);
 }
 
@@ -102,14 +102,21 @@ void Document::writeToFile(const QString& text, const QString filename)
 	out << text;
 }
 
+PassPtr Document::newPass(const QString& name)
+{
+	PassPtr p(new Pass(name));
+	connect(&p->conf, SIGNAL(changed()), this, SIGNAL(progParamChanged()));
+	return p;
+}
+
 // from config
 void Document::readProg(ProgKeep* prog)
 {
-	Pass p;
+	PassPtr p = newPass("Pass 1");
 
 	// remove everything except the model of the first pass
 	if (!m_passes.isEmpty())
-		p.model = m_passes[0].model;
+		p->model = m_passes[0]->model;
 	m_passes.clear(); // removes them from the edit window as well
 
 	// read texts
@@ -119,17 +126,23 @@ void Document::readProg(ProgKeep* prog)
 	{
 		d = new DocSrc(prog->vtxProg, true, SRC_VTX);
 		readToString(d->name(), d->text);
-		p.shaders.append(shared_ptr<DocSrc>(d));
+		p->shaders.append(shared_ptr<DocSrc>(d));
 	}
 	if (!prog->fragProg.isEmpty())
 	{
 		d = new DocSrc(prog->fragProg, true, SRC_FRAG);
 		readToString(d->name(), d->text);
-		p.shaders.append(shared_ptr<DocSrc>(d));
+		p->shaders.append(shared_ptr<DocSrc>(d));
+	}
+	if (!prog->geomProg.isEmpty())
+	{
+		d = new DocSrc(prog->geomProg, true, SRC_GEOM);
+		readToString(d->name(), d->text);
+		p->shaders.append(shared_ptr<DocSrc>(d));
 	}
 	m_passes.append(p);
 
-	m_conf.runType = prog->runType;
+	p->conf.runType = prog->runType;
 
 	// set config params
 	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)
@@ -142,9 +155,9 @@ void Document::readProg(ProgKeep* prog)
 }
 
 
-void Document::addNewShader(Pass* pass, SrcType type)
+void Document::addNewShader(Pass* pass, ElementType type)
 {
-	DocSrc *d = new DocSrc("Prog", true, type);
+	DocSrc *d = new DocSrc("Shader", false, type);
 	pass->shaders.append(shared_ptr<DocSrc>(d));
 }
 
@@ -170,14 +183,14 @@ void Document::readModel(const QString& name, const ModelData& md)
 {
 	if (m_passes.isEmpty())
 		return;
-	Pass& pass = m_passes[0];
+	PassPtr pass = m_passes[0];
 
 	QString text; 
 
 	if (name == "Generate from File")
 	{
 		text = generateFromFile();
-		pass.model.reset(new DocSrc(text, "Generated", false, SRC_MODEL));
+		pass->model.reset(new DocSrc(text, "Generated", false, SRC_MODEL));
 	}
 	else if (name == "Load File")
 	{
@@ -188,12 +201,12 @@ void Document::readModel(const QString& name, const ModelData& md)
 		filename = QDir::current().relativeFilePath(filename);
 
 		text = "load(" + filename + ")";
-		pass.model.reset(new DocSrc(text, "Loaded Mesh", false, SRC_MODEL));
+		pass->model.reset(new DocSrc(text, "Loaded Mesh", false, SRC_MODEL));
 	}
 	else if (name == "clear")
 	{
 		text = "";
-		pass.model.reset(new DocSrc(text, "Model", false, SRC_MODEL));
+		pass->model.reset(new DocSrc(text, "Model", false, SRC_MODEL));
 	}
 	else
 	{
@@ -201,18 +214,18 @@ void Document::readModel(const QString& name, const ModelData& md)
 		if (!md.isMesh) 
 		{
 			Document::readToString(md.filename, text);
-			pass.model.reset(new DocSrc(text, md.filename, true, SRC_MODEL));
+			pass->model.reset(new DocSrc(text, md.filename, true, SRC_MODEL));
 		}
 		else
 		{
 			text = "load(" + md.filename + ")";
-			pass.model.reset(new DocSrc(text, "Loaded Mesh", false, SRC_MODEL));
+			pass->model.reset(new DocSrc(text, "Loaded Mesh", false, SRC_MODEL));
 		}
 	}
 	
-	emit didReadModel(pass.model.get());
+	emit didReadModel(pass->model.get());
 
-	calc(pass.model.get());
+	calc(pass->model.get());
 
 }
 
@@ -272,7 +285,7 @@ QString Document::generateFromFile()
 
 
 
-QIcon Document::getTypeIcon(SrcType t)
+QIcon Document::getTypeIcon(ElementType t)
 {
 	switch (t)
 	{
@@ -499,10 +512,12 @@ void Document::compileShaders(const ProgInput& in)
 
 	if (m_passes.isEmpty())
 		return;
-	const Pass &pass = m_passes[0];
+	const PassPtr &pass = m_passes[0];
 
-	foreach(const shared_ptr<DocSrc>& src, pass.shaders)
+	foreach(const shared_ptr<DocSrc>& src, pass->shaders)
 	{
+		if (src->text.trimmed().isEmpty())
+			continue;
 		if (src->type == SRC_VTX)
 			m_prog.vtxprogs() += src->text;
 		else if (src->type == SRC_FRAG)
@@ -511,7 +526,10 @@ void Document::compileShaders(const ProgInput& in)
 			m_prog.geomprogs() += src->text;
 	}
 
-	m_conf.runType = in.runType;
+	if (m_prog.vtxprogs().size() + m_prog.fragprogs().size() + m_prog.geomprogs().size() == 0)
+		return;
+
+	m_conf.runType = pass->conf.runType.val();
 
 	m_onCalcEvals.clear();
 	m_onCalcEvals.resize(in.params.size());
@@ -531,7 +549,8 @@ void Document::compileShaders(const ProgInput& in)
 		pi.index = i;
 	}
 
-	if (m_prog.init())
+	ProgCompileConf conf(pass->conf.geomInput, pass->conf.geomOutput, pass->conf.geomVtxCount);
+	if (m_prog.init(conf))
 	{
 	//	parseAllParams(in);
 	}

@@ -14,6 +14,16 @@ enum EProgType
 	PTYPE_TRIANGLES
 };
 
+class ProgCompileConf
+{
+public:
+	ProgCompileConf(uint gIn, uint gOut, uint gCnt)
+		:geomInput(gIn), geomOutput(gOut), geomVtxCount(gCnt)
+	{}
+	uint geomInput;
+	uint geomOutput;
+	uint geomVtxCount;
+};
 
 class ShaderProgram
 {
@@ -35,7 +45,7 @@ public:
 
 	virtual void setPointSize(float size) const {}
 
-	bool init();
+	bool init(const ProgCompileConf& conf);
 	bool isOk() const { return m_isOk; }
 
 	uint progId() const { return m_progId; }

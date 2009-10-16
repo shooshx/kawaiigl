@@ -28,17 +28,17 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 
 	QMenu *passMenu = new QMenu(this);
 	QAction *act;
-	act = new QAction(Document::getTypeIcon(SRC_VTX), "Add Vertex Shader", this);
+	act = new QAction(Document::getTypeIcon(SRC_VTX), "New Vertex Shader", this);
 	act->setData(SRC_VTX);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
 	passMenu->addAction(act);
 
-	act = new QAction(Document::getTypeIcon(SRC_FRAG), "Add Fragment Shader", this);
+	act = new QAction(Document::getTypeIcon(SRC_FRAG), "New Fragment Shader", this);
 	act->setData(SRC_FRAG);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
 	passMenu->addAction(act);
 
-	act = new QAction(Document::getTypeIcon(SRC_GEOM), "Add Geometry Shader", this);
+	act = new QAction(Document::getTypeIcon(SRC_GEOM), "New Geometry Shader", this);
 	act->setData(SRC_GEOM);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
 	passMenu->addAction(act);
@@ -59,7 +59,7 @@ void ProjBrowser::addDoc()
 {
 	MyTreeItem* passItem = static_cast<MyTreeItem*>(ui.tree->eventItem());
 	int type = ((QAction*)sender())->data().toInt();
-	m_doc->addNewShader(passItem->m_pass, (SrcType)type);
+	m_doc->addNewShader(passItem->m_pass, (ElementType)type);
 	updateTree();
 }
 
@@ -94,7 +94,6 @@ void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t)
 	item->m_pass = pass;
 	item->m_src = t;
 	item->setIcon(0, Document::getTypeIcon(t->type));
-	item->setData(0, PTR_ROLE, QVariant::fromValue(t) ); // assume the list doesn't change without an update to the GUI. can take the address in a list.
 	
 	connect(t, SIGNAL(nameChanged(const QString&)), item, SLOT(updateDisplay(const QString&)));
 }
@@ -114,17 +113,17 @@ void ProjBrowser::updateTree()
 	ui.tree->clear();
 	for(int i = 0; i < m_doc->m_passes.size(); ++i)
 	{
-		Pass& pass = m_doc->m_passes[i];
-		MyTreeItem *passItem = new MyTreeItem((QTreeWidget*)NULL, QStringList(QString("Pass %1").arg(i + 1)), ITEM_PASS);
-		passItem->m_pass = &pass;
+		PassPtr& pass = m_doc->m_passes[i];
+		MyTreeItem *passItem = new MyTreeItem((QTreeWidget*)NULL, QStringList(pass->displayName()), ITEM_PASS);
+		passItem->m_pass = pass.get();
 		
 		QList<QTreeWidgetItem *> items;
 		items.append(passItem);
 		
-		addItem(&pass, passItem, pass.model.get());
-		foreach(const shared_ptr<DocSrc>& t, pass.shaders)
+		addItem(pass.get(), passItem, pass->model.get());
+		foreach(const shared_ptr<DocSrc>& t, pass->shaders)
 		{
-			addItem(&pass, passItem, t.get());
+			addItem(pass.get(), passItem, t.get());
 		}
 
 		ui.tree->insertTopLevelItems(0, items);
@@ -147,11 +146,15 @@ void ProjBrowser::itemClicked(QTreeWidgetItem *item, int col)
 	if (item == 0)
 		return;
 	if (item->type() == ITEM_PASS)
-		return;
-	
-	DocSrc* sdoc = item->data(0, PTR_ROLE).value<DocSrc*>();
-	emit openDocText(sdoc);
-
+	{
+		Pass* pass = ((MyTreeItem*)item)->m_pass;
+		emit openPassConf(pass);
+	}
+	else
+	{
+		DocSrc* sdoc = ((MyTreeItem*)item)->m_src;
+		emit openDocText(sdoc);
+	}
 }
 
 
@@ -161,11 +164,11 @@ void ProjBrowser::itemChanged(QTreeWidgetItem *item, int col)
 		return;
 	if (item->type() != ITEM_DOC)
 		return;
-	if ( ((MyTreeItem*)item)->m_itIsIChanging)
+	
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+	if ( mitem->m_itIsIChanging)
 		return;
 
-	DocSrc* sdoc = item->data(0, PTR_ROLE).value<DocSrc*>();
-
-	sdoc->setName(item->text(0));
+	mitem->m_src->setName(item->text(0));
 	
 }

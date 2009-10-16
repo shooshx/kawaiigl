@@ -365,19 +365,19 @@ void T2GLWidget::paintFlat()
 
 	drawAddTracker(m_doc->m_addTrack);
 
-
-	GL_BEGIN_TEXT();
 	
-	glColor3f(0.3f, 0.3f, 1.0f);
-	glRasterPos2f(-0.95f, -0.92f);
+	//GL_BEGIN_TEXT();
+	//glColor3f(0.3f, 0.3f, 1.0f);
+	//glRasterPos2f(-0.95f, -0.92f);
 
-	mglPrint(QString("%1/%2").arg(m_doc->numPoints()).arg(m_doc->numPoly()), 0);
+	QString s = QString("Vertices:%1 / Polygons:%2").arg(m_doc->numPoints()).arg(m_doc->numPoly());
 	if (conf.fullFps)
 	{
-		mglPrint(QString(" %1 FPS").arg(m_framesLast), 0);
+		s += QString(" %1 FPS").arg(m_framesLast);
 	}
+	emit message(s);
 
-	GL_END_TEXT();
+	//GL_END_TEXT();
 
 	if (isUsingLight())
 		glEnable(GL_LIGHTING);
@@ -390,7 +390,7 @@ void T2GLWidget::paintPoly()
 	if (conf.bPoly)
 	{
 		ProgramUser proguser;
-		if (m_useProg && m_doc->m_prog.isOk())
+		if (m_curPass->conf.incPoly && m_useProg && m_doc->m_prog.isOk())
 			proguser.use(&m_doc->m_prog);
 
 		glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
@@ -428,6 +428,35 @@ void T2GLWidget::drawSolids(bool colorize)
 		r->render();
 }
 
+// should be in ShaderProgram?
+void T2GLWidget::programConfig(const PassPtr& pass)
+{
+	PassConf &pconf = pass->conf;
+	if (pconf.vertexPointSize)
+		glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+	else
+		glDisable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+	if (pconf.pointSpirits)
+	{
+		glEnable(GL_POINT_SPRITE);
+		glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, pconf.spiriteReplace.val());
+	}
+	else
+	{
+		glDisable(GL_POINT_SPRITE);
+	}
+
+// 	if (!m_doc->m_prog.geomprogs().isEmpty())
+// 	{ // has geometry shaders
+// 		uint progid = m_doc->m_prog.progId();
+// 		glProgramParameteriEXT(progid, GL_GEOMETRY_INPUT_TYPE_EXT, pconf.geomInput.val());
+// 		glProgramParameteriEXT(progid, GL_GEOMETRY_OUTPUT_TYPE_EXT, pconf.geomOutput.val());
+// 		glProgramParameteriEXT(progid, GL_GEOMETRY_VERTICES_OUT_EXT, pconf.geomVtxCount.val()); // 6 points for every point
+// 
+// 	}
+
+}
 
 void T2GLWidget::paint3DScene(bool clearBack)
 {
@@ -436,12 +465,17 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	if (clearBack)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	if (m_useProg && m_doc->m_prog.isOk())
+		programConfig(m_curPass);
+
+
 	if (!m_doc->isValid())
 		return;
 
 	if (!m_bShowHiddenPoints)
 	{ // this is faster
 		paintFlat();
+
 		paintPoly();
 	}
 	else
@@ -517,10 +551,11 @@ void T2GLWidget::changedRunType()
 
 void T2GLWidget::myPaintGL()
 {
-
 	try {
 
-		if (conf.runType == DisplayConf::RunQuadProcess)
+		m_curPass = m_doc->m_passes[0];
+
+		if (m_curPass->conf.runType == DisplayConf::RunQuadProcess)
 		{
 
 			bool doMulti = GLEW_EXT_framebuffer_blit && conf.quadMultiSamp;
@@ -562,7 +597,7 @@ void T2GLWidget::myPaintGL()
 			glDisable(GL_TEXTURE_2D);
 			
 		}
-		else if (conf.runType == DisplayConf::RunTex2Tex)
+		else if (m_curPass->conf.runType == DisplayConf::RunTex2Tex)
 		{
 			m_offbuf->bind(); // draw into buffer
 			
@@ -593,7 +628,7 @@ void T2GLWidget::myPaintGL()
 			qSwap(m_doc->m_inputUnit, m_doc->m_outputUnit);
 
 		}
-		else if (conf.runType == DisplayConf::RunNormal)
+		else if (m_curPass->conf.runType == DisplayConf::RunNormal)
 		{
 			paint3DScene();
 		}
@@ -657,37 +692,46 @@ void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 	bool hasTex = true; //false;
 	VertexDrawer drawer(this, hasTex, colorize, obj.verterxNormals);
 
-	glBegin(GL_QUADS); 
-	for(int pli = 0; pli < obj.poly.size(); ++pli)
+	if (!obj.poly.isEmpty())
 	{
-		MyPolygon &curpl = *obj.poly[pli];
-		if (curpl.pnum != 4)
-			continue;
-
-		for(int pni = 0; pni < 4; ++pni) 
+		glBegin(GL_QUADS); 
+		for(int pli = 0; pli < obj.poly.size(); ++pli)
 		{
-			drawer.drawVertex(curpl, pni);
+			MyPolygon &curpl = *obj.poly[pli];
+			if (curpl.pnum != 4)
+				continue;
 
-		}		
-	} 
-	glEnd();
+			for(int pni = 0; pni < 4; ++pni) 
+			{
+				drawer.drawVertex(curpl, pni);
 
-	glBegin(GL_TRIANGLES); 
-	for(int pli = 0; pli < obj.triangles.size(); ++pli) 
+			}		
+		} 
+		glEnd();
+	}
+
+	if (!obj.triangles.isEmpty())
 	{
-		MyPolygon &curpl = *obj.triangles[pli];
-		Q_ASSERT(curpl.pnum == 3);
-		for(int pni = 0; pni < 3; ++pni)
+		glBegin(GL_TRIANGLES); 
+		for(int pli = 0; pli < obj.triangles.size(); ++pli) 
 		{
-			drawer.drawVertex(curpl, pni);
-		}		
-	} 
-	glEnd();
+			MyPolygon &curpl = *obj.triangles[pli];
+			Q_ASSERT(curpl.pnum == 3);
+			for(int pni = 0; pni < 3; ++pni)
+			{
+				drawer.drawVertex(curpl, pni);
+			}		
+		} 
+		glEnd();
+	}
 
 }
 
 void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 {
+	if (rmesh->numFaces() == 0)
+		return;
+
 	bool vtxNormals = conf.bVtxNormals;
 	bool revNormals = false;
 
@@ -772,18 +816,23 @@ struct PointVertexDrawer : public PointDrawer
 
 void T2GLWidget::drawPointDots()
 {
-	if (m_bBackFaceCulling)
-		glDisable(GL_CULL_FACE);
+	//if (m_bBackFaceCulling)
+	//	glDisable(GL_CULL_FACE);
 
 	glPointSize(14.0);
+
+	ProgramUser proguser;
+	if (m_curPass->conf.incPoints && m_useProg && m_doc->m_prog.isOk())
+		proguser.use(&m_doc->m_prog);
 
 	glBegin(GL_POINTS);
 
 	m_doc->m_kparser.creator()->foreachPoints(PointVertexDrawer(conf, this));
 
 	glEnd();
-	if (m_bBackFaceCulling)
-		glEnable(GL_CULL_FACE);
+
+	//if (m_bBackFaceCulling)
+	//	glEnable(GL_CULL_FACE);
 
 }
 

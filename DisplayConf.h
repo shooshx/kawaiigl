@@ -14,7 +14,7 @@ class DisplayConf : public ParamBase
 public:
 	enum ETexAct { Tex_None = -1, Tex_File0, Tex_File1, Tex_File2 };
 	Q_ENUMS(ETexAct)
-	enum RunType
+		enum RunType
 	{
 		RunNormal, // 3d Scene rendered to the screen with prog
 		RunQuadProcess,  // 3d scene rendered to texture 0, texture 0 rendered to a quad with prog
@@ -99,6 +99,19 @@ public:
 Q_DECLARE_METATYPE(DisplayConf::ETexAct);
 Q_DECLARE_METATYPE(DisplayConf::RunType);
 
+
+class GUIPos : public ParamBase
+{
+public:
+	TypeProp<int> configWindowTab;
+	//TypeProp<int> editWindowTab;
+
+	GUIPos()
+		:configWindowTab(this, "configWindowTab", 0)
+		//,editWindowTab(this, "editWindowTab", 0)
+	{}
+};
+
 class KwSettings : public MySettings
 {
 public:
@@ -106,9 +119,11 @@ public:
 		:MySettings("ShyResearch", "KawaiiGL")
 	{
 		addParam(&disp, "disp");
+	//	addParam(&gui, "gui");
 	}
 
 	DisplayConf disp;
+	//GUIPos gui;
 
 };
 

@@ -102,6 +102,8 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			prog->vtxProg = e.text(); // contains the filenames
 		else if (e.tagName() == "fragtext")
 			prog->fragProg = e.text();
+		else if (e.tagName() == "geomtext")
+			prog->geomProg = e.text();
 		else if (e.tagName() == "param")
 		{
 			QDomAttr namea = e.attributeNode("name");

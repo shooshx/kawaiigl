@@ -5,6 +5,11 @@
 			<vtxtext>vtx.plain.glsl.txt</vtxtext>
 			<fragtext>frag.plain.glsl.txt</fragtext>
 		</program>
+		<program display="GeomTest">
+			<vtxtext>vtx.plain.glsl.txt</vtxtext>
+			<geomtext>geom.test.glsl.txt</geomtext>
+			<fragtext>frag.plain.glsl.txt</fragtext>
+		</program>
 		<program display="Plain-Color">
 			<vtxtext>vtx.plain.glsl.txt</vtxtext>
 			<fragtext>frag.plain_color.glsl.txt</fragtext>

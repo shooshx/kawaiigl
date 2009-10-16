@@ -8,7 +8,8 @@ class KawaiiGL;
 class Document;
 class DocSrc;
 struct ProgKeep;
-struct Pass;
+class Pass;
+class DocElement;
 
 class MyTreeItem : public QObject, public QTreeWidgetItem
 {
@@ -50,7 +51,8 @@ public slots:
 	void renameDoc();
 
 signals:
-	void openDocText(DocSrc* sdoc);
+	void openDocText(DocElement* sdoc);
+	void openPassConf(DocElement* pass);
 
 private:
 	void updateTree();

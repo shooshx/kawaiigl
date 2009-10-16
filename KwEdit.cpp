@@ -18,6 +18,7 @@
 #include "T2GLWidget.h"
 #include "ParamUI.h"
 #include "ProgTextEdit.h"
+#include "ShaderConfigDlg.h"
 
 #include "MyLib/QtAdd/CloseButton.h"
 
@@ -85,8 +86,6 @@ KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *vi
 
 	(new CheckBoxIn(&conf.addFace, ui.addFaceBot))->reload();
 
-	(new ComboBoxIn<DisplayConf::RunType>(&conf.runType, ui.runTypeBox))->reload();
-
 	connect(ui.update_shader, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.shaderEnable, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.saveBot1, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
@@ -100,6 +99,8 @@ KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *vi
 	readModel(NULL);
 	readProg(NULL);
 
+	//ui.tabs->setCurrentIndex(m_sett.gui.configWindowTab);
+
 }
 
 
@@ -109,12 +110,12 @@ bool KwEdit::isEnabled()
 	return m_doc->m_shaderEnabled; 
 }
 
-EditPage::~EditPage()
+KPage::~KPage()
 {
 	delete tab; // remove the tab from the tabs
 }
 
-void EditPage::commitText()
+void EditPage::commit()
 {
 	src->text = ed->toPlainText();
 }
@@ -127,9 +128,9 @@ void KwEdit::doShadersUpdate()
 	if (m_doc->m_shaderEnabled)
 	{
 		// go over all opened docs and commit the change in the GUI to the document
-		foreach(const EditPagePtr& page, m_pages)
+		foreach(const KPagePtr& page, m_pages)
 		{
-			page->commitText();
+			page->commit();
 		}
 
 		foreach(ParamUi* pui, m_paramUi)
@@ -143,7 +144,7 @@ void KwEdit::doShadersUpdate()
 		}
 	}
 
-	m_in.runType = conf().runType;
+//	m_in.runType = conf().runType;
 
 	emit updateShaders(m_in); // calls compile
 
@@ -207,14 +208,23 @@ void KwEdit::doVarUpdate()
 	doVarUpdate(pui);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool KPage::textual() const 
+{ 
+	return elem->textual(); 
+}
+
 
 void KwEdit::updateCursorPosLine()
 {
-	EditPagePtr curEd;
+	KPagePtr curEd;
 	if (!(curEd = m_curEd.lock()))
 		return;
+	if (!curEd->textual())
+		return;
 
-	int i = curEd->ed->textCursor().block().firstLineNumber();
+	int i = ((EditPage*)curEd.get())->ed->textCursor().block().firstLineNumber();
 	ui.infoLabel->setText(QString("Line %1").arg(i + 1));
 }
 
@@ -225,9 +235,9 @@ void KwEdit::zoomEdits(int delta)
 
 	//ui.ed->setFontSize(size);
 
-	foreach(const EditPagePtr& page, m_pages) 
+	foreach(const KPagePtr& page, m_pages) 
 	{
-		page->ed->setFontSize(size);
+		static_cast<EditPage*>(page.get())->ed->setFontSize(size);
 	}
 }
 
@@ -236,29 +246,31 @@ void KwEdit::editTextChanged(int pos, int rem, int add)
 	if (rem == 0 && add == 0)
 		return; // text did not change.
 
-	shared_ptr<EditPage> curEd;
+	shared_ptr<KPage> curEd;
 	if (!(curEd = m_curEd.lock()))
 		return;
 
 	// model requires immediate action
-	if (curEd->src->type == SRC_MODEL)
+	if (curEd->elem->type == SRC_MODEL)
 	{
-		curEd->commitText();
-		emit changedModel(curEd->src);
+		curEd->commit();
+		emit changedModel(static_cast<EditPage*>(curEd.get())->src);
 	}
 }
 
 void KwEdit::saveCurDoc()
 {
-	EditPagePtr curEd;
+	KPagePtr curEd;
 	if (!(curEd = m_curEd.lock()))
 		return;
+	if (!curEd->textual())
+		return;
 
-	DocSrc *src = curEd->src;
+	DocSrc *src = static_cast<EditPage*>(curEd.get())->src;
 
 	if (!src->isFilename)
 	{
-		QString filename = QFileDialog::getSaveFileName(this, "Save Shader", "", "glsl files (*.glsl.txt)");
+		QString filename = QFileDialog::getSaveFileName(this, "Save Shader", QString(src->name()).replace(" ", "_"), "glsl files (*.glsl.txt)");
 		if (filename.isEmpty())
 			return;
 		filename = QFileInfo(filename).fileName(); // ignore directories for now
@@ -266,24 +278,26 @@ void KwEdit::saveCurDoc()
 		src->isFilename = true;
 	}
 
-	curEd->commitText();
+	curEd->commit();
 	Document::writeToFile(src->text, src->name());
 	src->setChangedSinceLoad(false);
 }
 
 void KwEdit::modificateChanged(bool modif)
 {
-	EditPagePtr curEd;
+	KPagePtr curEd;
 	if (!(curEd = m_curEd.lock()))
 		return;
+	if (!curEd->textual())
+		return;
 
-	curEd->src->setChangedSinceLoad(modif);
+	static_cast<EditPage*>(curEd.get())->src->setChangedSinceLoad(modif);
 }
 
 void KwEdit::pageNameChanged(const QString& name)
 {
 	DocSrc *src = static_cast<DocSrc*>(sender());
-	EditPagePtr page = findPage(src);
+	KPagePtr page = findPage(src);
 	ui.tabs->setTabText(ui.tabs->indexOf(page->tab), name);
 }
 
@@ -292,10 +306,11 @@ void KwEdit::addError(DocSrc* src, int start, int count)
 {
 	if (src == NULL)
 		return;
-	EditPagePtr page = findPage(src);
+	EditPagePtr page = findEditPage(src);
 	if (page.get() == NULL)
 		return;
-	QTextBlock b = page->ed->document()->findBlock(start);
+
+	QTextBlock b = page.get()->ed->document()->findBlock(start);
 	b.setUserData(new OffsetData(start - b.position(), count));
 	errorBlockNumbers.append(b.blockNumber());
 }
@@ -305,7 +320,7 @@ void KwEdit::clearErrors(DocSrc* src)
 {
 	if (src != NULL)
 	{
-		EditPagePtr page = findPage(src);
+		EditPagePtr page = findEditPage(src);
 		if (page.get() != NULL) // might not be open
 		{
 			QTextDocument *d = page->ed->document();
@@ -320,7 +335,7 @@ void KwEdit::finishErrors(DocSrc* src)
 {
 	if (src == NULL)
 		return;
-	EditPagePtr page = findPage(src);
+	EditPagePtr page = findEditPage(src);
 	if (page.get() == NULL || page->m_high == NULL)
 		return;
 	page->m_high->rehighlight();
@@ -404,8 +419,8 @@ void KwEdit::readModel(DocSrc* src)
 	// automatically
 	if (!m_doc->m_passes.isEmpty())
 	{
-		const Pass &pass = m_doc->m_passes[0];
-		addPage(pass.model.get());
+		const PassPtr &pass = m_doc->m_passes[0];
+		addPage(pass->model.get());
 
 		//	if (ui.tabs->count() > oldIndex)
 		//		ui.tabs->setCurrentIndex(oldIndex);
@@ -419,7 +434,7 @@ void KwEdit::setText(const QString& text)
 }
 
 
-void KwEdit::removePage(DocSrc* src)
+void KwEdit::removePage(DocElement* src)
 {
 	m_pages.remove(src);
 }
@@ -433,10 +448,10 @@ void KwEdit::readProg(ProgKeep* prog)
 	// automatically open the progs of pass 1
 	if (!m_doc->m_passes.isEmpty()) 
 	{
-		const Pass &pass = m_doc->m_passes[0];
-		foreach(const shared_ptr<DocSrc>& s, pass.shaders)
+		const PassPtr &pass = m_doc->m_passes[0];
+		foreach(const shared_ptr<DocSrc>& s, pass->shaders)
 		{
-			if (s->type != SRC_GEOM) // don't open geometry by default
+			if (s->type != SRC_GEOM || !s->text.isEmpty()) // don't open geometry by default
 				addPage(s.get());
 		}
 	//	if (ui.tabs->count() > oldIndex)
@@ -461,24 +476,32 @@ void KwEdit::readProg(ProgKeep* prog)
 }
 
 // find an edit page by its index
-EditPagePtr KwEdit::findPage(int tabi)
+KPagePtr KwEdit::findPage(int tabi)
 {
 	QWidget *tab = ui.tabs->widget(tabi);
-	foreach(const EditPagePtr& p, m_pages)
+	foreach(const KPagePtr& p, m_pages)
 	{
 		if (tab == p->tab)
 		{
 			return p;
 		}
 	}
-	return EditPagePtr();
+	return KPagePtr();
 }
 
-EditPagePtr KwEdit::findPage(DocSrc* src)
+EditPagePtr KwEdit::findEditPage(DocSrc* src)
 {
-	QMap<DocSrc*, EditPagePtr>::iterator it = m_pages.find(src);
-	if (it == m_pages.end())
+	TPages::iterator it = m_pages.find(src);
+	if (it == m_pages.end() )
 		return EditPagePtr();
+	return static_pointer_cast<EditPage>(it.value());
+}
+
+KPagePtr KwEdit::findPage(DocElement* src)
+{
+	TPages::iterator it = m_pages.find(src);
+	if (it == m_pages.end())
+		return KPagePtr();
 	return it.value();
 }
 
@@ -489,42 +512,35 @@ void KwEdit::on_tabs_currentChanged(int ti)
 	if (ti == -1)
 		return;  // no tabs left. 
 
-	EditPagePtr page = findPage(ti);  
+	KPagePtr page = findPage(ti);  
 
-	ui.shaderControl->setVisible(page.get() != NULL && page->src->type != SRC_MODEL);
-	ui.modelControl->setVisible(page.get() != NULL && page->src->type == SRC_MODEL);
+	ui.shaderControl->setVisible(page.get() != NULL && page->elem->type != SRC_MODEL);
+	ui.modelControl->setVisible(page.get() != NULL && page->elem->type == SRC_MODEL);
+	updateCursorPosLine();
 
 	m_curEd = page;
 
-	updateCursorPosLine();
+	
 }
 
-bool operator==(const EditPage& a, const EditPage& b)
-{
-	return a.src == b.src && a.ed == b.ed && a.tab == b.tab;
-}
 
 void KwEdit::on_tabs_tabCloseRequested(int index)
 {
 	{
-		EditPagePtr page = findPage(index);
-		page->commitText();
-
-		//ui.tabs->removeTab(index);
-		m_pages.remove(page->src);
+		KPagePtr page = findPage(index);
+		page->commit();
+		m_pages.remove(page->elem);
 	}	
 }
 
 void KwEdit::tabsBarClose()
 {
-	EditPagePtr curEd;
+	KPagePtr curEd;
 	if (!(curEd = m_curEd.lock()))
 		return;
 	{
-		curEd->commitText();
-
-		//ui.tabs->removeTab(index);
-		m_pages.remove(curEd->src);
+		curEd->commit();
+		m_pages.remove(curEd->elem);
 	}	
 }
 
@@ -642,24 +658,13 @@ void KwEdit::clearParam()
 // 	m_doc->m_confxmls.activateAction(m_lastLoadedProg);
 // }
 
-
-void KwEdit::addPage(DocSrc* src, int index)
+KPagePtr KwEdit::addTextPage(DocSrc* src, int& index)
 {
-	// check if it's already open
-	foreach(const EditPagePtr& page, m_pages)
-	{
-		if (src == page->src) // points to the same original
-		{
-			ui.tabs->setCurrentWidget(page->tab);
-			return;
-		}
-	}
-
-	// open a new page
 	EditPagePtr page(new EditPage());
 	page->src = src;
-
 	page->tab = new QWidget();
+
+
 	QVBoxLayout *tabLayout = new QVBoxLayout(page->tab);
 	tabLayout->setContentsMargins(0, 3, 0, 0);
 	page->ed = new ProgTextEdit(page->tab);
@@ -693,13 +698,49 @@ void KwEdit::addPage(DocSrc* src, int index)
 	connect(page->ed->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(editTextChanged(int,int,int)));
 	connect(page->ed->document(), SIGNAL(modificationChanged(bool)), this, SLOT(modificateChanged(bool)));
 
-	connect(page->src, SIGNAL(removed(DocSrc*)), this, SLOT(removePage(DocSrc*)));
 	connect(page->src, SIGNAL(nameChanged(const QString&)), this, SLOT(pageNameChanged(const QString&)));
 
-	m_pages.insert(page->src, page);
-	if (index == -1)
-		ui.tabs->addTab(page->tab, Document::getTypeIcon(page->src->type), page->src->displayName());
+	return page;
+}
+
+
+
+KPagePtr KwEdit::addDlgPage(Pass* pass)
+{
+	DlgPagePtr page(new DlgPage());
+	page->pass = pass;
+
+	page->dlg = new ShaderConfigDlg(this, pass->conf, m_conf);
+	page->tab = page->dlg;
+
+	return page;
+}
+
+void KwEdit::addPage(DocElement* elem, int index)
+{
+	// check if it's already open
+	TPages::iterator it = m_pages.find(elem);
+	if (it != m_pages.end())
+	{
+		ui.tabs->setCurrentWidget((*it)->tab);
+		return;
+	}
+
+	KPagePtr page;
+	if (elem->textual())
+		page = addTextPage(static_cast<DocSrc*>(elem), index);
 	else
-		ui.tabs->insertTab(index, page->tab, Document::getTypeIcon(page->src->type), page->src->displayName());
+		page = addDlgPage(static_cast<Pass*>(elem));
+
+	page->elem = elem;
+
+	connect(page->elem, SIGNAL(removed(DocElement*)), this, SLOT(removePage(DocElement*)));
+
+	m_pages.insert(page->elem, page);
+	if (index == -1)
+		ui.tabs->addTab(page->tab, Document::getTypeIcon(page->elem->type), page->elem->displayName());
+	else
+		ui.tabs->insertTab(index, page->tab, Document::getTypeIcon(page->elem->type), page->elem->displayName());
 	ui.tabs->setCurrentWidget(page->tab);
 }
+

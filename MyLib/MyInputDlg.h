@@ -200,12 +200,12 @@ template<class T>
 struct ComboBoxIn : public WidgetIn
 {
 public:
-	ComboBoxIn(TypeProp<T>* _v, QComboBox *_w, bool autoup = true) 
+	ComboBoxIn(TypeProp<T>* _v, QComboBox *_w, bool autoup = true, QObject* altContainer = NULL) 
 		:WidgetIn(_v, _w), v(_v), w(_w)
 	{
 		const type_info& ti = typeid(T);
 		QString n(ti.name());
-		const QMetaObject* mo = v->container->metaObject();
+		const QMetaObject* mo = (altContainer?altContainer:v->container)->metaObject();
 		int ie = mo->indexOfEnumerator(n.section(':', -1).toAscii());
 		me = mo->enumerator(ie);
 
