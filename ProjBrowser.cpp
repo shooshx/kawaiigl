@@ -86,6 +86,17 @@ void ProjBrowser::renameDoc()
 }
 
 
+void MyTreeItem::updateDisplay(const QString& name)
+{
+	if (name == text(0))
+		return;
+	m_itIsIChanging = true;
+	setText(0, name);
+	m_itIsIChanging = false;
+}
+
+
+// part of updateTree
 void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t)
 {
 	if (t == NULL)
@@ -94,17 +105,8 @@ void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t)
 	item->m_pass = pass;
 	item->m_src = t;
 	item->setIcon(0, Document::getTypeIcon(t->type));
-	
-	connect(t, SIGNAL(nameChanged(const QString&)), item, SLOT(updateDisplay(const QString&)));
-}
 
-void MyTreeItem::updateDisplay(const QString& name)
-{
-	if (name == text(0))
-		return;
-	m_itIsIChanging = true;
-	setText(0, name);
-	m_itIsIChanging = false;
+	connect(t, SIGNAL(nameChanged(const QString&)), item, SLOT(updateDisplay(const QString&)));
 }
 
 

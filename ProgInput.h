@@ -46,33 +46,31 @@ struct FloatGuiConf : public GuiConf
 	float vmin, vmax;
 };
 
+// trivially copyable.
 struct ParamInput
 {
 	ParamInput() {}
 	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform)
-		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL) {}
+		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
+		 prop(NULL), lastParseOk(true)
+	{}
+	
 	QString name;
 	QString value;
 	EParamType type;
 	bool isUniform; // false if attribute
 
-	GuiConf* guiconf; // gui arguments 
+	GuiConf* guiconf; // gui arguments (loaded from the xml and never destroyed)
 
+	mutable Prop* prop; // the prop to update, if it exists (share with another widget using this) set by the PParamWidget
 	mutable int index; // in the program registry.
+	mutable bool lastParseOk;
 };
 
 
-
-struct ProgInput
-{
-	ProgInput()  {}
-
-	QVector<ParamInput> params; 
-
-};
 
 // a program that is loaded from the XML
-struct ProgKeep : public ProgInput
+struct ProgKeep 
 {
 	ProgKeep() : runType(DisplayConf::RunNormal) {}
 	typedef QMap<QString, QString> TArgsMap;
@@ -81,6 +79,7 @@ struct ProgKeep : public ProgInput
 	QString name;
 	TArgsMap args; // any name from DisplayConf and a value as string
 	DisplayConf::RunType runType;
+	QVector<ParamInput> params; 
 };
 
 

@@ -35,8 +35,8 @@ public:
 	int offset, count;
 };
 
-static QColor ERROR_COL = QColor(255, 128, 128);
-static QColor WARNING_COL = QColor(255, 174, 33);
+static QColor ERROR_COL = QColor(255, 128, 128); // duplicate?
+
 
 class MySyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -120,10 +120,18 @@ void EditPage::commit()
 	src->text = ed->toPlainText();
 }
 
+void DlgPage::commit()
+{
+	dlg->pparamsContainer()->commit();
+}
+void DlgPage::postCompile() 
+{
+	dlg->pparamsContainer()->postCompile();
+}
+
 
 void KwEdit::doShadersUpdate()
 {
-	m_in.params.clear();
 	m_doc->m_shaderEnabled = ui.shaderEnable->isChecked();
 	if (m_doc->m_shaderEnabled)
 	{
@@ -132,81 +140,24 @@ void KwEdit::doShadersUpdate()
 		{
 			page->commit();
 		}
-
-		foreach(ParamUi* pui, m_paramUi)
-		{
-			ParamInput pi(pui->name->text(), 
-				(EParamType)pui->type->itemData(pui->type->currentIndex()).toInt(), 
-				pui->value->text(), pui->m_isUniform);
-			pui->index = m_in.params.size();
-			m_in.params.append(pi);
-			
-		}
+		// commits all texts the the Pass instance
+		// and params
 	}
 
 //	m_in.runType = conf().runType;
 
-	emit updateShaders(m_in); // calls compile
+	emit updateShaders(); // calls compile
 
-	doVarsUpdate();
+	foreach(const KPagePtr& page, m_pages)
+	{
+		page->postCompile(); // update the colors of params
+	}
+
+	//doVarsUpdate();
 	m_doc->emitProgChanged();
 }
 
-void KwEdit::doVarsUpdate()
-{
-	if (!m_doc->m_shaderEnabled)
-		return; // no need to do anything if not enabled.
 
-	for(int i = 0; i < m_paramUi.size(); ++i)
-	{
-		const ParamUi* pui = m_paramUi[i];
-		doVarUpdate(pui, false);
-	}
-		
-}
-
-
-
-void KwEdit::doVarUpdate(const ParamUi* pui, bool update)
-{
-	ParamInput curpi(pui->name->text(), pui->m_dtype, pui->value->text(), pui->m_isUniform);
-
-	QColor c = Qt::white;
-
-	if (!curpi.name.isEmpty() && !curpi.value.isEmpty())
-	{
-		if (pui->index < m_in.params.size())
-		{
-			ParamInput progpi = m_in.params[pui->index];
-
-			if (progpi.name == curpi.name && getBaseType(progpi.type) == getBaseType(curpi.type) && progpi.isUniform == curpi.isUniform)
-			{
-				progpi.value = curpi.value;
-
-				if (!m_doc->parseSingleParam(progpi, (pui->moreCont != NULL)?pui->moreCont->prop:NULL, update))
-					c = ERROR_COL;
-			}
-			else
-				c = WARNING_COL; // no such param in the compiled prog
-		}
-		else
-			c = WARNING_COL; // no such param	
-	}
-
-	QPalette pl = pui->value->palette();
-	pl.setColor(QPalette::Base, c);
-	pui->value->setPalette(pl);
-
-
-}
-
-void KwEdit::doVarUpdate()
-{
-	QObject *sp = sender();
-	ParamUi *pui = ((UserData<ParamUi*>*)sp->userData(0))->i;
-
-	doVarUpdate(pui);
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -459,15 +410,12 @@ void KwEdit::readProg(ProgKeep* prog)
 	}
 
 	// set uniform and attributes from prog
-	clearParam();
+	//clearParam();
 
 	if (prog != NULL)
 	{
 		m_lastLoadedProg = prog->name; // for reload
-		foreach(const ParamInput& ppi, prog->params)
-		{
-			addParam(ppi);
-		}
+
 	}
 
 	ui.shaderEnable->setChecked(true);
@@ -545,113 +493,8 @@ void KwEdit::tabsBarClose()
 }
 
 
-void KwEdit::on_addParam_clicked()
-{
-	addParam(ParamInput("", EPFloat, "", true));
-}
-
-void KwEdit::addParam(const ParamInput& pi) //const QString& name, EParamType type, const QString& value)
-{
-	ParamUi *pui = new ParamUi(this);
-
-	pui->containter = new QWidget(this);
-	pui->layout = new QHBoxLayout(); // name edit, type combo, value edit, SOMETHING, x bot. 
-	pui->layout->setMargin(0);
-	pui->layout->setSpacing(2);
-
-	pui->containter->setLayout(pui->layout);
-
-	pui->uniAttr = new QPushButton();
-	pui->uniAttr->setMaximumSize(20, 20);
-	pui->uniAttr->setToolTip("Uniform/Attribute");
-
-	pui->name = new QLineEdit();
-	pui->name->setToolTip("name");
-	pui->type = new QComboBox();
-	pui->type->setMaximumWidth(80);
-	pui->type->addItem("float", (int)EPFloat);  // ADDTYPE
-	pui->type->addItem("float (range)", (int)EPFloatRange);
-	pui->type->addItem("float (time)", (int)EPFloatTime);
-	pui->type->addItem("int", (int)EPInt);
-	pui->type->addItem("vec2", (int)EPVec2);
-	pui->type->addItem("vec3", (int)EPVec3);
-	pui->type->addItem("vec4", (int)EPVec4);
-	pui->type->addItem("vec3 (color)", (int)EPVec3Color);
-	pui->type->addItem("vec4 (color)", (int)EPVec4Color);
-	pui->type->addItem("texture", (int)EPTexture);
-	pui->type->setToolTip("type");
-	pui->value = new QLineEdit();
-	pui->value->setUserData(0, new UserData<ParamUi*>(pui)); // needed
-	pui->value->setToolTip("value");
-
-	pui->name->setText(pi.name);
-	pui->type->setCurrentIndex(pui->type->findData(pi.type));
-	pui->value->setText(pi.value);
-	pui->m_isUniform = pi.isUniform;
-	pui->setUniAttrText();
-// 	pui->guiA = pi.guiA;
-// 	pui->guiB = pi.guiB;
-
-	pui->moreContainer = new QWidget();
-	QHBoxLayout *moreLayout = new QHBoxLayout();
-	pui->moreContainer->setLayout(moreLayout);
-	moreLayout->setMargin(0);
-	moreLayout->setSpacing(0);
-	pui->moreContainer->hide();
-
-	connect(pui->uniAttr, SIGNAL(clicked()), pui, SLOT(uniAttrChange()));
-	connect(pui->value, SIGNAL(textEdited(const QString&)), this, SLOT(doVarUpdate())); // update single variable
-	connect(pui->type, SIGNAL(currentIndexChanged(int)), pui, SLOT(initMoreWidget()));
-
-	pui->confGui = new QPushButton("?");
-	pui->confGui->setToolTip("Properties");
-	pui->confGui->setMaximumSize(20, 20);
-	connect(pui->confGui, SIGNAL(clicked()), pui, SLOT(configGui()));
-
-	QPushButton *remBot = new QPushButton("X");
-	remBot->setToolTip("remove");
-	remBot->setUserData(0, new UserData<ParamUi*>(pui)); // needed
-	connect(remBot, SIGNAL(clicked()), this, SLOT(removeParam()));
-	//pui.name->set
-	remBot->setMaximumSize(20, 20);
-	pui->layout->addWidget(pui->uniAttr);
-	pui->layout->addWidget(pui->name);
-	pui->layout->addWidget(pui->type);
-	pui->layout->addWidget(pui->value);
-	pui->layout->addWidget(pui->moreContainer);
-	pui->layout->addWidget(pui->confGui);
-	pui->layout->addWidget(remBot);
-	((QBoxLayout*)ui.shaderControl->layout())->addWidget(pui->containter);
-
-	pui->index = m_paramUi.size();
-	m_paramUi.append(pui);
-
-	pui->initMoreWidget(&pi);
-}
 
 
-
-void KwEdit::removeParam()
-{
-	QObject *sp = sender();
-	ParamUi *pui = ((UserData<ParamUi*>*)sp->userData(0))->i;
-	removeParam(pui);
-}
-
-void KwEdit::removeParam(ParamUi *pui)
-{
-	QWidget *w = pui->containter;
-	delete pui;
-	delete w;
-	
-	m_paramUi.remove(m_paramUi.indexOf(pui));
-}
-
-void KwEdit::clearParam()
-{
-	while (!m_paramUi.isEmpty())
-		removeParam(*m_paramUi.begin());
-}
 
 // void KwEdit::on_reloadBot_clicked()
 // {
@@ -710,7 +553,7 @@ KPagePtr KwEdit::addDlgPage(Pass* pass)
 	DlgPagePtr page(new DlgPage());
 	page->pass = pass;
 
-	page->dlg = new ShaderConfigDlg(this, pass->conf, m_conf);
+	page->dlg = new ShaderConfigDlg(this, pass, view(), m_doc, m_conf);
 	page->tab = page->dlg;
 
 	return page;

@@ -73,14 +73,16 @@ public:
 	void addNewShader(Pass* pass, ElementType type);
 	void removeShader(Pass* pass, DocSrc* src);
 
+	bool isProgEnabled() const { return m_shaderEnabled; }
+
 public slots:
 	void calc(DocSrc* qstr, bool doParse = true, QString saveAs = QString());
 	void calcNoParse();
 	void calcSave();
 
-	void compileShaders(const ProgInput& in);
+	void compileShaders();
 
-	bool parseSingleParam(const ParamInput& in, Prop* toprop, bool update);
+	bool parseSingleParam(const ParamInput& in, bool update);
 
 	
 	void updateTrack(IPoint* sel);
@@ -106,7 +108,9 @@ signals:
 	void didReadModel(DocSrc* src);
 
 private:
-	bool parseParam(const ParamInput& in, Prop* toprop); // if not NULL this prop should get the value as well.
+	bool parseParam(const ParamInput& in); // if not NULL this prop should get the value as well.
+	void parseAllParams(const PassPtr &pass);
+	
 	PassPtr newPass(const QString& name);
 
 	QString generateFromFile();

@@ -7,12 +7,15 @@
 #include "DisplayConf.h"
 #include "ProgInput.h"
 
+
 class QComboBox;
 class QLayout;
 class QLineEdit;
 
 class KwEdit;
 class ParamUi;
+class Document;
+class T2GLWidget;
 
 // ParamUI special controls
 class PuiCont : public QObject
@@ -94,7 +97,7 @@ class ParamUi : public QObject
 {
 	Q_OBJECT;
 public:
-	ParamUi(KwEdit *parent);
+	ParamUi(QWidget* parent, T2GLWidget* view);
 	virtual ~ParamUi(); // needs to get rid of all the widgets created somehow.
 
 	QWidget* containter; // contains all the widgets in a line
@@ -114,17 +117,15 @@ public:
 	EParamType m_dtype;
 	bool m_isUniform;
 
-	KwEdit *m_kwEdit;
+	QWidget *m_parent;
+	T2GLWidget *m_view;
+	Document *m_doc;
 
 	template<typename T>
-	void directUpdate(const T& val)
-	{
-		if (index >= m_kwEdit->m_in.params.size())
-			return;
-		m_kwEdit->m_doc->directUpdate(m_kwEdit->m_in.params[index], val);
-	}
+	void directUpdate(const T& val);
 
 	void setUniAttrText();
+	void setValueColor(const QColor& c);
 
 public slots:
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Wed Oct 14 22:17:07 2009
+** Created: Fri Oct 16 16:47:09 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -48,7 +48,6 @@ public:
     QHBoxLayout *horizontalLayout_4;
     QCheckBox *shaderEnable;
     QSpacerItem *horizontalSpacer;
-    QPushButton *addParam;
 
     void setupUi(QDialog *KwEdit)
     {
@@ -142,12 +141,6 @@ public:
 
         horizontalLayout_4->addItem(horizontalSpacer);
 
-        addParam = new QPushButton(shaderControl);
-        addParam->setObjectName(QString::fromUtf8("addParam"));
-        addParam->setMaximumSize(QSize(20, 20));
-
-        horizontalLayout_4->addWidget(addParam);
-
 
         verticalLayout_6->addLayout(horizontalLayout_4);
 
@@ -176,10 +169,6 @@ public:
         saveBot2->setStatusTip(QApplication::translate("KwEdit", "Save", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         shaderEnable->setText(QApplication::translate("KwEdit", "Enable Shaders", 0, QApplication::UnicodeUTF8));
-#ifndef QT_NO_STATUSTIP
-        addParam->setStatusTip(QApplication::translate("KwEdit", "Add Parameter", 0, QApplication::UnicodeUTF8));
-#endif // QT_NO_STATUSTIP
-        addParam->setText(QApplication::translate("KwEdit", "+", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(KwEdit);
     } // retranslateUi
 

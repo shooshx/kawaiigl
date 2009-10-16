@@ -140,9 +140,13 @@ void Document::readProg(ProgKeep* prog)
 		readToString(d->name(), d->text);
 		p->shaders.append(shared_ptr<DocSrc>(d));
 	}
+
+	p->params = prog->params; // copy the ParamInput's of the loaded xml.
+
 	m_passes.append(p);
 
 	p->conf.runType = prog->runType;
+
 
 	// set config params
 	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)
@@ -499,7 +503,7 @@ void Document::updateTrack(IPoint* sel)
 }
 
 
-void Document::compileShaders(const ProgInput& in)
+void Document::compileShaders()
 {
 	m_prog.clear();
 	if (!m_shaderEnabled)
@@ -526,20 +530,21 @@ void Document::compileShaders(const ProgInput& in)
 			m_prog.geomprogs() += src->text;
 	}
 
+	// if it's empty, do nothing.
 	if (m_prog.vtxprogs().size() + m_prog.fragprogs().size() + m_prog.geomprogs().size() == 0)
 		return;
 
 	m_conf.runType = pass->conf.runType.val();
 
 	m_onCalcEvals.clear();
-	m_onCalcEvals.resize(in.params.size());
+	m_onCalcEvals.resize(pass->params.size());
 	m_onFrameEvals.clear();
-	m_onFrameEvals.resize(in.params.size());
+	m_onFrameEvals.resize(pass->params.size());
 	m_attribEval.clear();
 
-	for(int i = 0; i < in.params.size(); ++i)
+	for(int i = 0; i < pass->params.size(); ++i)
 	{
-		const ParamInput &pi = in.params[i];
+		const ParamInput &pi = pass->params[i];
 		ShaderParam *sp;
 		if (pi.isUniform)
 			sp = new UniformParam(pi.name);
@@ -552,16 +557,31 @@ void Document::compileShaders(const ProgInput& in)
 	ProgCompileConf conf(pass->conf.geomInput, pass->conf.geomOutput, pass->conf.geomVtxCount);
 	if (m_prog.init(conf))
 	{
-	//	parseAllParams(in);
+		// need to take care of the variables background colors.
+		parseAllParams(pass);
 	}
 
-	//emit progChanged();
+	emit progChanged();
 }
 
 
+void Document::parseAllParams(const PassPtr &pass)
+{
+	{
+		ProgramUser use(&m_prog);
+		for(int i = 0; i < pass->params.size(); ++i)
+		{
+			const ParamInput &pi = pass->params[i];
+			parseParam(pi);
+		}
+	}
+
+	mglCheckErrorsC("parseAllParam");
+
+}
 
 
-bool Document::parseSingleParam(const ParamInput& pi, Prop* toprop, bool update)
+bool Document::parseSingleParam(const ParamInput& pi, bool update)
 {
 	if (!m_prog.isOk())
 		return false;
@@ -569,7 +589,7 @@ bool Document::parseSingleParam(const ParamInput& pi, Prop* toprop, bool update)
 	bool ok;
 	{
 		ProgramUser use(&m_prog);
-		ok = parseParam(pi, toprop);
+		ok = parseParam(pi);
 	}
 
 	mglCheckErrorsC("parseSingleParam");
@@ -579,12 +599,15 @@ bool Document::parseSingleParam(const ParamInput& pi, Prop* toprop, bool update)
 	return ok;
 }
 
+
+
 // parse uniform. this defines what a uniform variable can be.
-bool Document::parseParam(const ParamInput& pi, Prop* toprop)
+bool Document::parseParam(const ParamInput& pi)
 {
 	if (!pi.isUniform)
 	{
-		return parseAttrib(pi);
+		pi.lastParseOk = parseAttrib(pi);
+		return pi.lastParseOk;
 	}
 	
 
@@ -632,7 +655,7 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 			IPoint *v = NULL;
 			if (ok = m_kparser.kparseVec(iter, end, nameend, v))
 			{
-				shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, toprop, pi.index));
+				shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, pi.prop, pi.index));
 				m_onCalcEvals[pi.index] = pa;
 
 				pa->update(m_prog);
@@ -673,6 +696,7 @@ bool Document::parseParam(const ParamInput& pi, Prop* toprop)
 		break;
 	}
 
+	pi.lastParseOk = ok;
 	return ok;
 }
 

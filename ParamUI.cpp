@@ -8,12 +8,29 @@
 #include <QSlider>
 
 
-ParamUi::ParamUi(KwEdit *parent) :QObject(NULL), // we don't want QObject to call our d-tor
-m_kwEdit(parent), moreCont(NULL), m_isUniform(true)
+ParamUi::ParamUi(QWidget* parent, T2GLWidget* view) :QObject(NULL), // we don't want QObject to call our d-tor
+	m_parent(parent), m_view(view), m_doc(view->doc()), moreCont(NULL), m_isUniform(true)
 {}
+
 ParamUi::~ParamUi()
 {
 	delete moreCont;
+}
+
+void ParamUi::setValueColor(const QColor& c)
+{
+	QPalette pl = value->palette();
+	pl.setColor(QPalette::Base, c);
+	value->setPalette(pl);
+}
+
+
+template<typename T>
+void ParamUi::directUpdate(const T& val)
+{
+	//if (index >= m_kwEdit->m_in.params.size())
+	//	return; ###
+	//m_kwEdit->m_doc->directUpdate(m_kwEdit->m_in.params[index], val);
 }
 
 
@@ -60,7 +77,7 @@ SliderPui::SliderPui(ParamUi *pui, float val, FloatGuiConf* conf) : PuiCont(pui)
 
 void SliderPui::config()
 {
-	if (!MyInputDlg::getValues("Min value", "Max value", vmin, vmax, "GUI Config", pui->m_kwEdit))
+	if (!MyInputDlg::getValues("Min value", "Max value", vmin, vmax, "GUI Config", pui->m_parent))
 		return;
 	((TypeProp<float>*)prop)->setRange(vmin, vmax);
 }
@@ -83,7 +100,7 @@ TrackPui::TrackPui(ParamUi *pui, Vec2GuiConf* conf) : PuiCont(pui)
 	prop = cprop;
 	win = new CheckBoxIn(cprop, chp); // pui->m_kwEdit->conf().trackForParam
 	win->reload();
-	connect(pui->m_kwEdit->view(), SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseTrack(QMouseEvent*)));
+	connect(pui->m_view, SIGNAL(mouseMove(QMouseEvent*)), this, SLOT(mouseTrack(QMouseEvent*)));
 	pui->confGui->show();
 }
 
@@ -94,7 +111,7 @@ void TrackPui::config()
 	TypeProp<bool> abs(&dummy, "_abs", "Absolute Coordinates", !relative);
 	DTypeProp2(float, minv, float, maxv) x(&dummy, "X range", xmin, xmax), y(&dummy, "Y range", ymin, ymax);
 	dummy.reset();
-	if (!MyInputDlg::getValues(pui->m_kwEdit, abs, x, y, "Vec2 tracking"))
+	if (!MyInputDlg::getValues(pui->m_parent, abs, x, y, "Vec2 tracking"))
 		return;
 	relative = !abs.val();
 	xmin = x.minv; xmax = x.maxv;
@@ -130,7 +147,7 @@ TimePui::~TimePui()
 
 void TimePui::play()
 {
-	if (!pui->m_kwEdit->isEnabled())
+	if (!pui->m_doc->isProgEnabled())
 		return;
 
 	if (timer.isActive())
@@ -154,13 +171,13 @@ void TimePui::reset()
 
 void TimePui::config()
 {
-	if (!MyInputDlg::getValue("Timer interval (msec)", interval, "GUI Config", pui->m_kwEdit))
+	if (!MyInputDlg::getValue("Timer interval (msec)", interval, "GUI Config", pui->m_parent))
 		return;
 }
 
 void TimePui::timeout()
 {
-	if (!pui->m_kwEdit->isEnabled())
+	if (!pui->m_doc->isProgEnabled())
 		return;
 
 	curmsec += interval;
@@ -183,7 +200,7 @@ void ColorPui::colorParamChanged() // Prop changed
 
 	pui->value->setText("{" + vc.toStringNoParen() + "}"); // doesn't cause the variable to be sent
 
-	if (!pui->m_kwEdit->isEnabled())
+	if (!pui->m_doc->isProgEnabled())
 		return;
 	pui->directUpdate(vc);
 }
@@ -196,7 +213,7 @@ void SliderPui::sliderParamChanged()
 	float v = cprop->val();
 
 	pui->value->setText(QString("%1").arg(v));
-	if (!pui->m_kwEdit->isEnabled())
+	if (!pui->m_doc->isProgEnabled())
 		return; 
 	pui->directUpdate(v);
 }
@@ -211,16 +228,16 @@ void TrackPui::mouseTrack(QMouseEvent* event)
 
 	Vec2 c;
 	c.x = (float)event->x() ; // map to texture coordinates space
-	c.y = pui->m_kwEdit->view()->height() - (float)event->y() ;
+	c.y = pui->m_view->height() - (float)event->y() ;
 
 	if (relative) // relative coordinates
 	{
-		c.x = c.x / pui->m_kwEdit->view()->width() * (xmax - xmin) + xmin; // map to texture coordinates space
-		c.y = c.y / pui->m_kwEdit->view()->height() * (ymax - ymin) + ymin;
+		c.x = c.x / pui->m_view->width() * (xmax - xmin) + xmin; // map to texture coordinates space
+		c.y = c.y / pui->m_view->height() * (ymax - ymin) + ymin;
 	}
 
 	pui->value->setText("{" + c.toStringNoParen() + "}");
-	if (!pui->m_kwEdit->isEnabled())
+	if (!pui->m_doc->isProgEnabled())
 		return;
 	pui->directUpdate(c);
 

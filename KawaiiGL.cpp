@@ -79,8 +79,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_kView, SIGNAL(message(const QString&)), this, SLOT(message(const QString&)));
 
 	connect(m_edDlg, SIGNAL(changedModel(DocSrc*)), m_doc, SLOT(calc(DocSrc*)));
-	connect(m_edDlg, SIGNAL(updateShaders(const ProgInput&)), m_doc, SLOT(compileShaders(const ProgInput&)));
-//	connect(m_edDlg, SIGNAL(updateVars(const ProgInput&)), m_doc, SLOT(parseAllParams(const ProgInput&)));
+	connect(m_edDlg, SIGNAL(updateShaders()), m_doc, SLOT(compileShaders()));
 
 //	connect(m_kView, SIGNAL(decompProgChanged(const QString&)), m_edDlg, SLOT(curChanged(const QString&)));
 

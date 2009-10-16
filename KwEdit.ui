@@ -196,22 +196,6 @@
           </property>
          </spacer>
         </item>
-        <item>
-         <widget class="QPushButton" name="addParam" >
-          <property name="maximumSize" >
-           <size>
-            <width>20</width>
-            <height>20</height>
-           </size>
-          </property>
-          <property name="statusTip" >
-           <string>Add Parameter</string>
-          </property>
-          <property name="text" >
-           <string>+</string>
-          </property>
-         </widget>
-        </item>
        </layout>
       </item>
      </layout>

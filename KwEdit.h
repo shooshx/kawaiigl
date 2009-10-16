@@ -35,6 +35,7 @@ struct KPage
 	KPage() : tab(NULL), elem(NULL) {}
 	virtual ~KPage();
 	virtual void commit() {}
+	virtual void postCompile() {}
 	bool textual() const;
 
 	QWidget* tab;
@@ -51,9 +52,12 @@ struct EditPage : public KPage
 	MySyntaxHighlighter *m_high; // the edit widget deletes this.
 };
 
+// we kinda don't need this class. TBD
 struct DlgPage : public KPage
 {
 	DlgPage() : pass(NULL), dlg(NULL) {}
+	virtual void commit();
+	virtual void postCompile();
 
 	Pass* pass;
 	ShaderConfigDlg* dlg;
@@ -88,7 +92,6 @@ public slots:
 	void readModel(DocSrc* src);
 	void readProg(ProgKeep* prog);
 	void doShadersUpdate();
-	void doVarsUpdate();
 	void setText(const QString& text);
 
 	void addPage(DocElement*, int index = -1);
@@ -97,7 +100,6 @@ public slots:
 
 private slots:
 	// void on_reloadBot_clicked();
-	void on_addParam_clicked();
 	void on_tabs_currentChanged(int);
 	void on_tabs_tabCloseRequested(int index);
 
@@ -107,16 +109,13 @@ private slots:
 
 	void updateCursorPosLine();
 	void zoomEdits(int delta);
-	void removeParam();
 
-	void doVarUpdate(); // sent from the LineEdit
 	void editTextChanged(int pos, int rem, int add);
 	void modificateChanged(bool modif);
 
 signals:
 	void changedModel(DocSrc* txt);
-	void updateShaders(const ProgInput& in);
-	void updateVars(const ProgInput& in);
+	void updateShaders();
 
 public:
 	Ui::KwEdit ui;
@@ -129,18 +128,12 @@ private:
 	KPagePtr findPage(DocElement* src);
 	EditPagePtr findEditPage(DocSrc* src);
 
-	void addParam(const ParamInput& pi);
-	void removeParam(ParamUi *pui);
-	void clearParam();
-	void doVarUpdate(const ParamUi* pui, bool update = true);
-	void initMoreWidget(ParamUi *pui);
 
 	KPagePtr addDlgPage(Pass* pass);
 	KPagePtr addTextPage(DocSrc* src, int& index);
 	
 private:
 
-	QVector<ParamUi*> m_paramUi;
 	typedef QMap<DocElement*, KPagePtr> TPages;
 	TPages m_pages;
 
@@ -150,17 +143,9 @@ private:
 	Document *m_doc;
 	T2GLWidget *m_view;
 
-
 	DisplayConf &m_conf;
-
-
-	ProgInput m_in;
-
-
-	QString generateFromFile();
-
 	
-	QList<int> errorBlockNumbers;
+	QList<int> errorBlockNumbers; // move somewhere else TBD
 
 	friend class ConfXmls;
 	friend class ParamUi;

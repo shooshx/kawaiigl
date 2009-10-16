@@ -265,7 +265,7 @@ void ConfXmls::loadProgramsFile(QMenu* menu)
 	}
 
 	menu->clear();
-	foreach(ProgInput* pi, m_progrep)
+	foreach(ProgKeep* pi, m_progrep)
 		delete pi;
 	m_progrep.clear();
 
