@@ -1,14 +1,15 @@
 #include "ParamUI.h"
 
-#include "KwEdit.h"
-#include "T2GLWidget.h"
-#include "Document.h"
-
 #include <QPushButton>
 #include <QSlider>
 
+#include "KwEdit.h"
+#include "T2GLWidget.h"
+#include "Document.h"
+#include "PParamsWidget.h"
 
-ParamUi::ParamUi(QWidget* parent, T2GLWidget* view) :QObject(NULL), // we don't want QObject to call our d-tor
+
+ParamUi::ParamUi(PParamsWidget* parent, T2GLWidget* view) :QObject(NULL), // we don't want QObject to call our d-tor
 	m_parent(parent), m_view(view), m_doc(view->doc()), moreCont(NULL), m_isUniform(true)
 {}
 
@@ -28,9 +29,7 @@ void ParamUi::setValueColor(const QColor& c)
 template<typename T>
 void ParamUi::directUpdate(const T& val)
 {
-	//if (index >= m_kwEdit->m_in.params.size())
-	//	return; ###
-	//m_kwEdit->m_doc->directUpdate(m_kwEdit->m_in.params[index], val);
+	m_parent->fastVarUpdate(this, val);
 }
 
 

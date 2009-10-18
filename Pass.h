@@ -34,8 +34,18 @@ public:
 	bool textual() const { return type != SRC_CONF; }
 	virtual QString displayName() const = 0;
 
+	void setName(const QString& newname)
+	{
+		if (m_name == newname)
+			return;
+		m_name = newname;
+		emit nameChanged(displayName());
+	}
+	const QString& name() const { return m_name; }
+
 signals:
 	void removed(DocElement*);
+	void nameChanged(const QString&);
 
 public:
 	ElementType type;
@@ -72,21 +82,12 @@ public:
 		return true;
 	}
 
-	void setName(const QString& newname)
-	{
-		if (m_name == newname)
-			return;
-		m_name = newname;
-		emit nameChanged(displayName());
-	}
-	const QString name() const { return m_name; }
 
 	bool isFilename;
 	QString text;
 
 
 signals:
-	void nameChanged(const QString&);
 	void externalTextChange();
 
 private:

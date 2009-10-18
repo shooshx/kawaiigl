@@ -13,6 +13,9 @@
    <string>ShaderConfigDlg</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" >
+   <property name="margin" >
+    <number>0</number>
+   </property>
    <item>
     <widget class="QWidget" native="1" name="confContainer" >
      <property name="minimumSize" >
@@ -226,7 +229,14 @@
     </widget>
    </item>
    <item>
-    <widget class="PParamsWidget" native="1" name="paramContainer" />
+    <widget class="PParamsWidget" native="1" name="paramContainer" >
+     <property name="sizePolicy" >
+      <sizepolicy vsizetype="MinimumExpanding" hsizetype="MinimumExpanding" >
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

@@ -28,31 +28,64 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 
 	QMenu *passMenu = new QMenu(this);
 	QAction *act;
-	act = new QAction(Document::getTypeIcon(SRC_VTX), "New Vertex Shader", this);
+	QMenu *newShaderMenu = new QMenu("New Shader...");
+	passMenu->addMenu(newShaderMenu);
+
+	newShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_VTX), "Vertex", this));
 	act->setData(SRC_VTX);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
-	passMenu->addAction(act);
 
-	act = new QAction(Document::getTypeIcon(SRC_FRAG), "New Fragment Shader", this);
+	newShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_FRAG), "Fragment", this));
 	act->setData(SRC_FRAG);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
-	passMenu->addAction(act);
 
-	act = new QAction(Document::getTypeIcon(SRC_GEOM), "New Geometry Shader", this);
+	newShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_GEOM), "Geometry", this));
 	act->setData(SRC_GEOM);
 	connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
-	passMenu->addAction(act);
 
+	QMenu *existShaderMenu = new QMenu("Load exisiting...", passMenu);
+	passMenu->addMenu(existShaderMenu);
+
+	existShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_VTX), "Vertex", this));
+	act->setData(SRC_VTX);
+	connect(act, SIGNAL(triggered()), this, SLOT(existingDoc()));
+
+	existShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_FRAG), "Fragment", this));
+	act->setData(SRC_FRAG);
+	connect(act, SIGNAL(triggered()), this, SLOT(existingDoc()));
+
+	existShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_GEOM), "Geometry", this));
+	act->setData(SRC_GEOM);
+	connect(act, SIGNAL(triggered()), this, SLOT(existingDoc()));
+
+	passMenu->addSeparator();
+
+	passMenu->addAction(act = new QAction(QIcon(), "Add Pass", this));
+	connect(act, SIGNAL(triggered()), this, SLOT(addPass()));
+
+	QMenu *nothingMenu = new QMenu(this); // menu of the background
+	nothingMenu->addAction(act);
+
+	
 	QMenu *docMenu = new QMenu(this);
 	act = new QAction(QIcon(), "Remove", this);
-	connect(act, SIGNAL(triggered()), this, SLOT(removeDoc()));
+	connect(act, SIGNAL(triggered()), this, SLOT(removeFromMenu()));
+	act->setShortcut(QKeySequence(Qt::Key_Delete));
 	docMenu->addAction(act);
+	passMenu->addAction(act);
+	ui.tree->addAction(act);
+
+
 	act = new QAction(QIcon(), "Rename", this);
-	connect(act, SIGNAL(triggered()), this, SLOT(renameDoc()));
+	connect(act, SIGNAL(triggered()), this, SLOT(renameFromMenu()));
+	act->setShortcut(QKeySequence(Qt::Key_F2));
 	docMenu->addAction(act);
+	passMenu->addAction(act);
+	ui.tree->addAction(act);
 
 	ui.tree->setTypeMenu(ITEM_PASS, passMenu);
 	ui.tree->setTypeMenu(ITEM_DOC, docMenu);
+	ui.tree->setTypeMenu(-1, nothingMenu);
 }
 
 void ProjBrowser::addDoc()
@@ -63,26 +96,61 @@ void ProjBrowser::addDoc()
 	updateTree();
 }
 
-void ProjBrowser::removeDoc()
+void ProjBrowser::removeFromMenu()
 {
-	MyTreeItem* item = static_cast<MyTreeItem*>(ui.tree->eventItem());
-	m_doc->removeShader(item->m_pass, item->m_src);
+	QTreeWidgetItem* item = ui.tree->eventItem();
+	if (item == NULL)
+		item = ui.tree->currentItem();
+	if (item == NULL)
+		return;
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+
+	if (mitem->type() != ITEM_PASS)
+		m_doc->removeShader(mitem->m_pass, mitem->m_src);
+	else
+		m_doc->removePass(mitem->m_pass);
 	updateTree();
 }
 
-void ProjBrowser::renameDoc()
+void ProjBrowser::existingDoc()
 {
+	int type = ((QAction*)sender())->data().toInt();
+	QString filename = QFileDialog::getOpenFileName(this, QString("Load ") + Document::getTypeName((ElementType)type) + " Shader", 
+								"", "model files (*.txt *.glsl)");
+	if (filename.isEmpty())
+		return;
 	MyTreeItem* item = static_cast<MyTreeItem*>(ui.tree->eventItem());
-	Qt::ItemFlags oldf = item->flags();
-	item->m_itIsIChanging = true;
-	item->setFlags(oldf | Qt::ItemIsEditable);
+	m_doc->loadShaderFile(item->m_pass, filename, (ElementType)type);
+	updateTree();
+}
 
-	item->updateDisplay(item->m_src->name()); // get rid of the * for editing
-	item->m_itIsIChanging = true;
-	ui.tree->editItem(item, 0);
-	item->m_itIsIChanging = false;
-	item->setFlags(oldf);
+void ProjBrowser::renameFromMenu()
+{
+	QTreeWidgetItem* item = ui.tree->eventItem();
+	if (item == NULL)
+		item = ui.tree->currentItem();
+	if (item == NULL)
+		return;
 
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+
+	Qt::ItemFlags oldf = mitem->flags();
+	mitem->m_itIsIChanging = true;
+	mitem->setFlags(oldf | Qt::ItemIsEditable);
+
+	mitem->updateDisplay(mitem->m_elem->name()); // get rid of the * for editing
+	mitem->m_itIsIChanging = true;
+	ui.tree->editItem(mitem, 0);
+	mitem->m_itIsIChanging = false;
+	mitem->setFlags(oldf);
+}
+
+
+void ProjBrowser::addPass()
+{
+//	MyTreeItem* item = static_cast<MyTreeItem*>(ui.tree->eventItem());
+	m_doc->addNewPass();
+	updateTree();
 }
 
 
@@ -97,38 +165,39 @@ void MyTreeItem::updateDisplay(const QString& name)
 
 
 // part of updateTree
-void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t)
+void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t, Pass* selpass, DocSrc* seldoc)
 {
 	if (t == NULL)
 		return;
 	MyTreeItem *item = new MyTreeItem(parent, QStringList(t->displayName()), ITEM_DOC);
 	item->m_pass = pass;
-	item->m_src = t;
+	item->m_elem = item->m_src = t;
+
 	item->setIcon(0, Document::getTypeIcon(t->type));
+	if (item->m_pass == selpass && item->m_src == seldoc)
+		ui.tree->setCurrentItem(item);
 
 	connect(t, SIGNAL(nameChanged(const QString&)), item, SLOT(updateDisplay(const QString&)));
 }
 
 
-void ProjBrowser::updateTree()
+void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 {
 	ui.tree->clear();
 	for(int i = 0; i < m_doc->m_passes.size(); ++i)
 	{
 		PassPtr& pass = m_doc->m_passes[i];
-		MyTreeItem *passItem = new MyTreeItem((QTreeWidget*)NULL, QStringList(pass->displayName()), ITEM_PASS);
-		passItem->m_pass = pass.get();
-		
-		QList<QTreeWidgetItem *> items;
-		items.append(passItem);
-		
+		MyTreeItem *passItem = new MyTreeItem((QTreeWidget*)ui.tree, QStringList(pass->displayName()), ITEM_PASS);
+		passItem->m_elem = passItem->m_pass = pass.get();
+		if (passItem->m_pass == selpass && passItem->m_src == seldoc) // src is NULL
+			ui.tree->setCurrentItem(passItem);
+				
 		addItem(pass.get(), passItem, pass->model.get());
 		foreach(const shared_ptr<DocSrc>& t, pass->shaders)
 		{
 			addItem(pass.get(), passItem, t.get());
 		}
 
-		ui.tree->insertTopLevelItems(0, items);
 	}
 
 	ui.tree->expandAll();
@@ -164,13 +233,48 @@ void ProjBrowser::itemChanged(QTreeWidgetItem *item, int col)
 {
 	if (item == 0)
 		return;
-	if (item->type() != ITEM_DOC)
-		return;
 	
 	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
 	if ( mitem->m_itIsIChanging)
 		return;
 
-	mitem->m_src->setName(item->text(0));
-	
+	mitem->m_elem->setName(item->text(0));
+}
+
+void ProjBrowser::on_upBut_clicked()
+{
+	QTreeWidgetItem* item = ui.tree->currentItem();
+	if (item == NULL)
+		return;
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+	if (mitem->type() != ITEM_PASS)
+		return;
+	m_doc->movePass(mitem->m_pass, -1);
+	updateTree(mitem->m_pass); // the tree still exists when this is evaluated
+}
+
+void ProjBrowser::on_downBut_clicked()
+{
+	QTreeWidgetItem* item = ui.tree->currentItem();
+	if (item == NULL)
+		return;
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+	if (mitem->type() != ITEM_PASS)
+		return;
+	m_doc->movePass(mitem->m_pass, 1);
+	updateTree(mitem->m_pass);
+}
+
+void ProjBrowser::on_removeBut_clicked()
+{
+	QTreeWidgetItem* item = ui.tree->currentItem();
+	if (item == NULL)
+		return;
+	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+	if (mitem->type() != ITEM_PASS)
+		m_doc->removeShader(mitem->m_pass, mitem->m_src);		
+	else
+		m_doc->removePass(mitem->m_pass);
+
+	updateTree();
 }

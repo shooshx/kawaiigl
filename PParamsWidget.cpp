@@ -96,7 +96,6 @@ void PParamsWidget::doVarUpdate(ParamUi* pui, bool update)
 			if (progpi.name == curpi.name && getBaseType(progpi.type) == getBaseType(curpi.type) && progpi.isUniform == curpi.isUniform)
 			{
 				progpi.value = curpi.value;
-
 				if (!m_doc->parseSingleParam(progpi, update))
 					c = ERROR_COL;
 			}
@@ -114,11 +113,7 @@ void PParamsWidget::doVarUpdate(ParamUi* pui, bool update)
 }
 
 
-void PParamsWidget::fastVarUpdate()
-{
-	// check enabled
-//###
-}
+
 
 // received when text is edited
 // the sender()->userData(0) should be the ParamUI

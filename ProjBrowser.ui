@@ -86,6 +86,68 @@
      </column>
     </widget>
    </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2" >
+     <property name="bottomMargin" >
+      <number>9</number>
+     </property>
+     <item>
+      <widget class="QPushButton" name="upBut" >
+       <property name="maximumSize" >
+        <size>
+         <width>23</width>
+         <height>23</height>
+        </size>
+       </property>
+       <property name="icon" >
+        <iconset>
+         <normaloff>://images/arrow-up.png</normaloff>://images/arrow-up.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="downBut" >
+       <property name="maximumSize" >
+        <size>
+         <width>23</width>
+         <height>23</height>
+        </size>
+       </property>
+       <property name="icon" >
+        <iconset>
+         <normaloff>://images/arrow-down.png</normaloff>://images/arrow-down.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeBut" >
+       <property name="maximumSize" >
+        <size>
+         <width>23</width>
+         <height>23</height>
+        </size>
+       </property>
+       <property name="icon" >
+        <iconset>
+         <normaloff>://images/cross.png</normaloff>://images/cross.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2" >
+       <property name="orientation" >
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0" >
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11" />
@@ -96,6 +158,8 @@
    <header>MyLib\CtxTreeWidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="KawaiiGL.qrc" />
+ </resources>
  <connections/>
 </ui>

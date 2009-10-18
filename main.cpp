@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
 	QApplication app(argc, argv);
 
 	g_format.setSampleBuffers(true); 
+	g_format.setDoubleBuffer(false); // eH?
 
 	KawaiiGL window;
 	//window.show();

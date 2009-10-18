@@ -81,7 +81,6 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.lineColor, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
-	connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
 
 	//connect(&conf.selectedCol, SIGNAL(changed()), this, SLOT(updateGL()));
 
@@ -99,7 +98,9 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.trackForParam, SIGNAL(changed()), this, SLOT(updateMouseTracking()));
 	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(changedFps()));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(fpsTimeout()));
+
 	connect(&conf.runType, SIGNAL(changed()), this, SLOT(changedRunType()));
+	connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
 
 
 	setFocusPolicy(Qt::StrongFocus); // for key presses
@@ -112,6 +113,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	updateMouseTracking();
 	changedFps();
 
+	//setAutoBufferSwap(false);
 
 	for(int i = 0; i < N_TEX; ++i)
 	{
@@ -481,8 +483,8 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	else
 	{ // needed to 
 		paintPoly();
-		if (conf.bPoly) // needs to be before
-			glFlush();
+		//if (conf.bPoly) // needs to be before
+		//	glFlush();
 		glClear(GL_DEPTH_BUFFER_BIT);
 		paintFlat();
 	}
@@ -552,6 +554,9 @@ void T2GLWidget::changedRunType()
 void T2GLWidget::myPaintGL()
 {
 	try {
+
+		if (m_doc->m_passes.isEmpty())
+			return;
 
 		m_curPass = m_doc->m_passes[0];
 

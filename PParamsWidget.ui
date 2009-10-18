@@ -5,8 +5,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>309</width>
-    <height>300</height>
+    <width>299</width>
+    <height>43</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -22,8 +22,8 @@
        </property>
        <property name="sizeHint" stdset="0" >
         <size>
-         <width>40</width>
-         <height>20</height>
+         <width>5</width>
+         <height>5</height>
         </size>
        </property>
       </spacer>
@@ -32,32 +32,19 @@
       <widget class="QPushButton" name="addParam" >
        <property name="maximumSize" >
         <size>
-         <width>20</width>
-         <height>20</height>
+         <width>65</width>
+         <height>23</height>
         </size>
        </property>
        <property name="statusTip" >
         <string>Add Parameter</string>
        </property>
        <property name="text" >
-        <string>+</string>
+        <string>Add Param</string>
        </property>
       </widget>
      </item>
     </layout>
-   </item>
-   <item>
-    <spacer name="verticalSpacer" >
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

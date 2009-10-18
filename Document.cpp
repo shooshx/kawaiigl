@@ -165,6 +165,14 @@ void Document::addNewShader(Pass* pass, ElementType type)
 	pass->shaders.append(shared_ptr<DocSrc>(d));
 }
 
+void Document::	loadShaderFile(Pass* pass, const QString& filename, ElementType type)
+{
+	DocSrc *d = new DocSrc(filename, true, type);
+	readToString(d->name(), d->text);
+	pass->shaders.append(shared_ptr<DocSrc>(d));
+}
+
+
 void Document::removeShader(Pass* pass, DocSrc* src)
 {
 	// The list contains shared_ptrs, we have a pointer, need to look for it manually.
@@ -180,6 +188,43 @@ void Document::removeShader(Pass* pass, DocSrc* src)
 		else
 			++it;
 	}
+}
+
+void Document::addNewPass()
+{
+	PassPtr p = newPass(QString("Pass %1").arg(m_passes.size() + 1) );
+	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
+//	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
+	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
+	m_passes.append(p);
+}
+
+void Document::movePass(Pass* pass, int delta)
+{
+	PassPtr passptr; // look for the PassPtr of the pass
+	TPasses::iterator it = m_passes.begin();
+	while (it != m_passes.end())
+	{
+		if (it->get() == pass)
+		{
+			passptr = *it;
+			it = m_passes.erase(it);
+			break;
+		}
+		else
+			++it;
+	}
+
+	if (delta != 0)
+	{
+		it += delta;
+		m_passes.insert(it, passptr);
+	} // delta = 0 is remove
+}
+
+void Document::removePass(Pass* pass)
+{
+	movePass(pass, 0);
 }
 
 
@@ -300,6 +345,19 @@ QIcon Document::getTypeIcon(ElementType t)
 	default: return QIcon();
 	}
 }
+
+QString Document::getTypeName(ElementType t)
+{
+	switch (t)
+	{
+	case SRC_VTX: return QString("Vertex");
+	case SRC_GEOM: return QString("Geometry");
+	case SRC_FRAG: return QString("Fragment");
+	case SRC_MODEL: return QString("Model");
+	default: return QString();
+	}
+}
+
 
 
 

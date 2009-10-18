@@ -13,6 +13,7 @@ public:
 		setContextMenuPolicy(Qt::DefaultContextMenu);
 	}
 
+	// -1 is reserved to the background menu
 	void setTypeMenu(int type, QMenu* menu)
 	{
 		m_menus.insert(type, menu);
@@ -25,9 +26,12 @@ protected:
 	void contextMenuEvent(QContextMenuEvent *event)
 	{
 		QTreeWidgetItem *item = itemAt(event->pos());
-		if (item == NULL)
-			return;
-		TMenusMap::iterator it = m_menus.find(item->type());
+		int type;
+		if (item == NULL) // backgrround
+			type = -1;
+		else
+			type = item->type();
+		TMenusMap::iterator it = m_menus.find(type);
 		if (it != m_menus.end())
 		{
 			m_eventItem = item;

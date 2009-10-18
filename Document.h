@@ -69,9 +69,15 @@ public:
 	}
 
 	static QIcon getTypeIcon(ElementType);
+	static QString getTypeName(ElementType);
 
 	void addNewShader(Pass* pass, ElementType type);
+	void loadShaderFile(Pass* pass, const QString& filename, ElementType type);
 	void removeShader(Pass* pass, DocSrc* src);
+
+	void addNewPass();
+	void removePass(Pass* pass);
+	void movePass(Pass* pass, int delta);
 
 	bool isProgEnabled() const { return m_shaderEnabled; }
 
@@ -188,7 +194,8 @@ public:
 	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
 	// these are here since they need to be sent as uniforms and we need access to them.
 
-	QList<PassPtr> m_passes;
+	typedef QList<PassPtr> TPasses;
+	TPasses m_passes;
 	bool m_shaderEnabled;
 
 	ConfXmls m_confxmls;

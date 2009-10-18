@@ -541,7 +541,6 @@ KPagePtr KwEdit::addTextPage(DocSrc* src, int& index)
 	connect(page->ed->document(), SIGNAL(contentsChange(int,int,int)), this, SLOT(editTextChanged(int,int,int)));
 	connect(page->ed->document(), SIGNAL(modificationChanged(bool)), this, SLOT(modificateChanged(bool)));
 
-	connect(page->src, SIGNAL(nameChanged(const QString&)), this, SLOT(pageNameChanged(const QString&)));
 
 	return page;
 }
@@ -578,6 +577,7 @@ void KwEdit::addPage(DocElement* elem, int index)
 	page->elem = elem;
 
 	connect(page->elem, SIGNAL(removed(DocElement*)), this, SLOT(removePage(DocElement*)));
+	connect(page->elem, SIGNAL(nameChanged(const QString&)), this, SLOT(pageNameChanged(const QString&)));
 
 	m_pages.insert(page->elem, page);
 	if (index == -1)

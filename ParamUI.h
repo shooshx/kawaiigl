@@ -92,12 +92,13 @@ public slots:
 };
 
 
+class PParamsWidget;
 
 class ParamUi : public QObject
 {
 	Q_OBJECT;
 public:
-	ParamUi(QWidget* parent, T2GLWidget* view);
+	ParamUi(PParamsWidget* parent, T2GLWidget* view);
 	virtual ~ParamUi(); // needs to get rid of all the widgets created somehow.
 
 	QWidget* containter; // contains all the widgets in a line
@@ -117,7 +118,7 @@ public:
 	EParamType m_dtype;
 	bool m_isUniform;
 
-	QWidget *m_parent;
+	PParamsWidget *m_parent;
 	T2GLWidget *m_view;
 	Document *m_doc;
 

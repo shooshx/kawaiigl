@@ -26,7 +26,15 @@ public:
 	void postCompile();
 
 	void addAllParams();
-	void fastVarUpdate();
+
+	template<typename T>
+	void fastVarUpdate(ParamUi* pui, const T& val)
+	{
+		// check enabled?
+		if (pui->index >= m_pass->params.size())
+			return;
+		m_doc->directUpdate(m_pass->params[pui->index], val);
+	}
 
 private slots:
 	void on_addParam_clicked();
