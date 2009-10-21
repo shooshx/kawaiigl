@@ -12,15 +12,9 @@ class DisplayConf : public ParamBase
 {
 	Q_OBJECT
 public:
-	enum ETexAct { Tex_None = -1, Tex_File0, Tex_File1, Tex_File2 };
+	enum ETexAct { Tex_None = -1, Tex_File0, Tex_File1, Tex_File2, Tex_File3 };
 	Q_ENUMS(ETexAct)
-		enum RunType
-	{
-		RunNormal, // 3d Scene rendered to the screen with prog
-		RunQuadProcess,  // 3d scene rendered to texture 0, texture 0 rendered to a quad with prog
-		RunTex2Tex
-	};
-	Q_ENUMS(RunType)
+
 
 	TypeProp<int> numberOfPasses; // 0, 1, 2, 3, 4, 5
 	TypeProp<bool> *passRound[N_PASS];
@@ -99,7 +93,7 @@ public:
 };
 
 Q_DECLARE_METATYPE(DisplayConf::ETexAct);
-Q_DECLARE_METATYPE(DisplayConf::RunType);
+
 
 
 class GUIPos : public ParamBase

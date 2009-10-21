@@ -368,14 +368,9 @@ void ProgTextEdit::setFontSize(int size)
 void KwEdit::readModel(DocSrc* src)
 {
 	// automatically
-	if (!m_doc->m_passes.isEmpty())
-	{
-		const PassPtr &pass = m_doc->m_passes[0];
-		addPage(pass->model.get());
-
-		//	if (ui.tabs->count() > oldIndex)
-		//		ui.tabs->setCurrentIndex(oldIndex);
-	}
+	RenderPassPtr rpass = m_doc->passForModel();
+	if (rpass)
+		addPage(rpass->model.get());
 
 }
 
@@ -393,25 +388,25 @@ void KwEdit::removePage(DocElement* src)
 // read a program from the reposityry
 void KwEdit::readProg(ProgKeep* prog)
 {
-
-	//int oldIndex = ui.tabs->currentIndex();
-	
-	// automatically open the progs of pass 1
-	if (!m_doc->m_passes.isEmpty()) 
+	// automatically open the progs of first pass that has shaders
+	RenderPassPtr rpass;
+	for (Document::TPasses::iterator it = m_doc->m_passes.begin(), end = m_doc->m_passes.end(); it != end; ++it)
 	{
-		const PassPtr &pass = m_doc->m_passes[0];
-		foreach(const shared_ptr<DocSrc>& s, pass->shaders)
+		rpass = dynamic_pointer_cast<RenderPass>(*it);
+		if (rpass && !rpass->shaders.isEmpty())
+			break;
+	}
+
+	if (rpass) 
+	{
+		foreach(const shared_ptr<DocSrc>& s, rpass->shaders)
 		{
 			if (s->type != SRC_GEOM || !s->text.isEmpty()) // don't open geometry by default
 				addPage(s.get());
 		}
-	//	if (ui.tabs->count() > oldIndex)
-	//		ui.tabs->setCurrentIndex(oldIndex);
 		ui.tabs->setCurrentIndex(0);
 	}
 
-	// set uniform and attributes from prog
-	//clearParam();
 
 	if (prog != NULL)
 	{
@@ -548,7 +543,7 @@ KPagePtr KwEdit::addTextPage(DocSrc* src, int& index)
 
 
 
-KPagePtr KwEdit::addDlgPage(Pass* pass)
+KPagePtr KwEdit::addDlgPage(RenderPass* pass)
 {
 	DlgPagePtr page(new DlgPage());
 	page->pass = pass;
@@ -572,8 +567,10 @@ void KwEdit::addPage(DocElement* elem, int index)
 	KPagePtr page;
 	if (elem->textual())
 		page = addTextPage(static_cast<DocSrc*>(elem), index);
+	else if (elem->type == SRC_RENDER)
+		page = addDlgPage(static_cast<RenderPass*>(elem));
 	else
-		page = addDlgPage(static_cast<Pass*>(elem));
+		return;
 
 	page->elem = elem;
 

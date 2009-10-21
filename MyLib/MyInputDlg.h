@@ -266,7 +266,7 @@ struct ColorSelIn : public WidgetIn
 {
 	Q_OBJECT
 public:
-	ColorSelIn(TypeProp<QColor> *_v, QAbstractButton *_bw, EFlags flags = None, bool _autoup = true);
+	ColorSelIn(TypeProp<QColor> *_v, QAbstractButton *_bw, bool withAlpha = false, EFlags flags = None, bool _autoup = true);
 
 	virtual void commitImp()
 	{
@@ -297,6 +297,7 @@ private:
 	MyColorPicker *modellessDlg;
 	QColor original;
 	bool doModal;
+	bool withAlpha;
 
 };
 

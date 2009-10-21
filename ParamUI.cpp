@@ -34,15 +34,15 @@ void ParamUi::directUpdate(const T& val)
 
 
 
-ColorPui::ColorPui(ParamUi *pui) : PuiCont(pui)
+ColorPui::ColorPui(ParamUi *pui, const QColor& init, bool _withAlpha) : PuiCont(pui), withAlpha(_withAlpha)
 {
 	QPushButton *chp = new QPushButton();
 	chp->setMaximumSize(20, 20);
 	pui->moreContainer->layout()->addWidget(chp);
 	pui->moreContainer->show();
-	TypeProp<QColor>* cprop = new TypeProp<QColor>(NULL, NULL, "_c", QColor(0,0,0));
+	TypeProp<QColor>* cprop = new TypeProp<QColor>(NULL, NULL, "Pick Color", init);
 	prop = cprop;
-	win = new ColorSelIn(cprop, chp, WidgetIn::DoModal);
+	win = new ColorSelIn(cprop, chp, withAlpha, WidgetIn::DoModal);
 	win->reload();
 	connect(cprop, SIGNAL(changed()), this, SLOT(colorParamChanged())); // change the text
 	pui->confGui->hide();
@@ -191,17 +191,28 @@ void ColorPui::colorParamChanged() // Prop changed
 {
 	if (!win->isInCommit())
 		return;
-	if (pui->m_dtype != EPVec3Color)
+	if (pui->m_dtype != EPVec3Color && pui->m_dtype != EPVec4Color)
 		return; // shouldn't happen
 	TypeProp<QColor> *cprop = dynamic_cast<TypeProp<QColor> *>(prop);
 	QColor c = *cprop;
-	Vec vc(c);
+	if (!withAlpha)
+	{
+		Vec vc(c);
+		pui->value->setText("{" + vc.toStringNoParen() + "}"); // doesn't cause the variable to be sent
+		if (!pui->m_doc->isProgEnabled())
+			return;
+		pui->directUpdate(vc);
+	}
+	else
+	{
+		Vec4 vc(c);
+		pui->value->setText("{" + vc.toStringNoParen() + "}");
+		if (!pui->m_doc->isProgEnabled())
+			return;
+		pui->directUpdate(vc);
+	}
 
-	pui->value->setText("{" + vc.toStringNoParen() + "}"); // doesn't cause the variable to be sent
 
-	if (!pui->m_doc->isProgEnabled())
-		return;
-	pui->directUpdate(vc);
 }
 
 void SliderPui::sliderParamChanged()
@@ -257,7 +268,18 @@ void ParamUi::initMoreWidget(const ParamInput* pi)
 
 	if (m_dtype == EPVec3Color)
 	{
-		moreCont = new ColorPui(this);
+		if (pi != NULL)
+			moreCont = new ColorPui(this, Vec::fromString(pi->value).toColor() , false);
+		else
+			moreCont = new ColorPui(this, QColor(0,0,0) , false);
+	}
+	else if (m_dtype == EPVec4Color)
+	{
+		if (pi != NULL)
+			moreCont = new ColorPui(this, Vec4::fromString(pi->value).toColor() , false);
+		else
+			moreCont = new ColorPui(this, QColor(0,0,0) , false);
+
 	}
 	else if (m_dtype == EPFloatRange)
 	{
@@ -282,6 +304,10 @@ void ParamUi::initMoreWidget(const ParamInput* pi)
 		moreContainer->hide();
 		confGui->hide();
 	}
+
+	if (pi != NULL && moreCont != NULL)
+		pi->prop = moreCont->prop;
+
 }
 
 void ParamUi::configGui()

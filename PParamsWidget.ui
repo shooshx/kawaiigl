@@ -6,13 +6,16 @@
     <x>0</x>
     <y>0</y>
     <width>299</width>
-    <height>43</height>
+    <height>36</height>
    </rect>
   </property>
   <property name="windowTitle" >
    <string>PParamsWidget</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" >
+   <property name="margin" >
+    <number>5</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" >
      <item>

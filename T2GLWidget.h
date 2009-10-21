@@ -85,7 +85,7 @@ private:
 
 	bool shouldUseProg() const;
 
-	void programConfig(const PassPtr& pass);
+	void programConfig(const RenderPassPtr& pass);
 
 	void emitDecompile();
 
@@ -106,7 +106,7 @@ private:
 	bool m_useProg;
 
 	DisplayConf &conf;
-	PassPtr m_curPass;
+	RenderPassPtr m_curPass;
 
 	MyFramebufferObject *m_offbufA[N_TEX];
 	MyFramebufferObject *m_offbufB[N_TEX];

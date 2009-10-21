@@ -11,7 +11,7 @@ class ShaderConfigDlg : public QWidget
 {
 	Q_OBJECT
 public:
-	ShaderConfigDlg(QWidget *parent, Pass* conf, T2GLWidget* view, Document* doc, DisplayConf& dconf); 
+	ShaderConfigDlg(QWidget *parent, RenderPass* conf, T2GLWidget* view, Document* doc, DisplayConf& dconf); 
 	// dconf needed for enum
 	// view needed for params container which needs it for mouse tracking
 	~ShaderConfigDlg() {}

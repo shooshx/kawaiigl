@@ -130,7 +130,7 @@ private:
 	EditPagePtr findEditPage(DocSrc* src);
 
 
-	KPagePtr addDlgPage(Pass* pass);
+	KPagePtr addDlgPage(RenderPass* pass);
 	KPagePtr addTextPage(DocSrc* src, int& index);
 	
 private:

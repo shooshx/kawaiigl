@@ -207,7 +207,7 @@
 		<program display="Pixelate">
 			<fragtext>frag.img_pixelate.glsl.txt</fragtext>
 			<param name="img" type="texture">0</param>
-			<param name="f" type="float">10</param>
+			<param name="f" type="floatRange" gui="1,50">10</param>
 			<quadproc>1</quadproc>
 		</program>
 		<program display="Average-3x3">

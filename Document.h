@@ -71,15 +71,19 @@ public:
 	static QIcon getTypeIcon(ElementType);
 	static QString getTypeName(ElementType);
 
-	void addNewShader(Pass* pass, ElementType type);
-	void loadShaderFile(Pass* pass, const QString& filename, ElementType type);
-	void removeShader(Pass* pass, DocSrc* src);
+	void addNewShader(RenderPass* pass, ElementType type);
+	void loadShaderFile(RenderPass* pass, const QString& filename, ElementType type);
+	void removeShader(RenderPass* pass, DocSrc* src);
 
 	void addNewPass();
 	void removePass(Pass* pass);
 	void movePass(Pass* pass, int delta);
 
 	bool isProgEnabled() const { return m_shaderEnabled; }
+
+	void addPass(PassPtr pass);
+	void clearPasses();
+	RenderPassPtr passForModel(); // find the pass where the model should go.
 
 public slots:
 	void calc(DocSrc* qstr, bool doParse = true, QString saveAs = QString());
@@ -115,10 +119,8 @@ signals:
 
 private:
 	bool parseParam(const ParamInput& in); // if not NULL this prop should get the value as well.
-	void parseAllParams(const PassPtr &pass);
+	void parseAllParams(const RenderPassPtr &pass);
 	
-	PassPtr newPass(const QString& name);
-
 	QString generateFromFile();
 
 	int m_nPoly, m_nPoints;
@@ -151,6 +153,7 @@ public:
 		
 		virtual void update(GenericShader &prog) const;
 	};
+
 	struct TexParamAdapter : public ParamAdapter
 	{
 		TexParamAdapter(Document* doc, int _i) : m_doc(doc), ParamAdapter(_i) {}
@@ -199,6 +202,7 @@ public:
 
 	typedef QList<PassPtr> TPasses;
 	TPasses m_passes;
+
 	bool m_shaderEnabled;
 
 	ConfXmls m_confxmls;

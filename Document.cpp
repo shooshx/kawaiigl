@@ -44,7 +44,7 @@ EParamType getBaseType(EParamType t)
 
 
 #define EDIT_CONF_FILE ("conf.edit.xml")
-#define PROG_CONF_FILE ("conf.programs2.xml")
+#define PROG_CONF_FILE ("conf.programs.xml")
 
 
 Document::Document(KawaiiGL* mainc)
@@ -64,12 +64,12 @@ Document::Document(KawaiiGL* mainc)
 	m_kparser.addFunction("wholeScreenQuad");
 
 	// default empty program
-	PassPtr p = newPass("Pass 1");
+	RenderPassPtr p(new RenderPass("Pass 1"));
 	p->model = shared_ptr<DocSrc>(new DocSrc("Model", false, SRC_MODEL));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
-	m_passes.append(p);
+	addPass(p);
 }
 
 
@@ -102,27 +102,42 @@ void Document::writeToFile(const QString& text, const QString filename)
 	out << text;
 }
 
-PassPtr Document::newPass(const QString& name)
+// find the pass where the model should go
+RenderPassPtr Document::passForModel()
 {
-	PassPtr p(new Pass(name));
-	connect(&p->conf, SIGNAL(changed()), this, SIGNAL(progParamChanged()));
-	return p;
+	RenderPassPtr rpass;
+	for (TPasses::iterator it = m_passes.begin(); it != m_passes.end(); ++it)
+	{
+		rpass = dynamic_pointer_cast<RenderPass>(*it);
+		if (rpass)
+			break;
+	}
+	return rpass;
 }
+
+
 
 // from config
 void Document::readProg(ProgKeep* prog)
 {
-	//PassPtr p = newPass("Pass 1");
-
 	// remove everything except the model of the first pass
 	DocSrcPtr model;
-	if (!m_passes.isEmpty())
-		model = m_passes[0]->model;
-	m_passes.clear(); // removes them from the edit window as well
+	
+	for (TPasses::iterator it = m_passes.begin(); it != m_passes.end(); ++it) // need to find the model
+	{
+		RenderPassPtr rpass = dynamic_pointer_cast<RenderPass>(*it);
+		if (rpass && rpass->model)
+		{
+			model = rpass->model;
+			break;
+		}
+	}
+
+	clearPasses(); // removes them from the edit window as well
 
 	foreach(const ProgKeep::PassKeep& pk, prog->m_passes)
 	{
-		PassPtr p = newPass(pk.name);
+		RenderPassPtr p(new RenderPass(pk.name));
 		foreach(const ProgKeep::SrcKeep& sk, pk.shaders)
 		{
 			DocSrc *d = new DocSrc(sk.name, true, sk.type);
@@ -131,13 +146,20 @@ void Document::readProg(ProgKeep* prog)
 		}
 		
 		p->params = pk.params; // copy the ParamInput's of the loaded xml.
+		for(int i = 0; i < p->params.size(); ++i)
+		{
+			ParamInput& pi = p->params[i];
+			pi.mypass = p.get();
+		}
+
 		p->conf.copyFrom(pk.conf);
 		
-		m_passes.append(p);
+		addPass(p);
 	}
 
-	if (!m_passes.isEmpty())
-		m_passes[0]->model = model;
+	RenderPassPtr rpass = passForModel();
+	if (rpass)
+		rpass->model = model;
 
 	// set config params
 	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)
@@ -150,13 +172,13 @@ void Document::readProg(ProgKeep* prog)
 }
 
 
-void Document::addNewShader(Pass* pass, ElementType type)
+void Document::addNewShader(RenderPass* pass, ElementType type)
 {
 	DocSrc *d = new DocSrc("Shader", false, type);
 	pass->shaders.append(shared_ptr<DocSrc>(d));
 }
 
-void Document::	loadShaderFile(Pass* pass, const QString& filename, ElementType type)
+void Document::	loadShaderFile(RenderPass* pass, const QString& filename, ElementType type)
 {
 	DocSrc *d = new DocSrc(filename, true, type);
 	readToString(d->name(), d->text);
@@ -164,11 +186,11 @@ void Document::	loadShaderFile(Pass* pass, const QString& filename, ElementType 
 }
 
 
-void Document::removeShader(Pass* pass, DocSrc* src)
+void Document::removeShader(RenderPass* pass, DocSrc* src)
 {
 	// The list contains shared_ptrs, we have a pointer, need to look for it manually.
-	Pass::TDocSrcList &shaders = pass->shaders;
-	Pass::TDocSrcList::iterator it = shaders.begin();
+	RenderPass::TDocSrcList &shaders = pass->shaders;
+	RenderPass::TDocSrcList::iterator it = shaders.begin();
 	while(it != shaders.end())
 	{
 		if (it->get() == src)
@@ -183,11 +205,11 @@ void Document::removeShader(Pass* pass, DocSrc* src)
 
 void Document::addNewPass()
 {
-	PassPtr p = newPass(QString("Pass %1").arg(m_passes.size() + 1) );
+	RenderPassPtr p(new RenderPass(QString("Pass %1").arg(m_passes.size() + 1) ));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
 //	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
-	m_passes.append(p);
+	addPass(p);
 }
 
 void Document::movePass(Pass* pass, int delta)
@@ -223,7 +245,7 @@ void Document::readModel(const QString& name, const ModelData& md)
 {
 	if (m_passes.isEmpty())
 		return;
-	PassPtr pass = m_passes[0];
+	RenderPassPtr pass = static_pointer_cast<RenderPass>(m_passes[0]);
 
 	QString text; 
 
@@ -333,6 +355,7 @@ QIcon Document::getTypeIcon(ElementType t)
 	case SRC_GEOM: return QIcon(":/images/doc_geom.png");
 	case SRC_FRAG: return QIcon(":/images/doc_frag.png");
 	case SRC_MODEL: return QIcon(":/images/doc_model.png");
+	case SRC_RENDER: return QIcon(":/images/gear.png");
 	default: return QIcon();
 	}
 }
@@ -551,6 +574,20 @@ void Document::updateTrack(IPoint* sel)
 
 }
 
+void Document::addPass(PassPtr pass)
+{
+	RenderPassPtr rpass = dynamic_pointer_cast<RenderPass>(pass);
+	if (rpass)
+		connect(&rpass->conf, SIGNAL(changed()), this, SIGNAL(progParamChanged()));
+	m_passes.append(pass);
+}
+
+void Document::clearPasses()
+{
+	m_passes.clear();
+}
+
+
 
 void Document::compileShaders()
 {
@@ -566,25 +603,28 @@ void Document::compileShaders()
 
 	foreach(const PassPtr &pass, m_passes)
 	{
-		pass->prog.clear();
+		RenderPassPtr rpass = dynamic_pointer_cast<RenderPass>(pass);
+		if (!rpass)
+			continue;
+		rpass->prog.clear();
 
 		if (!m_shaderEnabled)
 			continue;
 
-		foreach(const shared_ptr<DocSrc>& src, pass->shaders)
+		foreach(const shared_ptr<DocSrc>& src, rpass->shaders)
 		{
 			if (src->text.trimmed().isEmpty())
 				continue;
 			if (src->type == SRC_VTX)
-				pass->prog.vtxprogs() += src->text;
+				rpass->prog.vtxprogs() += src->text;
 			else if (src->type == SRC_FRAG)
-				pass->prog.fragprogs() += src->text;
+				rpass->prog.fragprogs() += src->text;
 			else if (src->type == SRC_GEOM)
-				pass->prog.geomprogs() += src->text;
+				rpass->prog.geomprogs() += src->text;
 		}
 
 		// if it's empty, do nothing.
-		if (pass->prog.vtxprogs().size() + pass->prog.fragprogs().size() + pass->prog.geomprogs().size() == 0)
+		if (rpass->prog.vtxprogs().size() + rpass->prog.fragprogs().size() + rpass->prog.geomprogs().size() == 0)
 			continue;
 
 		//m_conf.runType = pass->conf.runType.val();
@@ -593,23 +633,23 @@ void Document::compileShaders()
 		//m_onFrameEvals.resize(pass->params.size());
 		m_attribEval.clear();
 
-		for(int i = 0; i < pass->params.size(); ++i)
+		for(int i = 0; i < rpass->params.size(); ++i)
 		{
-			const ParamInput &pi = pass->params[i];
+			const ParamInput &pi = rpass->params[i];
 			ShaderParam *sp;
 			if (pi.isUniform)
 				sp = new UniformParam(pi.name);
 			else
 				sp = new AttribParam(pi.name);
-			pass->prog.addParam(sp, i);
+			rpass->prog.addParam(sp, i);
 			pi.index = i;
 		}
 
-		ProgCompileConf conf(pass->conf.geomInput, pass->conf.geomOutput, pass->conf.geomVtxCount);
-		if (pass->prog.init(conf))
+		ProgCompileConf conf(rpass->conf.geomInput, rpass->conf.geomOutput, rpass->conf.geomVtxCount);
+		if (rpass->prog.init(conf))
 		{
 			// need to take care of the variables background colors.
-			parseAllParams(pass);
+			parseAllParams(rpass);
 		}
 	}
 
@@ -617,7 +657,7 @@ void Document::compileShaders()
 }
 
 
-void Document::parseAllParams(const PassPtr &pass)
+void Document::parseAllParams(const RenderPassPtr &pass)
 {
 	{
 		ProgramUser use(&pass->prog);
@@ -726,6 +766,10 @@ bool Document::parseParam(const ParamInput& pi)
 			if (ok = m_kparser.kparseVec4(nameend + 1, end, v))
 			{
 				prog.setUniform(v, pi.index);
+				if (pi.prop != NULL)
+				{
+					pi.prop->tryAssignTypeVal(v.toColor());
+				}
 			}
 		}
 		break;
@@ -767,9 +811,7 @@ void Document::VecParamAdapter::update(GenericShader &prog) const
 
 	if (toprop != NULL)
 	{
-		TypeProp<QColor> *cprop = dynamic_cast<TypeProp<QColor> *>(toprop);
-		if (cprop != NULL)
-			*cprop = ev.toColor(); 
+		toprop->tryAssignTypeVal(ev.toColor());
 	}
 }
 

@@ -42,9 +42,12 @@ class ColorPui : public PuiCont
 {
 	Q_OBJECT;
 public:
-	ColorPui(ParamUi *pui);
+	// init might be NULL
+	ColorPui(ParamUi *pui, const QColor& init, bool _withAlpha);
 public slots:
 	void colorParamChanged();
+private:
+	bool withAlpha;
 };
 
 class SliderPui : public PuiCont

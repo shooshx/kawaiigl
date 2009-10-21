@@ -557,6 +557,29 @@ public:
 	Vec4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
 	explicit Vec4(const Vec& a) : x(a.x), y(a.y), z(a.z), w(1.0f) {}
 	Vec4(const Vec& a, float w) : x(a.x), y(a.y), z(a.z), w(w) {}
+	explicit Vec4(const QColor& c) 
+	{
+		initFromColor(c);
+	}
+
+	void initFromColor(const QColor& c);
+
+	QString toStringNoParen() const
+	{
+		return QString().sprintf("%1.2f, %1.2f, %1.2f, %1.2f", x, y, z, w);
+	}
+	void fromStringF(const QString& str)
+	{
+		QChar c;
+		QTextStream in(const_cast<QString*>(&str), QIODevice::ReadOnly);
+		in >> c >> x >> c >> y >> c >> z >> c >> w;
+	}
+	static Vec4 fromString(const QString& str)
+	{
+		Vec4 v;
+		v.fromStringF(str);
+		return v;
+	}
 
 	union
 	{
@@ -571,11 +594,35 @@ public:
 		float v[4];
 	};
 
-	Vec toVec() 
+	Vec toVec() const 
 	{ 
 		return Vec(x/w, y/w, z/w);
 	}
+
+	QColor toColor() const 
+	{
+		if (!isValidColor())
+			return QColor();
+		return QColor(qBound(0.0f, r, 1.0f) * 255.0, 
+					  qBound(0.0f, g, 1.0f) * 255.0, 
+				  	  qBound(0.0f, b, 1.0f) * 255.0,
+					  qBound(0.0f, a, 1.0f) * 255.0);
+	}
+	bool isValidColor() const
+	{
+		return (r != FLT_MAX);
+	}
 };
+
+inline void Vec4::initFromColor(const QColor& c)
+{
+	if (!c.isValid())
+	{
+		*this = Vec4(FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX);
+		return;
+	}
+	r = c.red() / 255.0f; g = c.green() / 255.0f; b = c.blue() / 255.0f; a = c.alpha() / 255.0f;
+}
 
 class Vec2
 {

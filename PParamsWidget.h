@@ -20,7 +20,7 @@ public:
 	PParamsWidget(QWidget *parent);
 	~PParamsWidget() {}
 
-	void init(T2GLWidget* view, Document* doc, Pass* pass);
+	void init(T2GLWidget* view, Document* doc, RenderPass* pass);
 
 	void commit();
 	void postCompile();
@@ -56,7 +56,7 @@ private:
 	Ui::PParamsWidgetClass ui;
 	QVector<ParamUi*> m_paramUi;
 
-	Pass *m_pass;
+	RenderPass *m_pass;
 
 	T2GLWidget *m_view; // need to pass it to ParamUIs
 	Document *m_doc;

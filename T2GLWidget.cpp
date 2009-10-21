@@ -443,7 +443,7 @@ void T2GLWidget::drawSolids(bool colorize)
 }
 
 // should be in ShaderProgram?
-void T2GLWidget::programConfig(const PassPtr& pass)
+void T2GLWidget::programConfig(const RenderPassPtr& pass)
 {
 	PassConf &pconf = pass->conf;
 	if (pconf.vertexPointSize)
@@ -535,7 +535,10 @@ void T2GLWidget::redoFrameBuffers()
 		for(int passi = 0; passi < m_doc->m_passes.size(); ++passi)
 		{
 			PassPtr pass = m_doc->m_passes[passi];
-			PassConf &pconf = pass->conf;
+			RenderPassPtr rpass = dynamic_pointer_cast<RenderPass>(pass);
+			if (!rpass)
+				continue;
+			PassConf &pconf = rpass->conf;
 
 			int index = pconf.to;
 
@@ -588,7 +591,9 @@ void T2GLWidget::myPaintGL()
 	{
 		for(int passi = 0; passi < m_doc->m_passes.size(); ++passi)
 		{
-			m_curPass = m_doc->m_passes[passi];
+			m_curPass = dynamic_pointer_cast<RenderPass>(m_doc->m_passes[passi]);
+			if (!m_curPass)
+				continue;
 			PassConf &pconf = m_curPass->conf;
 
 			// set up render to

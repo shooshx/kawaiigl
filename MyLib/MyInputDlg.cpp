@@ -223,8 +223,8 @@ void MyInputDlg::on_applyBot_clicked()
 }
 
 
-ColorSelIn::ColorSelIn(TypeProp<QColor> *_v, QAbstractButton *_bw, EFlags flags, bool _autoup)
- :WidgetIn(_v, _bw), v(_v), bw(_bw), sw(NULL), autoup(_autoup)
+ColorSelIn::ColorSelIn(TypeProp<QColor> *_v, QAbstractButton *_bw, bool _withAlpha, EFlags flags, bool _autoup)
+ :WidgetIn(_v, _bw), v(_v), bw(_bw), sw(NULL), autoup(_autoup), withAlpha(_withAlpha)
  ,modellessDlg(NULL)
  ,doModal(flags == DoModal)
 {
@@ -329,7 +329,7 @@ void MyInputDlg::addValueColor(TypeProp<QColor>* v, const WidgetLine& wl)
 	QPushButton *c = new QPushButton();
 	c->setMaximumSize(QSize(25, 200));
 
-	ColorSelIn *w = new ColorSelIn(v, c, WidgetIn::None, m_autoCommit);
+	ColorSelIn *w = new ColorSelIn(v, c, true, WidgetIn::None, m_autoCommit);
 
 	//QHBoxLayout *layout = new QHBoxLayout();
 	//wl.layout->addWidget(coll);

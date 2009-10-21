@@ -4,7 +4,7 @@
 #include "MyLib/MyInputDlg.h"
 #include "DisplayConf.h"
 
-ShaderConfigDlg::ShaderConfigDlg(QWidget *parent, Pass* pass, T2GLWidget* view, Document* doc, DisplayConf& dconf)
+ShaderConfigDlg::ShaderConfigDlg(QWidget *parent, RenderPass* pass, T2GLWidget* view, Document* doc, DisplayConf& dconf)
 	: QWidget(parent)
 {
 	ui.setupUi(this);

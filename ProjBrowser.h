@@ -9,6 +9,7 @@ class Document;
 class DocSrc;
 class ProgKeep;
 class Pass;
+class RenderPass;
 class DocElement;
 
 class MyTreeItem : public QObject, public QTreeWidgetItem
@@ -26,6 +27,8 @@ public slots:
 public:
 	Pass* m_pass;
 	DocSrc* m_src; // may be NULL if it's not a doc
+	RenderPass* m_rpass; // may be NULL 
+
 	DocElement *m_elem;
 
 	bool m_itIsIChanging;

@@ -46,15 +46,15 @@ struct FloatGuiConf : public GuiConf
 	float vmin, vmax;
 };
 
-class Pass;
+class RenderPass;
 
 // trivially copyable.
 struct ParamInput
 {
 	ParamInput() {}
-	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform)
+	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform, RenderPass* _mypass)
 		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
-		 prop(NULL), lastParseOk(true), mypass(NULL)
+		 prop(NULL), lastParseOk(true), mypass(_mypass)
 	{}
 	
 	QString name;
@@ -68,7 +68,7 @@ struct ParamInput
 	mutable int index; // in the program registry.
 	mutable bool lastParseOk;
 
-	Pass* mypass; // the pass this param is part of.
+	RenderPass* mypass; // the pass this param is part of.
 };
 
 

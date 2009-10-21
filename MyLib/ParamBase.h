@@ -71,6 +71,10 @@ public:
 		return ret; // return the value before
 	}
 
+	// try to  treat this Prop as a TypeProp<T> and assign a value to it.
+	template<typename T>
+	bool tryAssignTypeVal(const T& v);
+
 public slots:
 	virtual void externUpdate() {} // for children use.
 signals:
@@ -321,6 +325,19 @@ QMetaEnum getMetaEnum(QObject *container)
 		return QMetaEnum(); // invalid;
 	return mo->enumerator(ie);
 }
+
+template<typename T>
+bool Prop::tryAssignTypeVal(const T& v)
+{
+	TypeProp<T> *cprop = dynamic_cast<TypeProp<T> *>(this);
+	if (cprop != NULL)
+	{
+		*cprop = v; 
+		return true;
+	}
+	return false;
+}
+
 
 
 class TypePropN : public Prop, public IPropGather

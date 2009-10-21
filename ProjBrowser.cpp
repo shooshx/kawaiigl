@@ -7,6 +7,7 @@ using namespace boost;
 
 #define ITEM_PASS (QTreeWidgetItem::UserType + 1)
 #define ITEM_DOC (QTreeWidgetItem::UserType + 2)
+#define ITEM_OP (QTreeWidgetItem::UserType + 3)
 
 
 #define PTR_ROLE (Qt::UserRole + 1)
@@ -92,7 +93,7 @@ void ProjBrowser::addDoc()
 {
 	MyTreeItem* passItem = static_cast<MyTreeItem*>(ui.tree->eventItem());
 	int type = ((QAction*)sender())->data().toInt();
-	m_doc->addNewShader(passItem->m_pass, (ElementType)type);
+	m_doc->addNewShader(passItem->m_rpass, (ElementType)type);
 	updateTree();
 }
 
@@ -106,7 +107,7 @@ void ProjBrowser::removeFromMenu()
 	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
 
 	if (mitem->type() != ITEM_PASS)
-		m_doc->removeShader(mitem->m_pass, mitem->m_src);
+		m_doc->removeShader(mitem->m_rpass, mitem->m_src);
 	else
 		m_doc->removePass(mitem->m_pass);
 	updateTree();
@@ -124,7 +125,7 @@ void ProjBrowser::existingDoc()
 		if (filename.isEmpty())
 			return;
 		QString name = QFileInfo(filename).fileName(); // remove directory
-		m_doc->loadShaderFile(item->m_pass, name, (ElementType)type);
+		m_doc->loadShaderFile(item->m_rpass, name, (ElementType)type);
 	}
 	updateTree();
 }
@@ -176,8 +177,8 @@ void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t, Pass* selpa
 		return;
 	MyTreeItem *item = new MyTreeItem(NULL, QStringList(t->displayName()), ITEM_DOC);
 	item->m_pass = pass;
+	item->m_rpass = dynamic_cast<RenderPass*>(pass);
 	item->m_elem = item->m_src = t;
-
 	item->setIcon(0, Document::getTypeIcon(t->type));
 	if (item->m_pass == selpass && item->m_src == seldoc)
 		ui.tree->setCurrentItem(item);
@@ -193,18 +194,26 @@ void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 	for(int i = 0; i < m_doc->m_passes.size(); ++i)
 	{
 		PassPtr& pass = m_doc->m_passes[i];
-		MyTreeItem *passItem = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_PASS);
-		passItem->m_elem = passItem->m_pass = pass.get();
-		if (passItem->m_pass == selpass && passItem->m_src == seldoc) // src is NULL
-			ui.tree->setCurrentItem(passItem);
-				
-		addItem(pass.get(), passItem, pass->model.get());
-		foreach(const shared_ptr<DocSrc>& t, pass->shaders)
-		{
-			addItem(pass.get(), passItem, t.get());
-		}
 
-		ui.tree->addTopLevelItem(passItem);
+		if (pass->type == SRC_RENDER)
+		{
+			RenderPass *rpass = dynamic_cast<RenderPass*>(pass.get());
+			MyTreeItem *item = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_PASS);
+			item->m_elem = item->m_pass = item->m_rpass = rpass;
+
+			item->setIcon(0, Document::getTypeIcon(pass->type));
+					
+			addItem(pass.get(), item, rpass->model.get());
+			foreach(const shared_ptr<DocSrc>& t, rpass->shaders)
+			{
+				addItem(pass.get(), item, t.get());
+			}
+
+			ui.tree->addTopLevelItem(item);
+			if (item->m_pass == selpass && item->m_src == seldoc) // src is NULL
+				ui.tree->setCurrentItem(item);
+
+		}
 	}
 
 	ui.tree->expandAll();
@@ -225,7 +234,7 @@ void ProjBrowser::itemClicked(QTreeWidgetItem *item, int col)
 		return;
 	if (item->type() == ITEM_PASS)
 	{
-		Pass* pass = ((MyTreeItem*)item)->m_pass;
+		RenderPass* pass = ((MyTreeItem*)item)->m_rpass;
 		emit openPassConf(pass);
 	}
 	else
@@ -280,7 +289,7 @@ void ProjBrowser::on_removeBut_clicked()
 	{
 		MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
 		if (mitem->type() != ITEM_PASS)
-			m_doc->removeShader(mitem->m_pass, mitem->m_src);		
+			m_doc->removeShader(mitem->m_rpass, mitem->m_src);		
 		else
 			m_doc->removePass(mitem->m_pass);
 	}

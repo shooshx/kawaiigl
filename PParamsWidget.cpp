@@ -16,7 +16,7 @@ PParamsWidget::PParamsWidget(QWidget *parent)
 }
 
 
-void PParamsWidget::init(T2GLWidget* view, Document* doc, Pass* pass)
+void PParamsWidget::init(T2GLWidget* view, Document* doc, RenderPass* pass)
 {
 	m_pass = pass;
 	m_view = view;
@@ -36,9 +36,10 @@ void PParamsWidget::commit()
 	{
 		ParamInput pi(pui->name->text(), 
 			(EParamType)pui->type->itemData(pui->type->currentIndex()).toInt(), 
-			pui->value->text(), pui->m_isUniform);
+			pui->value->text(), pui->m_isUniform, m_pass);
 		pui->index = m_pass->params.size();
-		pi.mypass = m_pass;
+		if (pui->moreCont != NULL)
+			pi.prop = pui->moreCont->prop;
 		m_pass->params.append(pi);
 	}
 }
@@ -49,6 +50,9 @@ void PParamsWidget::postCompile()
 {
 	foreach(ParamUi* pui, m_paramUi)
 	{
+		if (m_pass->params.size() <= pui->index)
+			continue;
+
 		ParamInput progpi = m_pass->params[pui->index];
 		QColor c;
 		if (progpi.lastParseOk)
@@ -83,7 +87,7 @@ void PParamsWidget::doVarsUpdate()
 // if update is false, don't do an updateGL.
 void PParamsWidget::doVarUpdate(ParamUi* pui, bool update)
 {
-	ParamInput curpi(pui->name->text(), pui->m_dtype, pui->value->text(), pui->m_isUniform);
+	ParamInput curpi(pui->name->text(), pui->m_dtype, pui->value->text(), pui->m_isUniform, NULL);
 
 	QColor c = Qt::white;
 
@@ -163,7 +167,7 @@ void PParamsWidget::addAllParams() // of this pass
 // the (+) button was pressed
 void PParamsWidget::on_addParam_clicked()
 {
-	addParam(ParamInput("", EPFloat, "", true));
+	addParam(ParamInput("", EPFloat, "", true, NULL));
 }
 
 void PParamsWidget::addParam(const ParamInput& pi) //const QString& name, EParamType type, const QString& value)
@@ -176,6 +180,7 @@ void PParamsWidget::addParam(const ParamInput& pi) //const QString& name, EParam
 	pui->layout->setSpacing(2);
 
 	pui->containter->setLayout(pui->layout);
+	pui->containter->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
 
 	pui->uniAttr = new QPushButton();
 	pui->uniAttr->setMaximumSize(20, 20);
@@ -243,8 +248,6 @@ void PParamsWidget::addParam(const ParamInput& pi) //const QString& name, EParam
 	m_paramUi.append(pui);
 
 	pui->initMoreWidget(&pi);
-	if (pui->moreCont != NULL)
-		pi.prop = pui->moreCont->prop;
 
 
 }

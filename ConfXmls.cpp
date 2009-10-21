@@ -90,8 +90,7 @@ void ConfXmls::loadModelsFile()
 
 void ConfXmls::loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe)
 {
-	pass->conf = new PassConf();
-	pass->conf->reset();
+	pass->init();
 
 	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
 	{
@@ -148,7 +147,7 @@ void ConfXmls::loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe)
 					isUniform = false;
 			}
 
-			ParamInput pi(namea.value(), etype, e.text(), isUniform);
+			ParamInput pi(namea.value(), etype, e.text(), isUniform, NULL);
 
 			QDomAttr guia = e.attributeNode("gui");
 			if (!guia.isNull())
@@ -218,14 +217,27 @@ void ConfXmls::loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe)
 }
 
 
+enum RunType
+{
+	RunNone,
+	RunNormal, // 3d Scene rendered to the screen with prog
+	RunQuadProcess,  // 3d scene rendered to texture 0, texture 0 rendered to a quad with prog
+	RunTex2Tex
+};
+
 void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe)
 {
 	ProgKeep *prog = new ProgKeep;
 	prog->name = display;
+
+	ProgKeep::PassKeep tempPass;
+	RunType tempTemplate = RunNormal;
+
 	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
 	{
 		QDomElement e = n.toElement();
-		if (e.tagName() == "pass")
+		QString tagName = e.tagName();
+		if (tagName == "pass")
 		{
 			ProgKeep::PassKeep pass;
 
@@ -239,7 +251,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			prog->m_passes.append(pass);
 
 		}
-		else if (e.tagName() == "arg")
+		else if (tagName == "arg")
 		{
 			QDomAttr namea = e.attributeNode("name");
 			if (namea.isNull())
@@ -250,25 +262,62 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			else
 				prog->args[name] = e.text();
 		}
-/*
-		else if (e.tagName() == "quadproc")
+		// template support
+		else if (tagName == "vtxtext" || tagName == "fragtext" || tagName == "geomtext" || tagName == "param")
+		{
+			if (tempPass.conf == NULL)
+				loadPassElement(&tempPass, pe);
+		}
+		else if (tagName == "quadproc")
 		{
 			int op = e.text().toInt();
-			prog->runType = ((bool)op)?DisplayConf::RunQuadProcess:DisplayConf::RunNormal;
+			tempTemplate = ((bool)op)?RunQuadProcess:RunNormal;
 		}
-		else if (e.tagName() == "runtype")
+		else if (tagName == "runtype")
 		{
 			QString opt = e.text().toLower().trimmed();
 			if (opt == "quadproc")
-				prog->runType = DisplayConf::RunQuadProcess;
+				tempTemplate = RunQuadProcess;
 			else if (opt == "normal")
-				prog->runType = DisplayConf::RunNormal;
+				tempTemplate = RunNormal;
 			else if (opt == "tex2tex")
-				prog->runType = DisplayConf::RunTex2Tex;
+				tempTemplate = RunTex2Tex;
 			else
 				printf("unknown runType option %s\n", opt.toAscii().data());
-		}*/
+		}
 
+	}
+
+	if (tempPass.conf != NULL)
+	{
+		if (!prog->m_passes.isEmpty())
+		{
+			printf("error in prog %s, can't have passes and template at the same time\n", display.toAscii().data());
+			return;
+		}
+
+		switch(tempTemplate)
+		{
+		case RunNormal:
+			tempPass.name = "Pass 1";
+			prog->m_passes.append(tempPass);
+			break;
+		case RunQuadProcess:
+			{
+				ProgKeep::PassKeep pass1("Pass 1");
+				pass1.init();
+				pass1.conf->to = PassConf::Texture0;
+				prog->m_passes.append(pass1);
+				tempPass.name = "Pass 2";
+				tempPass.conf->what = PassConf::Quad_Tex0;
+				prog->m_passes.append(tempPass);
+				break;
+			}
+		case RunTex2Tex:
+			{
+				return; // not supported yet
+			}
+		}
 	}
 
 	menu->addAction(confAddProg(display, prog));

@@ -15,11 +15,15 @@
 
 enum ElementType
 {
-	SRC_VTX,
-	SRC_GEOM,
-	SRC_FRAG,
-	SRC_MODEL,
-	SRC_CONF,
+	SRC_TEXTUAL = 0x100,
+	SRC_VTX =    0x101,
+	SRC_GEOM =   0x102,
+	SRC_FRAG =   0x103,
+	SRC_MODEL =  0x104,
+
+	SRC_DIALOG =  0x200,
+	SRC_RENDER =   0x201,
+	SRC_OP_SWAP= 0x202,
 	SRC_NONE
 };
 
@@ -33,7 +37,7 @@ public:
 	{
 		emit removed(this);
 	}
-	bool textual() const { return type != SRC_CONF; }
+	bool textual() const { return (type & SRC_TEXTUAL) == SRC_TEXTUAL; }
 	virtual QString displayName() const = 0;
 
 	void setName(const QString& newname)
@@ -177,15 +181,23 @@ Q_DECLARE_METATYPE(PassConf::EGeomOutType);
 Q_DECLARE_METATYPE(PassConf::ERenderWhat);
 Q_DECLARE_METATYPE(PassConf::ERenderTo);
 
-
-class Pass : public DocElement 
+class Pass : public DocElement
 {
 public:
-	Pass(const QString& name) : DocElement(SRC_CONF, name) 
+	Pass(ElementType type, const QString& name) : DocElement(type, name)
+	{}
+
+	virtual QString displayName() const { return m_name; }
+};
+
+
+class RenderPass : public Pass 
+{
+public:
+	RenderPass(const QString& name) : Pass(SRC_RENDER, name) 
 	{
 		conf.reset();
 	}
-	virtual QString displayName() const { return m_name; }
 	
 	typedef QList<DocSrcPtr> TDocSrcList;
 	TDocSrcList shaders;
@@ -197,8 +209,17 @@ public:
 	GenericShader prog;
 
 private:
-	Q_DISABLE_COPY(Pass);
+	Q_DISABLE_COPY(RenderPass);
 };
+
+class SwapPass : public Pass
+{
+public:
+	SwapPass(const QString& name) : Pass(SRC_OP_SWAP, name)
+	{}
+};
+
+
 
 
 class ProgKeep
@@ -215,7 +236,12 @@ public:
 	};
 	struct PassKeep
 	{
-		PassKeep() : conf(NULL) {}
+		PassKeep(const QString& _name = QString()) : conf(NULL), name(_name) {}
+		void init()
+		{
+			conf = new PassConf();
+			conf->reset();
+		}
 		QString name;
 		QVector<SrcKeep> shaders;
 		SrcKeep model; // optional...
@@ -231,6 +257,7 @@ public:
 
 
 typedef boost::shared_ptr<Pass> PassPtr;
+typedef boost::shared_ptr<RenderPass> RenderPassPtr;
 
 
 #endif // PASS_H_INCLUDED
