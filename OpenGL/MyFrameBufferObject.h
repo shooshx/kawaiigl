@@ -52,6 +52,8 @@ public:
     QImage toImage() const;
     Attachment attachment() const;
 
+	static void doBind(MyFramebufferObject* fbo);
+	static void doRelease(MyFramebufferObject* fbo);
 
     QPaintEngine *paintEngine() const;
     GLuint handle() const;

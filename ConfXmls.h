@@ -5,11 +5,12 @@
 #include <QObject>
 #include <QMap>
 
+#include "Pass.h"
+
 class QMenu;
 class QDomElement;
 class QWidget;
 class QAction;
-struct ProgKeep;
 struct ModelData;
 class KawaiiGL;
 class DisplayConf;
@@ -24,6 +25,7 @@ public:
 
 	void loadModelsFile();
 
+	void loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe);
 	void loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe);
 	void loadProgramsElement(QMenu* menu, QDomElement &pe);
 	void loadProgramsFile(QMenu* menu);

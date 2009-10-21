@@ -7,6 +7,7 @@
 #include "KwEdit.h"
 #include "DisplayConf.h"
 #include "KawaiiGL.h"
+#include "Pass.h"
 
 
 ConfXmls::ConfXmls(KawaiiGL* mainc) :m_conf(mainc->sett().disp), m_parent(mainc) {}
@@ -87,11 +88,10 @@ void ConfXmls::loadModelsFile()
 
 }
 
-
-void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe)
+void ConfXmls::loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe)
 {
-	ProgKeep *prog = new ProgKeep;
-	prog->name = display;
+	pass->conf = new PassConf();
+	pass->conf->reset();
 
 	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
 	{
@@ -99,11 +99,11 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 		if (e.isNull())
 			continue;
 		if (e.tagName() == "vtxtext")
-			prog->vtxProg = e.text(); // contains the filenames
+			pass->shaders.append(ProgKeep::SrcKeep(e.text(), SRC_VTX)); // contains the filenames
 		else if (e.tagName() == "fragtext")
-			prog->fragProg = e.text();
+			pass->shaders.append(ProgKeep::SrcKeep(e.text(), SRC_FRAG));
 		else if (e.tagName() == "geomtext")
-			prog->geomProg = e.text();
+			pass->shaders.append(ProgKeep::SrcKeep(e.text(), SRC_GEOM));
 		else if (e.tagName() == "param")
 		{
 			QDomAttr namea = e.attributeNode("name");
@@ -135,7 +135,10 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			else if (type == "texture")
 				etype = EPTexture;
 			else 
-				printf("unknown type %s\n", type.toAscii().data());
+			{
+				printf("unknown param type %s\n", type.toAscii().data());
+				continue;
+			}
 
 			bool isUniform = true;
 			QDomAttr kinda = e.attributeNode("kind");
@@ -146,7 +149,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			}
 
 			ParamInput pi(namea.value(), etype, e.text(), isUniform);
-			
+
 			QDomAttr guia = e.attributeNode("gui");
 			if (!guia.isNull())
 			{
@@ -185,9 +188,69 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			}
 
 
-			prog->params.append(pi);
+			pass->params.append(pi);
+
+		} // param
+		else if (e.tagName() == "conf")
+		{
+			QDomAttr namea = e.attributeNode("name");
+			if (namea.isNull())
+				continue;
+			QString name = namea.value();
+			Prop *p = pass->conf->propByName(name);
+			if (p == NULL)
+			{
+				printf("unknown config name %s\n", name.toAscii().data());
+				continue;
+			}
+			QString value = e.text();
+			if (!p->fromString(value))
+			{
+				printf("Unable to understand config `%s` value `%s`\n", name.toAscii().data(), value.toAscii().data());
+				continue;
+			}
 
 		}
+		// TBD: read model?
+
+
+	} // children
+}
+
+
+void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe)
+{
+	ProgKeep *prog = new ProgKeep;
+	prog->name = display;
+	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
+	{
+		QDomElement e = n.toElement();
+		if (e.tagName() == "pass")
+		{
+			ProgKeep::PassKeep pass;
+
+			QDomAttr namea = pe.attributeNode("name");
+			if (namea.isNull())
+				pass.name = QString("Pass %1").arg(prog->m_passes.size() + 1);
+			else
+				pass.name = namea.value();
+
+			loadPassElement(&pass, e);
+			prog->m_passes.append(pass);
+
+		}
+		else if (e.tagName() == "arg")
+		{
+			QDomAttr namea = e.attributeNode("name");
+			if (namea.isNull())
+				continue;
+			QString name = namea.value();
+			if (m_conf.propByName(name) == NULL)
+				printf("No such property %s\n", name.toAscii().data());
+			else
+				prog->args[name] = e.text();
+		}
+/*
 		else if (e.tagName() == "quadproc")
 		{
 			int op = e.text().toInt();
@@ -204,18 +267,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 				prog->runType = DisplayConf::RunTex2Tex;
 			else
 				printf("unknown runType option %s\n", opt.toAscii().data());
-		}
-		else if (e.tagName() == "arg")
-		{
-			QDomAttr namea = e.attributeNode("name");
-			if (namea.isNull())
-				continue;
-			QString name = namea.value();
-			if (m_conf.propByName(name) == NULL)
-				printf("No such property %s\n", name.toAscii().data());
-			else
-				prog->args[name] = e.text();
-		}
+		}*/
 
 	}
 
@@ -237,7 +289,29 @@ void ConfXmls::loadProgramsElement(QMenu* menu, QDomElement &de)
 
 		if (pe.tagName() == "program")
 		{
-			loadProgramElement(menu, display, pe);
+			QDomText txt = pe.firstChild().toText();
+			if (!txt.isNull()) // it's a filename
+			{
+				QString filename = txt.data();
+				QFile file(filename);
+				if (!file.open(QIODevice::ReadOnly))
+				{
+					printf("could not open examples file %s\n", filename.toAscii().data());
+					continue;
+				}
+				QDomDocument doc("program");
+				if (!doc.setContent(&file))
+				{
+					file.close();
+					printf("could not parse XML file %s\n", filename.toAscii().data());
+					continue;
+				}	
+				loadProgramElement(menu, display, doc.documentElement());
+			}
+			else // it's embedded
+			{
+				loadProgramElement(menu, display, pe);
+			}
 		}
 		if (pe.tagName() == "group")
 		{

@@ -46,13 +46,15 @@ struct FloatGuiConf : public GuiConf
 	float vmin, vmax;
 };
 
+class Pass;
+
 // trivially copyable.
 struct ParamInput
 {
 	ParamInput() {}
 	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform)
 		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
-		 prop(NULL), lastParseOk(true)
+		 prop(NULL), lastParseOk(true), mypass(NULL)
 	{}
 	
 	QString name;
@@ -65,11 +67,14 @@ struct ParamInput
 	mutable Prop* prop; // the prop to update, if it exists (share with another widget using this) set by the PParamWidget
 	mutable int index; // in the program registry.
 	mutable bool lastParseOk;
+
+	Pass* mypass; // the pass this param is part of.
 };
 
 
 
 // a program that is loaded from the XML
+/*
 struct ProgKeep 
 {
 	ProgKeep() : runType(DisplayConf::RunNormal) {}
@@ -81,6 +86,7 @@ struct ProgKeep
 	DisplayConf::RunType runType;
 	QVector<ParamInput> params; 
 };
+*/
 
 
 struct ModelData

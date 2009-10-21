@@ -5,6 +5,7 @@
 #include <QVariant>
 #include <QDialog>
 #include <QSettings>
+#include <QMetaEnum>
 
 class MyInputDlg;
 class MySettings;
@@ -61,6 +62,7 @@ public:
 	virtual void addWidget(MyInputDlg* dlg); // default implementation creates a line and calls addInnerWidget()
 	virtual void addInnerWidget(WidgetLine& wl) { };
 	virtual void reset() {}
+	virtual void copyFrom(const Prop* op) {} // default does nothing
 
 	const bool checkChanged() const 
 	{ 
@@ -196,6 +198,12 @@ public:
 			value = defaultVal;
 	}
 
+	void copyFrom(const Prop* op)
+	{
+		const TypeProp<T> *top = static_cast<const TypeProp<T>*>(op); // needs to succeed
+		(*this) = top->val();
+	}
+
 	//operator T() { return value; }
 	operator const T&() const { return value; }
 	const T& val() const { return value; }
@@ -302,6 +310,17 @@ private:
 
 };
 
+template<typename T>
+QMetaEnum getMetaEnum(QObject *container)
+{
+	const type_info& ti = typeid(T);
+	QString n(ti.name());
+	const QMetaObject* mo = container->metaObject();
+	int ie = mo->indexOfEnumerator(n.section(':', -1).toAscii());
+	if (ie == -1)
+		return QMetaEnum(); // invalid;
+	return mo->enumerator(ie);
+}
 
 
 class TypePropN : public Prop, public IPropGather
@@ -605,13 +624,19 @@ public:
 		m_byname.insert(p->m_memberName, p);
 		connect(p, SIGNAL(changed()), this, SLOT(paramChanged()));
 	}
-	Prop* propByName(const QString& name)
+	Prop* propByName(const QString& name) // by member name mname()
 	{
 		TByNameMap::iterator it = m_byname.find(name);
 		if (it == m_byname.end())
 			return NULL;
 		return *it;
 	}
+	const Prop* propByName(const QString& name) const
+	{
+		return const_cast<ParamBase*>(this)->propByName(name);
+	}
+
+	void copyFrom(const ParamBase *other);
 
 	bool execDialog(QWidget *parent, const QString caption);
 

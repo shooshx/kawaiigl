@@ -11,6 +11,7 @@
 #include "MyLib/ParamBase.h"
 #include "DisplayConf.h"
 #include "ProgInput.h"
+#include "OpenGL/Shaders.h"
 
 enum ElementType
 {
@@ -18,7 +19,8 @@ enum ElementType
 	SRC_GEOM,
 	SRC_FRAG,
 	SRC_MODEL,
-	SRC_CONF
+	SRC_CONF,
+	SRC_NONE
 };
 
 // things that can have a page in the edit window
@@ -94,7 +96,7 @@ private:
 	bool changedSinceLoad;
 };
 
-
+typedef boost::shared_ptr<DocSrc> DocSrcPtr;
 
 class PassConf : public ParamBase
 {
@@ -105,7 +107,7 @@ public:
 	{
 		POINTS = GL_POINTS, 
 		LINES = GL_LINES, 
-	//	LINES_ADJACENCY_EXT = GL_LINES_ADJACENCY_EXT, 
+	//	LINES_ADJACENCY_EXT = GL_LINES_ADJACENCY_EXT,  TBD
 		TRIANGLES = GL_TRIANGLES, 
 	//	TRIANGLES_ADJACENCY_EXT = GL_TRIANGLES_ADJACENCY_EXT
 	};
@@ -118,6 +120,24 @@ public:
 	};
 	Q_ENUMS(EGeomOutType);
 
+	enum ERenderWhat
+	{
+		Model = -1,
+		Quad_Tex0 = 0,
+		Quad_Tex1,
+		Quad_Tex2,
+		Quad_Tex3
+	};
+	Q_ENUMS(ERenderWhat);
+	enum ERenderTo
+	{
+		Display = -1,
+		Texture0 = 0,
+		Texture1,
+		Texture2,
+		Texture3
+	};
+	Q_ENUMS(ERenderTo)
 
 	TypeProp<bool> incPoly; // include polygons in program
 	TypeProp<bool> incPoints; // include points in program
@@ -129,8 +149,11 @@ public:
 	TypeProp<EGeomInType> geomInput;
 	TypeProp<EGeomOutType> geomOutput;
 	TypeProp<int> geomVtxCount;
-	TypeProp<DisplayConf::RunType> runType;
+	//TypeProp<DisplayConf::RunType> runType;
 
+	TypeProp<ERenderWhat> what;
+	TypeProp<ERenderTo> to;
+	TypeProp<bool> toMultisample;  // relevant only if to is not display
 
 	PassConf() 
 		:incPoly(this, "includePoly", true)
@@ -141,13 +164,18 @@ public:
 		,geomInput(this, "geomInput", POINTS)
 		,geomOutput(this, "geomOutput", _POINTS)
 		,geomVtxCount(this, "geomVtxCount", 3)
-		,runType(this, "runType", DisplayConf::RunNormal)
+		//,runType(this, "runType", DisplayConf::RunNormal)
+		,what(this, "what", Model)
+		,to(this, "to", Display)
+		,toMultisample(this, "toMultisample", true)
 	{}
 
 };
 
 Q_DECLARE_METATYPE(PassConf::EGeomInType);
 Q_DECLARE_METATYPE(PassConf::EGeomOutType);
+Q_DECLARE_METATYPE(PassConf::ERenderWhat);
+Q_DECLARE_METATYPE(PassConf::ERenderTo);
 
 
 class Pass : public DocElement 
@@ -159,16 +187,48 @@ public:
 	}
 	virtual QString displayName() const { return m_name; }
 	
-	typedef QList<boost::shared_ptr<DocSrc> > TDocSrcList;
+	typedef QList<DocSrcPtr> TDocSrcList;
 	TDocSrcList shaders;
 
-	boost::shared_ptr<DocSrc> model;
+	DocSrcPtr model;
 	QVector<ParamInput> params; 
 
 	PassConf conf;
+	GenericShader prog;
+
 private:
 	Q_DISABLE_COPY(Pass);
 };
+
+
+class ProgKeep
+{
+public:
+	QString name;
+
+	struct SrcKeep
+	{
+		SrcKeep() :type(SRC_NONE) {}
+		SrcKeep(const QString& _name, ElementType _type) :name(_name), type(_type) {}
+		QString name;
+		ElementType type;
+	};
+	struct PassKeep
+	{
+		PassKeep() : conf(NULL) {}
+		QString name;
+		QVector<SrcKeep> shaders;
+		SrcKeep model; // optional...
+		QVector<ParamInput> params; 
+		PassConf *conf; // can't be copied
+	};
+	QVector<PassKeep> m_passes; 
+
+	typedef QMap<QString, QString> TArgsMap;
+	TArgsMap args; // any name from DisplayConf and a value as string
+
+};
+
 
 typedef boost::shared_ptr<Pass> PassPtr;
 

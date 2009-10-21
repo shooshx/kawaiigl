@@ -62,13 +62,14 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	QTabWidget *tabs = new QTabWidget();
 	control_l->addWidget(tabs);
 
-	m_contDlg = new ControlPanel(&m_sett.disp, this, m_doc);
+	m_contDlg = new ControlPanel(&m_sett.disp, this, m_doc, m_kView);
 	tabs->addTab(m_contDlg, "Config");
 	m_browse = new ProjBrowser(this, m_doc);
 	tabs->addTab(m_browse, "Browser");
 	tabs->setCurrentWidget(m_browse);
 
 	//tabs->setCurrentIndex(m_sett.gui.configWindowTab);
+	tabs->setCurrentIndex(0);
 
 	m_control->show();
 	m_control->move(pos() + QPoint(-30, 20));
@@ -84,9 +85,11 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 //	connect(m_kView, SIGNAL(decompProgChanged(const QString&)), m_edDlg, SLOT(curChanged(const QString&)));
 
 	connect(m_doc, SIGNAL(loaded()), m_kView, SLOT(newModelLoaded()));
-	connect(m_doc, SIGNAL(loaded()), m_edDlg, SLOT(doVarsUpdate())); // parsed new text. vars defs may be wrong
+	//connect(m_doc, SIGNAL(loaded()), m_edDlg, SLOT(doVarsUpdate())); // parsed new text. vars defs may be wrong
 	connect(m_doc, SIGNAL(modelChanged()), m_kView, SLOT(updateGL()));
-	connect(m_doc, SIGNAL(progChanged()), m_kView, SLOT(updateGL()));
+	connect(m_doc, SIGNAL(progChanged()), m_kView, SLOT(redoFrameBuffers()));
+	connect(m_kView, SIGNAL(changedFBOs()), m_contDlg, SLOT(updateTexEdits()));
+
 	connect(m_doc, SIGNAL(progParamChanged()), m_kView, SLOT(updateGL()));
 	connect(m_doc, SIGNAL(textChanged(const QString&)), m_edDlg, SLOT(setText(const QString&)));
 
@@ -97,7 +100,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_contDlg, SIGNAL(resetView()), m_kView, SLOT(resetState()));
 	connect(m_contDlg, SIGNAL(resetLight()), m_kView, SLOT(resetLight()));
 	connect(m_contDlg, SIGNAL(changedTexFile(int)), m_kView, SLOT(setTexture(int)));
-	connect(m_contDlg, SIGNAL(reassertTex(int)), m_kView, SLOT(rebindTexture(int)));
+//	connect(m_contDlg, SIGNAL(reassertTex(int)), m_kView, SLOT(rebindTexture(int)));
 	connect(m_contDlg, SIGNAL(saveMesh()), m_doc, SLOT(calcSave()));
 
 	connect(m_browse, SIGNAL(openDocText(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
@@ -146,7 +149,7 @@ void KawaiiGL::closeEvent(QCloseEvent *event)
 
 void KawaiiGL::message(const QString& s)
 {
-	statusBar()->showMessage(s, 5000);
+	statusBar()->showMessage(s, 0);
 }
 
 

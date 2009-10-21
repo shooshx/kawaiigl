@@ -72,12 +72,34 @@ template<> bool TypeProp<QStringList>::fromStringImp(const QString& s);
 template<typename T> // for anything int-derived
 QString TypeProp<T>::toString() const
 {
+	QMetaEnum me = getMetaEnum<T>(container);
+	if (me.isValid())
+	{
+		return QString(me.key(value)); // string name
+	}
 	return QString("%1").arg(value);
 }
 
 template<typename T> // for anything int-derived (enums)
 bool TypeProp<T>::fromStringImp(const QString& s)
 {
+	// parse as enum string
+	QMetaEnum me = getMetaEnum<T>(container);
+	if (me.isValid())
+	{
+		QString us = s.toLower().trimmed();
+		int index = 0;
+		while (us != QString(me.key(index)).toLower())
+			++index;
+		if (index < me.keyCount())
+		{
+			int v = me.value(index);
+			value = *(T*)&v;
+			return true;
+		}
+	}
+
+	// parse as int
 	bool ok = false;
 	int i = s.toInt(&ok);
 	value = *(T*)&i; // old ugly friend...

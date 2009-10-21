@@ -150,11 +150,11 @@ void KwEdit::doShadersUpdate()
 
 	foreach(const KPagePtr& page, m_pages)
 	{
-		page->postCompile(); // update the colors of params
+		page->postCompile(); // update the background colors of param values
 	}
 
 	//doVarsUpdate();
-	m_doc->emitProgChanged();
+	//m_doc->emitProgChanged();
 }
 
 
@@ -407,6 +407,7 @@ void KwEdit::readProg(ProgKeep* prog)
 		}
 	//	if (ui.tabs->count() > oldIndex)
 	//		ui.tabs->setCurrentIndex(oldIndex);
+		ui.tabs->setCurrentIndex(0);
 	}
 
 	// set uniform and attributes from prog

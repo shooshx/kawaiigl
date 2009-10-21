@@ -7,7 +7,7 @@
 class KawaiiGL;
 class Document;
 class DocSrc;
-struct ProgKeep;
+class ProgKeep;
 class Pass;
 class DocElement;
 
@@ -16,10 +16,6 @@ class MyTreeItem : public QObject, public QTreeWidgetItem
 	Q_OBJECT
 public:
 	MyTreeItem(QTreeWidgetItem *parent, const QStringList & strings, int type)
-		:QObject(NULL), QTreeWidgetItem(parent, strings, type), m_pass(NULL), m_src(NULL), m_elem(NULL),
-		 m_itIsIChanging(false)
-	{}
-	MyTreeItem(QTreeWidget *parent, const QStringList & strings, int type)
 		:QObject(NULL), QTreeWidgetItem(parent, strings, type), m_pass(NULL), m_src(NULL), m_elem(NULL),
 		 m_itIsIChanging(false)
 	{}

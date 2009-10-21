@@ -13,6 +13,9 @@
 
 #include <QRubberBand>
 
+
+#include <GL/wglew.h>
+
 using namespace boost;
 
 // TBD 
@@ -51,7 +54,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	:GLWidget(parent)
 	,m_selPnt(NULL), m_bShowHiddenPoints(false)
 	,conf(parent->sett().disp)
-	,m_doc(doc), m_offbuf(NULL), m_offbuf2(NULL), m_useProg(true)
+	,m_doc(doc), m_useProg(true)
 	,m_rubberBand(NULL)
 	,m_framesThisSecond(0), m_framesLast(0)
 {
@@ -61,6 +64,14 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	aqmin = Vec(-2, -2, -2);
 	aqmax = Vec(2, 2, 2);
 	m_lightPos = Vec(0.0f, 0.0f, 20.0f);
+
+	for(int i = 0; i < N_TEX; ++i)
+	{
+		m_offbufA[i] = NULL;
+		m_offbufB[i] = NULL;
+	}
+	m_texUnits.resize(N_TEX);
+
 
 	//BuildFont(QFont());
 	show();
@@ -79,6 +90,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.bCoordName, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.backCol, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.lineColor, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.bTriangulate, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
 
@@ -99,8 +111,8 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(changedFps()));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(fpsTimeout()));
 
-	connect(&conf.runType, SIGNAL(changed()), this, SLOT(changedRunType()));
-	connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
+	//connect(&conf.runType, SIGNAL(changed()), this, SLOT(changedRunType()));
+	//connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
 
 
 	setFocusPolicy(Qt::StrongFocus); // for key presses
@@ -180,6 +192,11 @@ void T2GLWidget::initializeGL()
 	glEnable(GL_POLYGON_OFFSET_POINT);
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POINT_SMOOTH);
+
+	if (WGLEW_EXT_swap_control) {
+		// disable vertical sync
+		wglSwapIntervalEXT(0);
+	}
 
 }
 
@@ -372,12 +389,7 @@ void T2GLWidget::paintFlat()
 	//glColor3f(0.3f, 0.3f, 1.0f);
 	//glRasterPos2f(-0.95f, -0.92f);
 
-	QString s = QString("Vertices:%1 / Polygons:%2").arg(m_doc->numPoints()).arg(m_doc->numPoly());
-	if (conf.fullFps)
-	{
-		s += QString(" %1 FPS").arg(m_framesLast);
-	}
-	emit message(s);
+
 
 	//GL_END_TEXT();
 
@@ -392,8 +404,8 @@ void T2GLWidget::paintPoly()
 	if (conf.bPoly)
 	{
 		ProgramUser proguser;
-		if (m_curPass->conf.incPoly && m_useProg && m_doc->m_prog.isOk())
-			proguser.use(&m_doc->m_prog);
+		if (m_curPass->conf.incPoly && shouldUseProg())
+			proguser.use(&m_curPass->prog);
 
 		glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
 
@@ -449,16 +461,13 @@ void T2GLWidget::programConfig(const PassPtr& pass)
 		glDisable(GL_POINT_SPRITE);
 	}
 
-// 	if (!m_doc->m_prog.geomprogs().isEmpty())
-// 	{ // has geometry shaders
-// 		uint progid = m_doc->m_prog.progId();
-// 		glProgramParameteriEXT(progid, GL_GEOMETRY_INPUT_TYPE_EXT, pconf.geomInput.val());
-// 		glProgramParameteriEXT(progid, GL_GEOMETRY_OUTPUT_TYPE_EXT, pconf.geomOutput.val());
-// 		glProgramParameteriEXT(progid, GL_GEOMETRY_VERTICES_OUT_EXT, pconf.geomVtxCount.val()); // 6 points for every point
-// 
-// 	}
-
 }
+
+bool T2GLWidget::shouldUseProg() const
+{
+	return m_useProg && m_curPass.get() != NULL && m_curPass->prog.isOk();
+}
+
 
 void T2GLWidget::paint3DScene(bool clearBack)
 {
@@ -467,12 +476,13 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	if (clearBack)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	if (m_useProg && m_doc->m_prog.isOk())
+	if (shouldUseProg())
 		programConfig(m_curPass);
-
 
 	if (!m_doc->isValid())
 		return;
+
+	m_countPoly = 0; m_countVtx = 0;
 
 	if (!m_bShowHiddenPoints)
 	{ // this is faster
@@ -489,6 +499,13 @@ void T2GLWidget::paint3DScene(bool clearBack)
 		paintFlat();
 	}
 
+	QString s = QString("Vertices:%1 / Polygons:%2").arg(m_countVtx).arg(m_countPoly);
+	if (conf.fullFps)
+	{
+		s += QString(" %1 FPS").arg(m_framesLast);
+	}
+	emit message(s);
+
 	mglCheckErrorsC("paint");
 }
 
@@ -496,9 +513,143 @@ void T2GLWidget::paint3DScene(bool clearBack)
 void T2GLWidget::resizeGL(int width, int height)
 {
 	GLWidget::resizeGL(width, height);
-	changedRunType();
+	redoFrameBuffers();
 }
 
+
+void T2GLWidget::redoFrameBuffers()
+{
+	bool touched[N_TEX] = {0}; // has this run touched texUnit[i] ?
+
+
+	if (m_doc->isProgEnabled())
+	{
+		for(int i = 0; i < N_TEX; ++i)
+		{
+			delete m_offbufA[i]; 
+			m_offbufA[i] = NULL;
+			delete m_offbufB[i]; 
+			m_offbufB[i] = NULL;
+		}
+
+		for(int passi = 0; passi < m_doc->m_passes.size(); ++passi)
+		{
+			PassPtr pass = m_doc->m_passes[passi];
+			PassConf &pconf = pass->conf;
+
+			int index = pconf.to;
+
+			if (index != PassConf::Display)  // to frame buffer (texture)
+			{
+				bool doMulti = GLEW_EXT_framebuffer_blit && pconf.toMultisample;
+				
+				const GlTexture* drawTex = NULL;
+				if (doMulti) 
+				{	// rendering to the multisampled fbo and then immediatly copy to the normal one which is the texture
+					m_offbufA[index] = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 4);
+					m_offbufB[index] = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 0, MyFramebufferObject::FI_LINEAR);
+					drawTex = m_offbufB[index]->texture();
+					printf("created multisample off-screen buffer (%d,%d) for tex %d\n", width(), height(), index);
+				}
+				else
+				{
+					m_offbufA[index] = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
+					drawTex = m_offbufA[index]->texture();
+					printf("created off-screen buffer (%d,%d) for tex %d\n", width(), height(), index);
+				}
+
+				//m_offbufA[index] = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
+				
+				glActiveTexture(GL_TEXTURE0 + index);
+				drawTex->bind();
+				m_texUnits[index].outputOf = pass;
+				touched[index] = true;
+			} // display
+		} // passes for
+	} // prog enabled
+
+	for(int i = 0; i < N_TEX; ++i)
+	{
+		if (!touched[i])
+		{
+			m_texUnits[i].outputOf.reset();
+			rebindTexture(i);
+		}
+	}
+
+	emit changedFBOs();
+	updateGL();
+}
+
+
+void T2GLWidget::myPaintGL()
+{
+	if (m_doc->isProgEnabled())
+	{
+		for(int passi = 0; passi < m_doc->m_passes.size(); ++passi)
+		{
+			m_curPass = m_doc->m_passes[passi];
+			PassConf &pconf = m_curPass->conf;
+
+			// set up render to
+			MyFramebufferObject *fbo = NULL;
+			int toIndex = pconf.to;
+			if (toIndex != PassConf::Display)  // to frame buffer (texture)
+			{
+				fbo = m_offbufA[toIndex];
+			}
+
+			// render
+			MyFramebufferObject::doBind(fbo);
+			if (pconf.what == PassConf::Model)
+			{
+				paint3DScene();
+			}
+			else // Quad_TexX
+			{
+				ProgramUser proguser;  //... through the program
+				if (m_curPass->prog.isOk())
+					proguser.use(&m_curPass->prog);
+
+				int texunit = (int)pconf.what;
+				glActiveTexture(GL_TEXTURE0 + texunit);
+				glEnable(GL_TEXTURE_2D);
+				WholeScreenQuad wsq(this, texunit);
+				wsq.render();
+				glDisable(GL_TEXTURE_2D);
+			}
+			MyFramebufferObject::doRelease(fbo);
+
+			// take care of to-multisampling
+			if (toIndex != PassConf::Display)
+			{
+				bool doMulti = GLEW_EXT_framebuffer_blit && pconf.toMultisample;
+				if (doMulti && m_offbufA[toIndex] != NULL && m_offbufB[toIndex] != NULL)
+				{ // can't read directly from a multi-sample render buffer, need to copy it to a texture.
+					glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_offbufA[toIndex]->handle()); // from
+					glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_offbufB[toIndex]->handle()); // to
+					// using GL_ARB_framebuffer_object
+					glBlitFramebuffer(0, 0, width(), height(), 0, 0, width(), height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
+					glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
+					glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+				}
+			}
+		}
+	}
+	else
+	{
+		paint3DScene();
+	}
+
+	if (conf.fullFps)
+	{
+		++m_framesThisSecond;
+		update();
+	}
+
+}
+
+#if 0
 void T2GLWidget::changedRunType()
 {
 	delete m_offbuf; m_offbuf = NULL;
@@ -540,18 +691,17 @@ void T2GLWidget::changedRunType()
 
 		m_doc->m_inputUnit = 1;
 		m_doc->m_outputUnit = 0;
-	
 
 	}
 	else if (conf.runType == DisplayConf::RunNormal)
 	{
-		
+
 	}
 	updateGL();
 }
 
 
-void T2GLWidget::myPaintGL()
+void T2GLWidget::myPaintGLx()
 {
 	try {
 
@@ -650,6 +800,8 @@ void T2GLWidget::myPaintGL()
 		printf("cought exception in myPaintGL()\n");
 	}
 }
+#endif
+
 
 class VertexDrawer
 {
@@ -680,7 +832,7 @@ public:
 			glMultiTexCoord2f(GL_TEXTURE0 + m_texUnit, curpl.texAncs[pni].x, curpl.texAncs[pni].y);
 		}
 
-		if (m_doc->m_prog.isOk())
+		if (m_glw->shouldUseProg())
 		{
 			m_doc->setAttribs(&curpl, pni);
 		}
@@ -695,22 +847,39 @@ public:
 void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 {
 	bool hasTex = true; //false;
+	bool triangulate = conf.bTriangulate;
 	VertexDrawer drawer(this, hasTex, colorize, obj.verterxNormals);
 
 	if (!obj.poly.isEmpty())
 	{
-		glBegin(GL_QUADS); 
+		glBegin(triangulate?GL_TRIANGLES:GL_QUADS); 
 		for(int pli = 0; pli < obj.poly.size(); ++pli)
 		{
 			MyPolygon &curpl = *obj.poly[pli];
 			if (curpl.pnum != 4)
 				continue;
 
-			for(int pni = 0; pni < 4; ++pni) 
+			if (triangulate)
 			{
-				drawer.drawVertex(curpl, pni);
+				drawer.drawVertex(curpl, 0);
+				drawer.drawVertex(curpl, 1);
+				drawer.drawVertex(curpl, 2);
 
-			}		
+				drawer.drawVertex(curpl, 0);
+				drawer.drawVertex(curpl, 3);
+				drawer.drawVertex(curpl, 2);
+				m_countPoly += 2;
+				m_countVtx += 6;
+			}
+			else
+			{
+				for(int pni = 0; pni < 4; ++pni) 
+				{
+					drawer.drawVertex(curpl, pni);
+				}	
+				++m_countPoly;
+				m_countVtx += 3;
+			}
 		} 
 		glEnd();
 	}
@@ -725,7 +894,9 @@ void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 			for(int pni = 0; pni < 3; ++pni)
 			{
 				drawer.drawVertex(curpl, pni);
-			}		
+			}
+			++m_countPoly;
+			m_countVtx += 4;
 		} 
 		glEnd();
 	}
@@ -757,7 +928,7 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 
 		if (!vtxNormals)
 			glNormal3fv((revNormals?-fh->normal():fh->normal()).v);
-		for(int i = 0; i < fh->size(); ++i)
+		for(int i = 0; i < 3; ++i)
 		{
 			RMesh::Vertex_const_handle vh = fh->vertex(i);
 
@@ -768,13 +939,16 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 			else if (vtxTexCoord)
 				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, vh->prop<Vec2>(MPROP_TEXCOORD).v);
 			
-			if (m_doc->m_prog.isOk())
+			if (shouldUseProg())
 			{
 				m_doc->setAttribs(vh);
 			}
 
 			glVertex3fv(vh->point().v);
 		}
+
+		++m_countPoly;
+		m_countVtx += 3;
 	}
 	glEnd();
 }
@@ -815,6 +989,7 @@ struct PointVertexDrawer : public PointDrawer
 		glColor3fv(pointCol(handle).v);
 
 		glVertex3fv(p.v);
+		++m_glw->m_countVtx;
 	}
 
 };
@@ -827,8 +1002,8 @@ void T2GLWidget::drawPointDots()
 	glPointSize(14.0);
 
 	ProgramUser proguser;
-	if (m_curPass->conf.incPoints && m_useProg && m_doc->m_prog.isOk())
-		proguser.use(&m_doc->m_prog);
+	if (m_curPass->conf.incPoints && shouldUseProg())
+		proguser.use(&m_curPass->prog);
 
 	glBegin(GL_POINTS);
 

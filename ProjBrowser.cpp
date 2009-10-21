@@ -69,7 +69,7 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 	
 	QMenu *docMenu = new QMenu(this);
 	act = new QAction(QIcon(), "Remove", this);
-	connect(act, SIGNAL(triggered()), this, SLOT(removeFromMenu()));
+	connect(act, SIGNAL(triggered()), this, SLOT(on_removeBut_clicked()));
 	act->setShortcut(QKeySequence(Qt::Key_Delete));
 	docMenu->addAction(act);
 	passMenu->addAction(act);
@@ -115,12 +115,17 @@ void ProjBrowser::removeFromMenu()
 void ProjBrowser::existingDoc()
 {
 	int type = ((QAction*)sender())->data().toInt();
-	QString filename = QFileDialog::getOpenFileName(this, QString("Load ") + Document::getTypeName((ElementType)type) + " Shader", 
+	QStringList filenames = QFileDialog::getOpenFileNames(this, QString("Load ") + Document::getTypeName((ElementType)type) + " Shader", 
 								"", "model files (*.txt *.glsl)");
-	if (filename.isEmpty())
-		return;
+	
 	MyTreeItem* item = static_cast<MyTreeItem*>(ui.tree->eventItem());
-	m_doc->loadShaderFile(item->m_pass, filename, (ElementType)type);
+	foreach(const QString& filename, filenames)
+	{
+		if (filename.isEmpty())
+			return;
+		QString name = QFileInfo(filename).fileName(); // remove directory
+		m_doc->loadShaderFile(item->m_pass, name, (ElementType)type);
+	}
 	updateTree();
 }
 
@@ -169,7 +174,7 @@ void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t, Pass* selpa
 {
 	if (t == NULL)
 		return;
-	MyTreeItem *item = new MyTreeItem(parent, QStringList(t->displayName()), ITEM_DOC);
+	MyTreeItem *item = new MyTreeItem(NULL, QStringList(t->displayName()), ITEM_DOC);
 	item->m_pass = pass;
 	item->m_elem = item->m_src = t;
 
@@ -178,6 +183,7 @@ void ProjBrowser::addItem(Pass* pass, MyTreeItem *parent, DocSrc* t, Pass* selpa
 		ui.tree->setCurrentItem(item);
 
 	connect(t, SIGNAL(nameChanged(const QString&)), item, SLOT(updateDisplay(const QString&)));
+	parent->addChild(item);
 }
 
 
@@ -187,7 +193,7 @@ void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 	for(int i = 0; i < m_doc->m_passes.size(); ++i)
 	{
 		PassPtr& pass = m_doc->m_passes[i];
-		MyTreeItem *passItem = new MyTreeItem((QTreeWidget*)ui.tree, QStringList(pass->displayName()), ITEM_PASS);
+		MyTreeItem *passItem = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_PASS);
 		passItem->m_elem = passItem->m_pass = pass.get();
 		if (passItem->m_pass == selpass && passItem->m_src == seldoc) // src is NULL
 			ui.tree->setCurrentItem(passItem);
@@ -198,6 +204,7 @@ void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 			addItem(pass.get(), passItem, t.get());
 		}
 
+		ui.tree->addTopLevelItem(passItem);
 	}
 
 	ui.tree->expandAll();
@@ -267,14 +274,16 @@ void ProjBrowser::on_downBut_clicked()
 
 void ProjBrowser::on_removeBut_clicked()
 {
-	QTreeWidgetItem* item = ui.tree->currentItem();
-	if (item == NULL)
-		return;
-	MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
-	if (mitem->type() != ITEM_PASS)
-		m_doc->removeShader(mitem->m_pass, mitem->m_src);		
-	else
-		m_doc->removePass(mitem->m_pass);
+	QList<QTreeWidgetItem*> items = ui.tree->selectedItems();
+
+	foreach(QTreeWidgetItem* item, items)
+	{
+		MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
+		if (mitem->type() != ITEM_PASS)
+			m_doc->removeShader(mitem->m_pass, mitem->m_src);		
+		else
+			m_doc->removePass(mitem->m_pass);
+	}
 
 	updateTree();
 }

@@ -260,6 +260,18 @@ bool MyFramebufferObject::release()
     return d->valid;
 }
 
+void MyFramebufferObject::doBind(MyFramebufferObject* fbo)
+{
+	if (fbo != NULL)
+		fbo->bind();
+	else
+		 glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+}
+void MyFramebufferObject::doRelease(MyFramebufferObject* fbo)
+{
+	if (fbo != NULL)
+		fbo->release();
+}
 
 
 const GlTexture* MyFramebufferObject::texture() const

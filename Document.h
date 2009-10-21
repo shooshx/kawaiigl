@@ -62,8 +62,8 @@ public:
 		if (!isEType(pi.type, val))
 			return;
 		{
-			ProgramUser use(&m_prog);
-			m_prog.setUniform(val, pi.index);
+			ProgramUser use(&pi.mypass->prog);
+			pi.mypass->prog.setUniform(val, pi.index);
 		}
 		emit progParamChanged(); // causes updateGL
 	}
@@ -159,7 +159,10 @@ public:
 		Document* m_doc;
 	};
 
-	typedef QVector<boost::shared_ptr<ParamAdapter> > TAdaptersList;
+	// this maps passName + paramNumbae (string) to the adapter.
+	// the mapping is done to avoid multiple adapters for the same parameter
+	// TBD: need to get rid of them when they change type?
+	typedef QMap<QString, boost::shared_ptr<ParamAdapter> >  TAdaptersList;
 	TAdaptersList m_onCalcEvals; // things that are re-evaluated when there's a calc() call
 	TAdaptersList m_onFrameEvals; // things that are reeveluated every frame
 
@@ -189,7 +192,7 @@ public:
 	//QString m_curtext; // of model
 	KwParser m_kparser;
 
-	GenericShader m_prog;
+	//GenericShader m_prog;
 
 	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
 	// these are here since they need to be sent as uniforms and we need access to them.

@@ -37,6 +37,16 @@ void TypePropN::fireChanged()
 		p->fireChanged();
 }
 
+void ParamBase::copyFrom(const ParamBase *other)
+{
+	foreach(Prop* p, m_props)
+	{
+		const Prop *op = other->propByName(p->mname());
+		p->copyFrom(op);
+	}
+}
+
+
 bool ParamBase::execDialog(QWidget *parent, const QString caption)
 {
 	MyInputDlg *dlg = createDialog(parent, true);

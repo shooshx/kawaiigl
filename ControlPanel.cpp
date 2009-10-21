@@ -3,14 +3,15 @@
 #include "DisplayConf.h"
 #include "KawaiiGL.h"
 #include "Document.h"
+#include "T2GLWidget.h"
 
 #include <QFileDialog>
 
 
 
 
-ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
-:QWidget(parent), conf(_conf), m_doc(doc)
+ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, T2GLWidget* view)
+:QWidget(parent), conf(_conf), m_doc(doc), m_kview(view)
 {
 	ui.setupUi(this);
 
@@ -33,6 +34,8 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 	m_W_Tex[0] = W_Tex(ui.tex1NameLabel, ui.tex1FileBot);
 	m_W_Tex[1] = W_Tex(ui.tex2NameLabel, ui.tex2FileBot);
 	m_W_Tex[2] = W_Tex(ui.tex3NameLabel, ui.tex3FileBot);
+	m_W_Tex[3] = W_Tex(ui.tex4NameLabel, ui.tex4FileBot);
+
 	for(int i = 0; i < N_TEX; ++i)
 	{
 		m_W_Tex[i].bot->setUserData(0, new UserData<int>(i));
@@ -52,6 +55,7 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 	(new CheckBoxIn(&conf->bCull, ui.SD_cull))->reload();
 	(new CheckBoxIn(&conf->bLines, ui.SD_lines))->reload();
 	(new CheckBoxIn(&conf->bLinesAll, ui.SD_linesAll))->reload();
+	(new CheckBoxIn(&conf->bTriangulate, ui.SD_triang))->reload();
 	(new CheckBoxIn(&conf->bPoly, ui.SD_polygons))->reload();
 	(new CheckBoxIn(&conf->bPoints, ui.SD_points))->reload();
 	(new CheckBoxIn(&conf->bUnusedPoints, ui.SD_unused))->reload();
@@ -65,11 +69,10 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 	(new ColorSelIn(&conf->materialCol, ui.mattColBot, WidgetIn::DoModal))->reload();
 	(new ColorSelIn(&conf->selectedCol, ui.selColBot, WidgetIn::DoModal))->reload();
 	(new ColorSelIn(&conf->lineColor, ui.lineColBot, WidgetIn::DoModal))->reload();
-	(new CheckBoxIn(&conf->quadMultiSamp, ui.multiSampQuad))->reload();
+	//(new CheckBoxIn(&conf->quadMultiSamp, ui.multiSampQuad))->reload();
 
 	connect(&conf->bCoordName, SIGNAL(changed()), this, SLOT(chFontEnable()));
 	connect(&conf->bCoordNum, SIGNAL(changed()), this, SLOT(chFontEnable()));
-	connect(&conf->runType, SIGNAL(changed()), this, SLOT(runTypeChange()));
 
 	//(new WidgetTIn<int>::LineEditIn(&conf->coordFontSize, ui.coordFontSize))->reload();
 	connect(ui.coordFontSize, SIGNAL(valueChanged(int)), this, SLOT(coordFontSizeChanged(int)));
@@ -81,8 +84,7 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc)
 	(new ComboBoxIn<DisplayConf::ETexAct>(&conf->texAct, ui.texSel))->reload();
 
 	updateSDlowLevel(*conf);
-	ui.tex0Fake->hide();
-	ui.tex1Fake->hide();
+
 }
 
 
@@ -179,34 +181,31 @@ void ControlPanel::texSelChanged(int i)
 */
 
 
-void ControlPanel::runTypeChange()
+void ControlPanel::updateTexEdits()
 {
-	if (conf->runType == DisplayConf::RunQuadProcess)
+	for (int i = 0; i < N_TEX; ++i)
 	{
-		ui.tex0Fake->show();
-		ui.tex0cont->hide();
-		ui.tex1Fake->hide();
-		ui.tex1cont->show();
-		ui.multiSampQuad->show();
-		emit reassertTex(1);
+		const T2GLWidget::TexUnit& tu = m_kview->m_texUnits[i];
+		PassPtr pass;
+		W_Tex &wtex = m_W_Tex[i];
+
+		wtex.file->blockSignals(true); // text changes don't send out fake updates
+		if (pass = tu.outputOf.lock())
+		{
+			wtex.file->setText(QString("Output of %1").arg(pass->name()));
+			wtex.file->setReadOnly(true);
+			wtex.bot->setEnabled(false);
+			wtex.isPassOutput = true;
+		}
+		else
+		{
+			wtex.bot->setEnabled(true);
+			wtex.file->setText(conf->texFile[i]->val());
+			wtex.file->setReadOnly(false);
+		}
+		wtex.file->blockSignals(false);
 	}
-	else if (conf->runType == DisplayConf::RunTex2Tex)
-	{
-		ui.tex0Fake->show();
-		ui.tex0cont->hide();
-		ui.multiSampQuad->hide();
-		ui.tex1Fake->show();
-		ui.tex1cont->hide();
-	}
-	else
-	{
-		ui.tex0Fake->hide();
-		ui.tex0cont->show();
-		ui.tex1Fake->hide();
-		ui.tex1cont->show();
-		emit reassertTex(0);
-		emit reassertTex(1);
-	}
-	emit doUpdate();
+
+	//emit doUpdate();
 }
 

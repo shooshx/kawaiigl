@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Fri Oct 16 16:47:09 2009
+** Created: Tue Oct 20 15:29:28 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!

@@ -44,7 +44,7 @@ EParamType getBaseType(EParamType t)
 
 
 #define EDIT_CONF_FILE ("conf.edit.xml")
-#define PROG_CONF_FILE ("conf.programs.xml")
+#define PROG_CONF_FILE ("conf.programs2.xml")
 
 
 Document::Document(KawaiiGL* mainc)
@@ -112,41 +112,32 @@ PassPtr Document::newPass(const QString& name)
 // from config
 void Document::readProg(ProgKeep* prog)
 {
-	PassPtr p = newPass("Pass 1");
+	//PassPtr p = newPass("Pass 1");
 
 	// remove everything except the model of the first pass
+	DocSrcPtr model;
 	if (!m_passes.isEmpty())
-		p->model = m_passes[0]->model;
+		model = m_passes[0]->model;
 	m_passes.clear(); // removes them from the edit window as well
 
-	// read texts
-	DocSrc *d;
-	
-	if (!prog->vtxProg.isEmpty())
+	foreach(const ProgKeep::PassKeep& pk, prog->m_passes)
 	{
-		d = new DocSrc(prog->vtxProg, true, SRC_VTX);
-		readToString(d->name(), d->text);
-		p->shaders.append(shared_ptr<DocSrc>(d));
-	}
-	if (!prog->fragProg.isEmpty())
-	{
-		d = new DocSrc(prog->fragProg, true, SRC_FRAG);
-		readToString(d->name(), d->text);
-		p->shaders.append(shared_ptr<DocSrc>(d));
-	}
-	if (!prog->geomProg.isEmpty())
-	{
-		d = new DocSrc(prog->geomProg, true, SRC_GEOM);
-		readToString(d->name(), d->text);
-		p->shaders.append(shared_ptr<DocSrc>(d));
+		PassPtr p = newPass(pk.name);
+		foreach(const ProgKeep::SrcKeep& sk, pk.shaders)
+		{
+			DocSrc *d = new DocSrc(sk.name, true, sk.type);
+			readToString(d->name(), d->text);
+			p->shaders.append(shared_ptr<DocSrc>(d));
+		}
+		
+		p->params = pk.params; // copy the ParamInput's of the loaded xml.
+		p->conf.copyFrom(pk.conf);
+		
+		m_passes.append(p);
 	}
 
-	p->params = prog->params; // copy the ParamInput's of the loaded xml.
-
-	m_passes.append(p);
-
-	p->conf.runType = prog->runType;
-
+	if (!m_passes.isEmpty())
+		m_passes[0]->model = model;
 
 	// set config params
 	for(ProgKeep::TArgsMap::iterator it = prog->args.begin(); it != prog->args.end(); ++it)
@@ -563,60 +554,63 @@ void Document::updateTrack(IPoint* sel)
 
 void Document::compileShaders()
 {
-	m_prog.clear();
-	if (!m_shaderEnabled)
-		return;
-
 	if (!isValid())
 	{ // we did not parse any model yet so the parser is invalid. wake it up.
 		calc(NULL);
 	}
 
-	if (m_passes.isEmpty())
-		return;
-	const PassPtr &pass = m_passes[0];
-
-	foreach(const shared_ptr<DocSrc>& src, pass->shaders)
-	{
-		if (src->text.trimmed().isEmpty())
-			continue;
-		if (src->type == SRC_VTX)
-			m_prog.vtxprogs() += src->text;
-		else if (src->type == SRC_FRAG)
-			m_prog.fragprogs() += src->text;
-		else if (src->type == SRC_GEOM)
-			m_prog.geomprogs() += src->text;
-	}
-
-	// if it's empty, do nothing.
-	if (m_prog.vtxprogs().size() + m_prog.fragprogs().size() + m_prog.geomprogs().size() == 0)
-		return;
-
-	m_conf.runType = pass->conf.runType.val();
 
 	m_onCalcEvals.clear();
-	m_onCalcEvals.resize(pass->params.size());
 	m_onFrameEvals.clear();
-	m_onFrameEvals.resize(pass->params.size());
-	m_attribEval.clear();
 
-	for(int i = 0; i < pass->params.size(); ++i)
-	{
-		const ParamInput &pi = pass->params[i];
-		ShaderParam *sp;
-		if (pi.isUniform)
-			sp = new UniformParam(pi.name);
-		else
-			sp = new AttribParam(pi.name);
-		m_prog.addParam(sp, i);
-		pi.index = i;
-	}
 
-	ProgCompileConf conf(pass->conf.geomInput, pass->conf.geomOutput, pass->conf.geomVtxCount);
-	if (m_prog.init(conf))
+	foreach(const PassPtr &pass, m_passes)
 	{
-		// need to take care of the variables background colors.
-		parseAllParams(pass);
+		pass->prog.clear();
+
+		if (!m_shaderEnabled)
+			continue;
+
+		foreach(const shared_ptr<DocSrc>& src, pass->shaders)
+		{
+			if (src->text.trimmed().isEmpty())
+				continue;
+			if (src->type == SRC_VTX)
+				pass->prog.vtxprogs() += src->text;
+			else if (src->type == SRC_FRAG)
+				pass->prog.fragprogs() += src->text;
+			else if (src->type == SRC_GEOM)
+				pass->prog.geomprogs() += src->text;
+		}
+
+		// if it's empty, do nothing.
+		if (pass->prog.vtxprogs().size() + pass->prog.fragprogs().size() + pass->prog.geomprogs().size() == 0)
+			continue;
+
+		//m_conf.runType = pass->conf.runType.val();
+
+		//m_onCalcEvals.resize(pass->params.size());
+		//m_onFrameEvals.resize(pass->params.size());
+		m_attribEval.clear();
+
+		for(int i = 0; i < pass->params.size(); ++i)
+		{
+			const ParamInput &pi = pass->params[i];
+			ShaderParam *sp;
+			if (pi.isUniform)
+				sp = new UniformParam(pi.name);
+			else
+				sp = new AttribParam(pi.name);
+			pass->prog.addParam(sp, i);
+			pi.index = i;
+		}
+
+		ProgCompileConf conf(pass->conf.geomInput, pass->conf.geomOutput, pass->conf.geomVtxCount);
+		if (pass->prog.init(conf))
+		{
+			// need to take care of the variables background colors.
+			parseAllParams(pass);
+		}
 	}
 
 	emit progChanged();
@@ -626,7 +620,7 @@ void Document::compileShaders()
 void Document::parseAllParams(const PassPtr &pass)
 {
 	{
-		ProgramUser use(&m_prog);
+		ProgramUser use(&pass->prog);
 		for(int i = 0; i < pass->params.size(); ++i)
 		{
 			const ParamInput &pi = pass->params[i];
@@ -641,12 +635,12 @@ void Document::parseAllParams(const PassPtr &pass)
 
 bool Document::parseSingleParam(const ParamInput& pi, bool update)
 {
-	if (!m_prog.isOk())
+	if (!pi.mypass->prog.isOk())
 		return false;
 
 	bool ok;
 	{
-		ProgramUser use(&m_prog);
+		ProgramUser use(&pi.mypass->prog);
 		ok = parseParam(pi);
 	}
 
@@ -657,7 +651,10 @@ bool Document::parseSingleParam(const ParamInput& pi, bool update)
 	return ok;
 }
 
-
+QString uniqueParamId(const ParamInput& pi)
+{
+	return pi.mypass->name() + QString("_%1").arg(pi.index);
+}
 
 // parse uniform. this defines what a uniform variable can be.
 bool Document::parseParam(const ParamInput& pi)
@@ -674,6 +671,8 @@ bool Document::parseParam(const ParamInput& pi)
 	const char* end = ba.data() + ba.size();
 	const char* nameend = ba.data() + pi.name.size();
 
+	GenericShader &prog = pi.mypass->prog;
+
 	bool ok = true;
 	switch(pi.type) // ADDTYPE
 	{
@@ -684,7 +683,7 @@ bool Document::parseParam(const ParamInput& pi)
 			float f = 0.0f;
 			if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
 			{
-				m_prog.setUniform(f, pi.index);
+				prog.setUniform(f, pi.index);
 			}
 		}
 		break;
@@ -694,7 +693,7 @@ bool Document::parseParam(const ParamInput& pi)
 			if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
 			{
 				int i = (int)f;
-				m_prog.setUniform(i, pi.index);
+				prog.setUniform(i, pi.index);
 			}
 		}
 		break;
@@ -703,7 +702,7 @@ bool Document::parseParam(const ParamInput& pi)
 			Vec2 v;
 			if (ok = m_kparser.kparseVec2(nameend + 1, end, v))
 			{
-				m_prog.setUniform(v, pi.index);
+				prog.setUniform(v, pi.index);
 			}
 		}
 		break;
@@ -714,9 +713,9 @@ bool Document::parseParam(const ParamInput& pi)
 			if (ok = m_kparser.kparseVec(iter, end, nameend, v))
 			{
 				shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, pi.prop, pi.index));
-				m_onCalcEvals[pi.index] = pa;
+				m_onCalcEvals[uniqueParamId(pi)] = pa;
 
-				pa->update(m_prog);
+				pa->update(prog);
 			}
 		}
 		break;
@@ -726,7 +725,7 @@ bool Document::parseParam(const ParamInput& pi)
 			Vec4 v;
 			if (ok = m_kparser.kparseVec4(nameend + 1, end, v))
 			{
-				m_prog.setUniform(v, pi.index);
+				prog.setUniform(v, pi.index);
 			}
 		}
 		break;
@@ -735,8 +734,8 @@ bool Document::parseParam(const ParamInput& pi)
 			int ti = pi.value.toInt(&ok);
 			if (ok)
 			{
-				m_prog.setUniform(ti, pi.index);
-				m_onFrameEvals[pi.index].reset();
+				prog.setUniform(ti, pi.index);
+				m_onFrameEvals[uniqueParamId(pi)].reset();
 			}
 			else
 			{
@@ -744,9 +743,9 @@ bool Document::parseParam(const ParamInput& pi)
 				if (v.startsWith("input"))
 				{
 					shared_ptr<ParamAdapter> pa(new TexParamAdapter(this, pi.index));
-					m_onFrameEvals[pi.index] = pa;
+					m_onFrameEvals[uniqueParamId(pi)] = pa;
 
-					pa->update(m_prog);
+					pa->update(prog);
 					ok = true;
 				}
 			}
@@ -787,11 +786,12 @@ void Document::updateParams(TAdaptersList &adapters)
 {
 	mglCheckErrorsC("startUpdateParams");
 	{
-		ProgramUser use(&m_prog);
-		foreach(const shared_ptr<ParamAdapter>& pa, adapters)
+		//throw "blat";
+		//ProgramUser use(&m_prog);
+		//foreach(const shared_ptr<ParamAdapter>& pa, adapters)
 		{
-			if (pa.get() != NULL)
-				pa->update(m_prog); // there are only Vec that need updates at the moment.
+		//	if (pa.get() != NULL)
+		//		pa->update(m_prog); // there are only Vec that need updates at the moment.
 		}
 	}
 
@@ -855,7 +855,7 @@ bool Document::parseAttrib(const ParamInput &pi)
 	else 
 		return false;
 
-	atte->setEnv(&m_prog, pi.index);
+	atte->setEnv(&pi.mypass->prog, pi.index);
 	m_attribEval.append(shared_ptr<AttribEval>(atte));
 	return true;
 }

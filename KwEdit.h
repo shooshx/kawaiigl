@@ -29,6 +29,7 @@ class ProgTextEdit;
 class DocElement;
 class ShaderConfigDlg;
 class Pass;
+class ProgKeep;
 
 struct KPage
 {

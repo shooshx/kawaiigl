@@ -11,12 +11,13 @@
 
 class Document;
 class KawaiiGL;
+class T2GLWidget;
 
 class ControlPanel : public QWidget //MyDialog
 {
 	Q_OBJECT
 public:
-	ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document* doc);
+	ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document* doc, T2GLWidget* kview);
 	//void setLightSliders(float amb, float diff, float spec);
 
 private slots:
@@ -29,7 +30,7 @@ private slots:
 	//void texSelChanged(int i);
 
 public slots:
-	void runTypeChange();
+	void updateTexEdits();
 
 signals:
 	void changedRend(); // changed rendering stuff
@@ -38,7 +39,7 @@ signals:
 	void resetView();
 	void resetLight();
 	void changedTexFile(int which);
-	void reassertTex(int which);
+//	void reassertTex(int which);
 	void saveMesh();
 	void doUpdate();
 	
@@ -57,14 +58,16 @@ private:
 
 	struct W_Tex
 	{
-		W_Tex(QLineEdit* ed = NULL, QPushButton* b = NULL) :file(ed), bot(b) {}
+		W_Tex(QLineEdit* ed = NULL, QPushButton* b = NULL) :file(ed), bot(b), isPassOutput(false) {}
 		QLineEdit *file;
 		QPushButton *bot;
+		bool isPassOutput; // is this texture a pass output
 	} m_W_Tex[N_TEX];
 
 
 	DisplayConf *conf;
 	Document *m_doc;
+	T2GLWidget *m_kview; // needed for access to the m_texUnits;
 	//bool m_bLastCullCheck;
 };
 

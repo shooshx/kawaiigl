@@ -10,7 +10,14 @@ ShaderConfigDlg::ShaderConfigDlg(QWidget *parent, Pass* pass, T2GLWidget* view, 
 	ui.setupUi(this);
 	PassConf &conf = pass->conf;
 
-	(new ComboBoxIn<DisplayConf::RunType>(&conf.runType, ui.runTypeBox, true, &dconf))->reload();
+	ui.geomGrp->setCollapse(true);
+	ui.pointGrp->setCollapse(true);
+
+	//(new ComboBoxIn<DisplayConf::RunType>(&conf.runType, ui.runTypeBox, true, &dconf))->reload();
+
+	(new ComboBoxIn<PassConf::ERenderWhat>(&conf.what, ui.whatCombo))->reload();
+	(new ComboBoxIn<PassConf::ERenderTo>(&conf.to, ui.toCombo))->reload();
+	(new CheckBoxIn(&conf.toMultisample, ui.toMulti))->reload();
 
 	(new CheckBoxIn(&conf.incPoly, ui.incPoly))->reload();
 	(new CheckBoxIn(&conf.incPoints, ui.incPoints))->reload();

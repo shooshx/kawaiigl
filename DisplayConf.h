@@ -6,7 +6,7 @@
 #include "MyLib/paramSpecialization.h"
 
 #define N_PASS 5
-#define N_TEX 3
+#define N_TEX 4
 
 class DisplayConf : public ParamBase
 {
@@ -26,13 +26,14 @@ public:
 	TypeProp<bool> *passRound[N_PASS];
 	TypeProp<bool> bVtxNormals;
 	TypeProp<bool> bLines, bPoly, bPoints, bUnusedPoints, bLinesAll, bCull, bCoordNum, bCoordName;
+	TypeProp<bool> bTriangulate;
 	TypeProp<bool> perspective, lighting;
 	TypeProp<int> coordFontSize;
 	TypeProp<bool> bLitBackFace;
 	TypeProp<bool> bLightMove, isPointLight;
 	TypeProp<ETexAct> texAct;
 	TypeProp<QString> *texFile[N_TEX];
-	TypeProp<bool> quadMultiSamp;
+//	TypeProp<bool> quadMultiSamp;
 	TypeProp<QColor> lightAmb, lightDiff, lightSpec;
 	TypeProp<int> materialShine;
 	TypeProp<QColor> backCol, materialCol, selectedCol, lineColor;
@@ -42,7 +43,7 @@ public:
 	TypeProp<bool> addFace;
 	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
 	TypeProp<QString> lastDir;
-	TypeProp<RunType> runType;
+//	TypeProp<RunType> runType;
 
 	DisplayConf() 
 		:numberOfPasses(this, "numberOfPasses", "Number Of Passes", 0)
@@ -54,12 +55,13 @@ public:
 		,bUnusedPoints(this, "bUnusedPoints", "Show unused Points", false)
 		,bLightMove(this, "bLightMove", "Move Light", false)
 		,bLinesAll(this, "bLinesAll", "Show all Lines", false)
+		,bTriangulate(this, "bTriangulate", "Triangulate Quads", false)
 		,coordFontSize(this, "coordFontSize", "Font Size", 10)
 		,bCoordNum(this, "bCoordNum", "Show coordinates", false)
 		,bCoordName(this, "bCoordName", "Show Names", false)
 		,bCull(this, "bCull", "Show Cull", false)
 		,texAct(this, "texAct", "Texture Action", Tex_None)
-		,quadMultiSamp(this, "quadMultiSamp", "Multi Sampling in quad processing", true)
+		//,quadMultiSamp(this, "quadMultiSamp", "Multi Sampling in quad processing", true)
 		//,texFile(this, "texFile", "Texture File", "")
 		,perspective(this, "perspective", "Perspective", false)
 		,lighting(this, "lighting", "Lighting", false)
@@ -77,7 +79,7 @@ public:
 		,trackForParam(this, "trackForParam", "trackForParam", 0)
 		,lastDir(this, "lastDir", "lastDir", "")
 		,fullFps(this, "fullFps", "fullFps", false)
-		,runType(this, "runType", "runType", RunNormal)
+	//	,runType(this, "runType", "runType", RunNormal)
 	{
 		for(int i = 0; i < N_PASS; ++i)
 		{
@@ -92,7 +94,7 @@ public:
 		}
 		addFace.shouldStore(false);
 		trackForParam.shouldStore(false);
-		runType.shouldStore(false);
+	//	runType.shouldStore(false);
 	}
 };
 

@@ -38,8 +38,8 @@ void PParamsWidget::commit()
 			(EParamType)pui->type->itemData(pui->type->currentIndex()).toInt(), 
 			pui->value->text(), pui->m_isUniform);
 		pui->index = m_pass->params.size();
+		pi.mypass = m_pass;
 		m_pass->params.append(pi);
-
 	}
 }
 

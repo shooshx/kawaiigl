@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'DispContDlg.ui'
 **
-** Created: Mon Oct 12 16:34:01 2009
+** Created: Tue Oct 20 20:14:46 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -80,6 +80,7 @@ public:
     QPushButton *saveBot;
     QPushButton *lineColBot;
     QCheckBox *SD_pntLight;
+    QCheckBox *SD_triang;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout;
     QLabel *label_2;
@@ -88,20 +89,11 @@ public:
     QHBoxLayout *horizontalLayout_5;
     QSpacerItem *horizontalSpacer;
     QComboBox *texSel;
-    QWidget *tex0Fake;
-    QHBoxLayout *horizontalLayout_6;
-    QLabel *label_8;
-    QLineEdit *tex0FakeLabek;
-    QCheckBox *multiSampQuad;
     QWidget *tex0cont;
     QHBoxLayout *horizontalLayout_7;
     QLabel *label_3;
     QLineEdit *tex1NameLabel;
     QPushButton *tex1FileBot;
-    QWidget *tex1Fake;
-    QHBoxLayout *horizontalLayout_3;
-    QLabel *label_9;
-    QLineEdit *tex0FakeLabek_2;
     QWidget *tex1cont;
     QHBoxLayout *horizontalLayout_4;
     QLabel *label_4;
@@ -111,12 +103,16 @@ public:
     QLabel *label_5;
     QLineEdit *tex3NameLabel;
     QPushButton *tex3FileBot;
+    QHBoxLayout *horizontalLayout_3;
+    QLabel *label_8;
+    QLineEdit *tex4NameLabel;
+    QPushButton *tex4FileBot;
 
     void setupUi(QWidget *DispContDlg)
     {
         if (DispContDlg->objectName().isEmpty())
             DispContDlg->setObjectName(QString::fromUtf8("DispContDlg"));
-        DispContDlg->resize(208, 517);
+        DispContDlg->resize(208, 525);
         DispContDlg->setMinimumSize(QSize(208, 0));
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
@@ -124,7 +120,7 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         widget = new QWidget(DispContDlg);
         widget->setObjectName(QString::fromUtf8("widget"));
-        widget->setMinimumSize(QSize(0, 335));
+        widget->setMinimumSize(QSize(0, 360));
         line_2 = new QFrame(widget);
         line_2->setObjectName(QString::fromUtf8("line_2"));
         line_2->setGeometry(QRect(10, 150, 85, 3));
@@ -136,7 +132,7 @@ public:
         coordFontSize = new QSpinBox(widget);
         coordFontSize->setObjectName(QString::fromUtf8("coordFontSize"));
         coordFontSize->setEnabled(false);
-        coordFontSize->setGeometry(QRect(38, 213, 44, 22));
+        coordFontSize->setGeometry(QRect(38, 240, 44, 22));
         coordFontSize->setMinimum(6);
         coordFontSize->setMaximum(72);
         coordFontSize->setValue(8);
@@ -202,13 +198,13 @@ public:
         SD_p4r->setGeometry(QRect(61, 5, 21, 18));
         coordNum = new QCheckBox(widget);
         coordNum->setObjectName(QString::fromUtf8("coordNum"));
-        coordNum->setGeometry(QRect(107, 216, 81, 20));
+        coordNum->setGeometry(QRect(107, 243, 81, 20));
         SD_lightMove = new QCheckBox(widget);
         SD_lightMove->setObjectName(QString::fromUtf8("SD_lightMove"));
         SD_lightMove->setGeometry(QRect(125, 25, 71, 18));
         SD_unused = new QCheckBox(widget);
         SD_unused->setObjectName(QString::fromUtf8("SD_unused"));
-        SD_unused->setGeometry(QRect(126, 136, 71, 18));
+        SD_unused->setGeometry(QRect(122, 136, 71, 18));
         frame2 = new QFrame(widget);
         frame2->setObjectName(QString::fromUtf8("frame2"));
         frame2->setGeometry(QRect(7, 73, 81, 25));
@@ -222,14 +218,14 @@ public:
         SD_p3r->setGeometry(QRect(61, 4, 21, 18));
         SD_linesAll = new QCheckBox(widget);
         SD_linesAll->setObjectName(QString::fromUtf8("SD_linesAll"));
-        SD_linesAll->setGeometry(QRect(126, 176, 61, 18));
+        SD_linesAll->setGeometry(QRect(122, 176, 61, 18));
         resetLight = new QPushButton(widget);
         resetLight->setObjectName(QString::fromUtf8("resetLight"));
         resetLight->setGeometry(QRect(172, 24, 20, 20));
         coordName = new QCheckBox(widget);
         coordName->setObjectName(QString::fromUtf8("coordName"));
         coordName->setEnabled(true);
-        coordName->setGeometry(QRect(88, 217, 16, 18));
+        coordName->setGeometry(QRect(88, 244, 16, 18));
         frame3 = new QFrame(widget);
         frame3->setObjectName(QString::fromUtf8("frame3"));
         frame3->setGeometry(QRect(7, 49, 81, 25));
@@ -246,40 +242,43 @@ public:
         SD_vtxNormals->setGeometry(QRect(12, 160, 71, 21));
         selColBot = new QPushButton(widget);
         selColBot->setObjectName(QString::fromUtf8("selColBot"));
-        selColBot->setGeometry(QRect(62, 283, 61, 24));
+        selColBot->setGeometry(QRect(62, 307, 61, 24));
         backColBot = new QPushButton(widget);
         backColBot->setObjectName(QString::fromUtf8("backColBot"));
-        backColBot->setGeometry(QRect(124, 259, 71, 24));
+        backColBot->setGeometry(QRect(124, 283, 71, 24));
         mattColBot = new QPushButton(widget);
         mattColBot->setObjectName(QString::fromUtf8("mattColBot"));
-        mattColBot->setGeometry(QRect(62, 259, 61, 24));
+        mattColBot->setGeometry(QRect(62, 283, 61, 24));
         shineEdit = new QLineEdit(widget);
         shineEdit->setObjectName(QString::fromUtf8("shineEdit"));
-        shineEdit->setGeometry(QRect(79, 310, 41, 21));
+        shineEdit->setGeometry(QRect(79, 334, 41, 21));
         ambBot = new QPushButton(widget);
         ambBot->setObjectName(QString::fromUtf8("ambBot"));
-        ambBot->setGeometry(QRect(9, 259, 51, 24));
+        ambBot->setGeometry(QRect(9, 283, 51, 24));
         diffBot = new QPushButton(widget);
         diffBot->setObjectName(QString::fromUtf8("diffBot"));
-        diffBot->setGeometry(QRect(9, 283, 51, 24));
+        diffBot->setGeometry(QRect(9, 307, 51, 24));
         specBot = new QPushButton(widget);
         specBot->setObjectName(QString::fromUtf8("specBot"));
-        specBot->setGeometry(QRect(9, 307, 51, 24));
+        specBot->setGeometry(QRect(9, 331, 51, 24));
         label_6 = new QLabel(widget);
         label_6->setObjectName(QString::fromUtf8("label_6"));
-        label_6->setGeometry(QRect(12, 242, 46, 14));
+        label_6->setGeometry(QRect(12, 266, 46, 14));
         label_7 = new QLabel(widget);
         label_7->setObjectName(QString::fromUtf8("label_7"));
-        label_7->setGeometry(QRect(67, 243, 46, 14));
+        label_7->setGeometry(QRect(67, 267, 46, 14));
         saveBot = new QPushButton(widget);
         saveBot->setObjectName(QString::fromUtf8("saveBot"));
         saveBot->setGeometry(QRect(10, 184, 41, 23));
         lineColBot = new QPushButton(widget);
         lineColBot->setObjectName(QString::fromUtf8("lineColBot"));
-        lineColBot->setGeometry(QRect(144, 283, 51, 24));
+        lineColBot->setGeometry(QRect(144, 307, 51, 24));
         SD_pntLight = new QCheckBox(widget);
         SD_pntLight->setObjectName(QString::fromUtf8("SD_pntLight"));
         SD_pntLight->setGeometry(QRect(158, 5, 72, 18));
+        SD_triang = new QCheckBox(widget);
+        SD_triang->setObjectName(QString::fromUtf8("SD_triang"));
+        SD_triang->setGeometry(QRect(120, 214, 81, 18));
 
         verticalLayout->addWidget(widget);
 
@@ -325,33 +324,6 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_5);
 
-        tex0Fake = new QWidget(DispContDlg);
-        tex0Fake->setObjectName(QString::fromUtf8("tex0Fake"));
-        horizontalLayout_6 = new QHBoxLayout(tex0Fake);
-        horizontalLayout_6->setSpacing(3);
-        horizontalLayout_6->setMargin(0);
-        horizontalLayout_6->setObjectName(QString::fromUtf8("horizontalLayout_6"));
-        label_8 = new QLabel(tex0Fake);
-        label_8->setObjectName(QString::fromUtf8("label_8"));
-
-        horizontalLayout_6->addWidget(label_8);
-
-        tex0FakeLabek = new QLineEdit(tex0Fake);
-        tex0FakeLabek->setObjectName(QString::fromUtf8("tex0FakeLabek"));
-        tex0FakeLabek->setEnabled(false);
-        tex0FakeLabek->setAcceptDrops(false);
-        tex0FakeLabek->setReadOnly(true);
-
-        horizontalLayout_6->addWidget(tex0FakeLabek);
-
-        multiSampQuad = new QCheckBox(tex0Fake);
-        multiSampQuad->setObjectName(QString::fromUtf8("multiSampQuad"));
-
-        horizontalLayout_6->addWidget(multiSampQuad);
-
-
-        verticalLayout->addWidget(tex0Fake);
-
         tex0cont = new QWidget(DispContDlg);
         tex0cont->setObjectName(QString::fromUtf8("tex0cont"));
         horizontalLayout_7 = new QHBoxLayout(tex0cont);
@@ -379,30 +351,11 @@ public:
 
         horizontalLayout_7->addWidget(tex1FileBot);
 
+        label_3->raise();
+        tex1FileBot->raise();
+        tex1NameLabel->raise();
 
         verticalLayout->addWidget(tex0cont);
-
-        tex1Fake = new QWidget(DispContDlg);
-        tex1Fake->setObjectName(QString::fromUtf8("tex1Fake"));
-        horizontalLayout_3 = new QHBoxLayout(tex1Fake);
-        horizontalLayout_3->setSpacing(3);
-        horizontalLayout_3->setMargin(0);
-        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
-        label_9 = new QLabel(tex1Fake);
-        label_9->setObjectName(QString::fromUtf8("label_9"));
-
-        horizontalLayout_3->addWidget(label_9);
-
-        tex0FakeLabek_2 = new QLineEdit(tex1Fake);
-        tex0FakeLabek_2->setObjectName(QString::fromUtf8("tex0FakeLabek_2"));
-        tex0FakeLabek_2->setEnabled(false);
-        tex0FakeLabek_2->setAcceptDrops(false);
-        tex0FakeLabek_2->setReadOnly(true);
-
-        horizontalLayout_3->addWidget(tex0FakeLabek_2);
-
-
-        verticalLayout->addWidget(tex1Fake);
 
         tex1cont = new QWidget(DispContDlg);
         tex1cont->setObjectName(QString::fromUtf8("tex1cont"));
@@ -451,6 +404,29 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_2);
 
+        horizontalLayout_3 = new QHBoxLayout();
+        horizontalLayout_3->setSpacing(3);
+        horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
+        horizontalLayout_3->setContentsMargins(-1, -1, -1, 0);
+        label_8 = new QLabel(DispContDlg);
+        label_8->setObjectName(QString::fromUtf8("label_8"));
+
+        horizontalLayout_3->addWidget(label_8);
+
+        tex4NameLabel = new QLineEdit(DispContDlg);
+        tex4NameLabel->setObjectName(QString::fromUtf8("tex4NameLabel"));
+
+        horizontalLayout_3->addWidget(tex4NameLabel);
+
+        tex4FileBot = new QPushButton(DispContDlg);
+        tex4FileBot->setObjectName(QString::fromUtf8("tex4FileBot"));
+        tex4FileBot->setMaximumSize(QSize(21, 21));
+
+        horizontalLayout_3->addWidget(tex4FileBot);
+
+
+        verticalLayout->addLayout(horizontalLayout_3);
+
 
         retranslateUi(DispContDlg);
         QObject::connect(SD_light, SIGNAL(toggled(bool)), SD_lightMove, SLOT(setEnabled(bool)));
@@ -493,25 +469,26 @@ public:
         specBot->setText(QApplication::translate("DispContDlg", "Specular", 0, QApplication::UnicodeUTF8));
         label_6->setText(QApplication::translate("DispContDlg", "Light 0:", 0, QApplication::UnicodeUTF8));
         label_7->setText(QApplication::translate("DispContDlg", "Material:", 0, QApplication::UnicodeUTF8));
+#ifndef QT_NO_TOOLTIP
+        saveBot->setToolTip(QApplication::translate("DispContDlg", "Save the subdivided object to a file", 0, QApplication::UnicodeUTF8));
+#endif // QT_NO_TOOLTIP
         saveBot->setText(QApplication::translate("DispContDlg", "Save", 0, QApplication::UnicodeUTF8));
         lineColBot->setText(QApplication::translate("DispContDlg", "Lines", 0, QApplication::UnicodeUTF8));
         SD_pntLight->setText(QApplication::translate("DispContDlg", "Pnt", 0, QApplication::UnicodeUTF8));
+        SD_triang->setText(QApplication::translate("DispContDlg", "Triangulate", 0, QApplication::UnicodeUTF8));
         label_2->setText(QApplication::translate("DispContDlg", "Clip", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         resetView->setToolTip(QApplication::translate("DispContDlg", "Reset View", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         resetView->setText(QApplication::translate("DispContDlg", "0", 0, QApplication::UnicodeUTF8));
-        label_8->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
-        tex0FakeLabek->setText(QApplication::translate("DispContDlg", "[SCREEN]", 0, QApplication::UnicodeUTF8));
-        multiSampQuad->setText(QApplication::translate("DispContDlg", "Multi-Samp", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
         tex1FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
-        label_9->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
-        tex0FakeLabek_2->setText(QApplication::translate("DispContDlg", "[SCREEN]", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("DispContDlg", "1.", 0, QApplication::UnicodeUTF8));
         tex2FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
         label_5->setText(QApplication::translate("DispContDlg", "2.", 0, QApplication::UnicodeUTF8));
         tex3FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
+        label_8->setText(QApplication::translate("DispContDlg", "3.", 0, QApplication::UnicodeUTF8));
+        tex4FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
         Q_UNUSED(DispContDlg);
     } // retranslateUi
 
