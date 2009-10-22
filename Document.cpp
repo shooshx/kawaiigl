@@ -135,24 +135,38 @@ void Document::readProg(ProgKeep* prog)
 
 	clearPasses(); // removes them from the edit window as well
 
-	foreach(const ProgKeep::PassKeep& pk, prog->m_passes)
+	foreach(const ProgKeep::PassKeep* pk, prog->m_passes)
 	{
-		RenderPassPtr p(new RenderPass(pk.name));
-		foreach(const ProgKeep::SrcKeep& sk, pk.shaders)
+		const ProgKeep::RenderPassKeep *rpk = dynamic_cast<const ProgKeep::RenderPassKeep*>(pk);
+		if (rpk == NULL)
+		{
+			const ProgKeep::SwapPassKeep *spk = dynamic_cast<const ProgKeep::SwapPassKeep*>(pk);
+			if (spk != NULL)
+			{
+				SwapOpPassPtr spass(new SwapOpPass(spk->name));
+				spass->a = (PassConf::ERenderTo)spk->a;
+				spass->b = (PassConf::ERenderTo)spk->b;
+				addPass(spass);
+			}
+			continue;
+		}
+
+		RenderPassPtr p(new RenderPass(rpk->name));
+		foreach(const ProgKeep::SrcKeep& sk, rpk->shaders)
 		{
 			DocSrc *d = new DocSrc(sk.name, true, sk.type);
 			readToString(d->name(), d->text);
 			p->shaders.append(shared_ptr<DocSrc>(d));
 		}
 		
-		p->params = pk.params; // copy the ParamInput's of the loaded xml.
+		p->params = rpk->params; // copy the ParamInput's of the loaded xml.
 		for(int i = 0; i < p->params.size(); ++i)
 		{
 			ParamInput& pi = p->params[i];
 			pi.mypass = p.get();
 		}
 
-		p->conf.copyFrom(pk.conf);
+		p->conf.copyFrom(rpk->conf);
 		
 		addPass(p);
 	}
@@ -209,6 +223,12 @@ void Document::addNewPass()
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
 //	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
+	addPass(p);
+}
+
+void Document::addNewSwap()
+{
+	SwapOpPassPtr p(new SwapOpPass("Swap"));
 	addPass(p);
 }
 
@@ -356,6 +376,7 @@ QIcon Document::getTypeIcon(ElementType t)
 	case SRC_FRAG: return QIcon(":/images/doc_frag.png");
 	case SRC_MODEL: return QIcon(":/images/doc_model.png");
 	case SRC_RENDER: return QIcon(":/images/gear.png");
+	case SRC_OP_SWAP: return QIcon(":/images/arrow-switch-270.png");
 	default: return QIcon();
 	}
 }

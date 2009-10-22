@@ -25,7 +25,7 @@ public:
 
 	void loadModelsFile();
 
-	void loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe);
+	void loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe);
 	void loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe);
 	void loadProgramsElement(QMenu* menu, QDomElement &pe);
 	void loadProgramsFile(QMenu* menu);

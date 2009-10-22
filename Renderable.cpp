@@ -21,22 +21,26 @@ void WholeScreenQuad::render()
 	glBegin(GL_QUADS);
 
 	glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 0.0f); 
-	if (texUnit != 0)
+	glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 0.0f); 
+	if (texUnit > 1)
 		glMultiTexCoord2f(GL_TEXTURE0 + texUnit, 0.0f, 0.0f); 
 	glVertex2f(-1.0f, -1.0f);
 
 	glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 0.0f);
-	if (texUnit != 0)
+	glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 0.0f);
+	if (texUnit > 1)
 		glMultiTexCoord2f(GL_TEXTURE0 + texUnit, 1.0f, 0.0f);
 	glVertex2f(1.0f, -1.0f);
 
 	glMultiTexCoord2f(GL_TEXTURE0, 1.0f, 1.0f);
-	if (texUnit != 0)
+	glMultiTexCoord2f(GL_TEXTURE1, 1.0f, 1.0f);
+	if (texUnit > 1)
 		glMultiTexCoord2f(GL_TEXTURE0 + texUnit, 1.0f, 1.0f);
 	glVertex2f(1.0f, 1.0f);
 
 	glMultiTexCoord2f(GL_TEXTURE0, 0.0f, 1.0f);
-	if (texUnit != 0)
+	glMultiTexCoord2f(GL_TEXTURE1, 0.0f, 1.0f);
+	if (texUnit > 1)
 		glMultiTexCoord2f(GL_TEXTURE0 + texUnit, 0.0f, 1.0f);
 	glVertex2f(-1.0f, 1.0f);
 

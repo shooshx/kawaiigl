@@ -67,6 +67,11 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 	QMenu *nothingMenu = new QMenu(this); // menu of the background
 	nothingMenu->addAction(act);
 
+	passMenu->addAction(act = new QAction(QIcon(), "Add swap operation", this));
+	connect(act, SIGNAL(triggered()), this, SLOT(addSwap()));
+	nothingMenu->addAction(act);
+
+	QMenu *swapMenu = new QMenu(this);
 	
 	QMenu *docMenu = new QMenu(this);
 	act = new QAction(QIcon(), "Remove", this);
@@ -75,7 +80,7 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 	docMenu->addAction(act);
 	passMenu->addAction(act);
 	ui.tree->addAction(act);
-
+	swapMenu->addAction(act);
 
 	act = new QAction(QIcon(), "Rename", this);
 	connect(act, SIGNAL(triggered()), this, SLOT(renameFromMenu()));
@@ -87,6 +92,7 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
 	ui.tree->setTypeMenu(ITEM_PASS, passMenu);
 	ui.tree->setTypeMenu(ITEM_DOC, docMenu);
 	ui.tree->setTypeMenu(-1, nothingMenu);
+	ui.tree->setTypeMenu(ITEM_OP, swapMenu);
 }
 
 void ProjBrowser::addDoc()
@@ -159,6 +165,12 @@ void ProjBrowser::addPass()
 	updateTree();
 }
 
+void ProjBrowser::addSwap()
+{
+	m_doc->addNewSwap();
+	updateTree();
+}
+
 
 void MyTreeItem::updateDisplay(const QString& name)
 {
@@ -194,11 +206,12 @@ void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 	for(int i = 0; i < m_doc->m_passes.size(); ++i)
 	{
 		PassPtr& pass = m_doc->m_passes[i];
+		MyTreeItem *item = NULL;
 
 		if (pass->type == SRC_RENDER)
 		{
 			RenderPass *rpass = dynamic_cast<RenderPass*>(pass.get());
-			MyTreeItem *item = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_PASS);
+			item = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_PASS);
 			item->m_elem = item->m_pass = item->m_rpass = rpass;
 
 			item->setIcon(0, Document::getTypeIcon(pass->type));
@@ -208,12 +221,20 @@ void ProjBrowser::updateTree(Pass* selpass, DocSrc* seldoc)
 			{
 				addItem(pass.get(), item, t.get());
 			}
-
-			ui.tree->addTopLevelItem(item);
-			if (item->m_pass == selpass && item->m_src == seldoc) // src is NULL
-				ui.tree->setCurrentItem(item);
-
 		}
+		else if (pass->type == SRC_OP_SWAP)
+		{
+			SwapOpPass *spass = dynamic_cast<SwapOpPass*>(pass.get());
+			item = new MyTreeItem(NULL, QStringList(pass->displayName()), ITEM_OP);
+			item->m_elem = item->m_pass = spass;
+
+			item->setIcon(0, Document::getTypeIcon(spass->type));
+		}
+
+		ui.tree->addTopLevelItem(item);
+		if (item->m_pass == selpass && item->m_src == seldoc) // src is NULL
+			ui.tree->setCurrentItem(item);
+
 	}
 
 	ui.tree->expandAll();
@@ -237,10 +258,24 @@ void ProjBrowser::itemClicked(QTreeWidgetItem *item, int col)
 		RenderPass* pass = ((MyTreeItem*)item)->m_rpass;
 		emit openPassConf(pass);
 	}
-	else
+	else if (item->type() == ITEM_DOC)
 	{
 		DocSrc* sdoc = ((MyTreeItem*)item)->m_src;
 		emit openDocText(sdoc);
+	}
+	else if (item->type() == ITEM_OP)
+	{
+		SwapOpPass* pass = static_cast<SwapOpPass*>(static_cast<MyTreeItem*>(item)->m_pass);
+		ParamTemp prm("Selection");
+		static PassConf pc;
+		TypeProp<PassConf::ERenderTo> a(&prm, &pc, "_m", "swap the frame buffer of", pass->a);
+		TypeProp<PassConf::ERenderTo> b(&prm, &pc, "_m", "with the frame buffer of", pass->b);
+		prm.reset();
+
+		if (!MyInputDlg::getValues(this, a, b, "Swap two frame buffers"))
+			return;
+		pass->a = a;
+		pass->b = b;
 	}
 }
 
@@ -288,7 +323,7 @@ void ProjBrowser::on_removeBut_clicked()
 	foreach(QTreeWidgetItem* item, items)
 	{
 		MyTreeItem* mitem = static_cast<MyTreeItem*>(item);
-		if (mitem->type() != ITEM_PASS)
+		if (mitem->type() == ITEM_DOC)
 			m_doc->removeShader(mitem->m_rpass, mitem->m_src);		
 		else
 			m_doc->removePass(mitem->m_pass);

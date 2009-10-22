@@ -79,6 +79,8 @@ public:
 	void removePass(Pass* pass);
 	void movePass(Pass* pass, int delta);
 
+	void addNewSwap();
+
 	bool isProgEnabled() const { return m_shaderEnabled; }
 
 	void addPass(PassPtr pass);

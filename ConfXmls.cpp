@@ -88,10 +88,8 @@ void ConfXmls::loadModelsFile()
 
 }
 
-void ConfXmls::loadPassElement(ProgKeep::PassKeep* pass, QDomElement &pe)
+void ConfXmls::loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe)
 {
-	pass->init();
-
 	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
 	{
 		QDomElement e = n.toElement();
@@ -230,7 +228,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 	ProgKeep *prog = new ProgKeep;
 	prog->name = display;
 
-	ProgKeep::PassKeep tempPass;
+	ProgKeep::RenderPassKeep *tempPass = NULL;
 	RunType tempTemplate = RunNormal;
 
 	for (QDomNode n = pe.firstChild(); !n.isNull(); n = n.nextSibling())
@@ -239,15 +237,15 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 		QString tagName = e.tagName();
 		if (tagName == "pass")
 		{
-			ProgKeep::PassKeep pass;
+			ProgKeep::RenderPassKeep *pass = new ProgKeep::RenderPassKeep();
 
 			QDomAttr namea = pe.attributeNode("name");
 			if (namea.isNull())
-				pass.name = QString("Pass %1").arg(prog->m_passes.size() + 1);
+				pass->name = QString("Pass %1").arg(prog->m_passes.size() + 1);
 			else
-				pass.name = namea.value();
+				pass->name = namea.value();
 
-			loadPassElement(&pass, e);
+			loadPassElement(pass, e);
 			prog->m_passes.append(pass);
 
 		}
@@ -265,8 +263,11 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 		// template support
 		else if (tagName == "vtxtext" || tagName == "fragtext" || tagName == "geomtext" || tagName == "param")
 		{
-			if (tempPass.conf == NULL)
-				loadPassElement(&tempPass, pe);
+			if (tempPass == NULL)
+			{
+				tempPass = new ProgKeep::RenderPassKeep();
+				loadPassElement(tempPass, pe);
+			}
 		}
 		else if (tagName == "quadproc")
 		{
@@ -288,7 +289,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 
 	}
 
-	if (tempPass.conf != NULL)
+	if (tempPass != NULL)
 	{
 		if (!prog->m_passes.isEmpty())
 		{
@@ -299,23 +300,35 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 		switch(tempTemplate)
 		{
 		case RunNormal:
-			tempPass.name = "Pass 1";
+			tempPass->name = "Pass 1";
 			prog->m_passes.append(tempPass);
 			break;
 		case RunQuadProcess:
 			{
-				ProgKeep::PassKeep pass1("Pass 1");
-				pass1.init();
-				pass1.conf->to = PassConf::Texture0;
+				ProgKeep::RenderPassKeep *pass1 = new ProgKeep::RenderPassKeep("Pass 1");
+				pass1->conf->to = PassConf::Texture0;
 				prog->m_passes.append(pass1);
-				tempPass.name = "Pass 2";
-				tempPass.conf->what = PassConf::Quad_Tex0;
+
+				tempPass->name = "Pass 2";
+				tempPass->conf->what = PassConf::Quad_Tex0;
 				prog->m_passes.append(tempPass);
 				break;
 			}
 		case RunTex2Tex:
 			{
-				return; // not supported yet
+				tempPass->name = "Pass 1";
+				prog->m_passes.append(tempPass);
+				tempPass->conf->what = PassConf::Quad_Tex1;
+				tempPass->conf->to = PassConf::Texture0;
+				tempPass->conf->toMultisample = false;
+
+				ProgKeep::RenderPassKeep *disp = new ProgKeep::RenderPassKeep("Pass 2");
+				disp->conf->what = PassConf::Quad_Tex0;
+				disp->conf->to = PassConf::Display;
+				prog->m_passes.append(disp);
+
+				prog->m_passes.append(new ProgKeep::SwapPassKeep("Swap", 0, 1));
+				break;
 			}
 		}
 	}

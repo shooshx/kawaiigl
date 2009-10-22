@@ -212,14 +212,18 @@ private:
 	Q_DISABLE_COPY(RenderPass);
 };
 
-class SwapPass : public Pass
+class SwapOpPass : public Pass
 {
 public:
-	SwapPass(const QString& name) : Pass(SRC_OP_SWAP, name)
+	SwapOpPass(const QString& name) : Pass(SRC_OP_SWAP, name), a(PassConf::Texture0), b(PassConf::Texture1)
 	{}
+	PassConf::ERenderTo a,b; // indexes to swap
 };
 
 
+typedef boost::shared_ptr<Pass> PassPtr;
+typedef boost::shared_ptr<RenderPass> RenderPassPtr;
+typedef boost::shared_ptr<SwapOpPass> SwapOpPassPtr;
 
 
 class ProgKeep
@@ -234,21 +238,32 @@ public:
 		QString name;
 		ElementType type;
 	};
+
 	struct PassKeep
 	{
-		PassKeep(const QString& _name = QString()) : conf(NULL), name(_name) {}
-		void init()
+		PassKeep(const QString& _name) : name(_name) {}
+		virtual ~PassKeep() {}
+		QString name;
+	};
+	struct RenderPassKeep : public PassKeep
+	{
+		RenderPassKeep(const QString& _name = QString()) : PassKeep(_name)
 		{
 			conf = new PassConf();
 			conf->reset();
 		}
-		QString name;
+		
 		QVector<SrcKeep> shaders;
 		SrcKeep model; // optional...
 		QVector<ParamInput> params; 
 		PassConf *conf; // can't be copied
 	};
-	QVector<PassKeep> m_passes; 
+	struct SwapPassKeep : public PassKeep
+	{
+		SwapPassKeep(const QString& name, int _a, int _b) :PassKeep(name), a(_a), b(_b) {}
+		int a, b;
+	};
+	QVector<PassKeep*> m_passes; 
 
 	typedef QMap<QString, QString> TArgsMap;
 	TArgsMap args; // any name from DisplayConf and a value as string
@@ -256,8 +271,6 @@ public:
 };
 
 
-typedef boost::shared_ptr<Pass> PassPtr;
-typedef boost::shared_ptr<RenderPass> RenderPassPtr;
 
 
 #endif // PASS_H_INCLUDED

@@ -499,13 +499,6 @@ void T2GLWidget::paint3DScene(bool clearBack)
 		paintFlat();
 	}
 
-	QString s = QString("Vertices:%1 / Polygons:%2").arg(m_countVtx).arg(m_countPoly);
-	if (conf.fullFps)
-	{
-		s += QString(" %1 FPS").arg(m_framesLast);
-	}
-	emit message(s);
-
 	mglCheckErrorsC("paint");
 }
 
@@ -536,16 +529,27 @@ void T2GLWidget::redoFrameBuffers()
 		{
 			PassPtr pass = m_doc->m_passes[passi];
 			RenderPassPtr rpass = dynamic_pointer_cast<RenderPass>(pass);
-			if (!rpass)
-				continue;
-			PassConf &pconf = rpass->conf;
 
-			int index = pconf.to;
+			int index = -1;
+			bool multisamp = false;
+
+			if (rpass)
+			{
+				PassConf &pconf = rpass->conf;
+				index = pconf.to;
+				multisamp = pconf.toMultisample;
+			}
+			else // swap!
+			{
+				index = 1;
+			}
+			
 
 			if (index != PassConf::Display)  // to frame buffer (texture)
 			{
-				bool doMulti = GLEW_EXT_framebuffer_blit && pconf.toMultisample;
+				bool doMulti = GLEW_EXT_framebuffer_blit && multisamp;
 				
+				glActiveTexture(GL_TEXTURE0 + index); // all binding are going to happen in the right unit
 				const GlTexture* drawTex = NULL;
 				if (doMulti) 
 				{	// rendering to the multisampled fbo and then immediatly copy to the normal one which is the texture
@@ -560,11 +564,9 @@ void T2GLWidget::redoFrameBuffers()
 					drawTex = m_offbufA[index]->texture();
 					printf("created off-screen buffer (%d,%d) for tex %d\n", width(), height(), index);
 				}
-
-				//m_offbufA[index] = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
 				
-				glActiveTexture(GL_TEXTURE0 + index);
 				drawTex->bind();
+
 				m_texUnits[index].outputOf = pass;
 				touched[index] = true;
 			} // display
@@ -593,7 +595,26 @@ void T2GLWidget::myPaintGL()
 		{
 			m_curPass = dynamic_pointer_cast<RenderPass>(m_doc->m_passes[passi]);
 			if (!m_curPass)
+			{
+				SwapOpPassPtr spass = dynamic_pointer_cast<SwapOpPass>(m_doc->m_passes[passi]);
+				if (spass)
+				{
+					int sa = spass->a, sb = spass->b;
+					qSwap(m_offbufA[sa], m_offbufA[sb]);
+					qSwap(m_offbufB[sa], m_offbufB[sb]);
+					if (m_offbufA[sb] != NULL)
+					{
+						glActiveTexture(GL_TEXTURE0 + sa);
+						m_offbufA[sb]->texture()->bind();
+					}
+					if (m_offbufA[sa] != NULL)
+					{
+						glActiveTexture(GL_TEXTURE0 + sb);
+						m_offbufA[sa]->texture()->bind();
+					}
+				}
 				continue;
+			}
 			PassConf &pconf = m_curPass->conf;
 
 			// set up render to
@@ -646,12 +667,18 @@ void T2GLWidget::myPaintGL()
 		paint3DScene();
 	}
 
+	QString s = QString("Vertices: %1 / Polygons: %2").arg(m_countVtx).arg(m_countPoly);
+	if (conf.fullFps)
+	{
+		s += QString(" %1 FPS").arg(m_framesLast);
+	}
+	emit message(s);
+
 	if (conf.fullFps)
 	{
 		++m_framesThisSecond;
 		update();
 	}
-
 }
 
 #if 0
