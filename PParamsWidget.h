@@ -18,7 +18,7 @@ class PParamsWidget : public QWidget
 
 public:
 	PParamsWidget(QWidget *parent);
-	~PParamsWidget() {}
+	~PParamsWidget();
 
 	void init(T2GLWidget* view, Document* doc, RenderPass* pass);
 

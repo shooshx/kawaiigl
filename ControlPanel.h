@@ -21,10 +21,11 @@ public:
 	//void setLightSliders(float amb, float diff, float spec);
 
 private slots:
+	void on_resetBot_clicked();
 	void updateSDPasses(bool justChecked);
 	void updateSDlowLevel(const DisplayConf& dspc);
 	void chFontEnable();
-	void coordFontSizeChanged(int v);
+	//void coordFontSizeChanged(int v);
 	void selectTexFile();
 	void changedTexFile();
 	//void texSelChanged(int i);

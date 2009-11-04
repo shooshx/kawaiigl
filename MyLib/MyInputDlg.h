@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QSpinBox>
 #include <QMetaEnum>
 #include "ui_MyInputDlg.h"
 
@@ -194,6 +195,40 @@ private:
 	QLabel *numl;
 	T mult;
 };
+
+template<class T>
+struct SpinBoxIn : public WidgetIn
+{
+public:
+	SpinBoxIn(TypeProp<T>* _v, QSpinBox *_w, bool autoup = true) 
+		:WidgetIn(_v, _w), v(_v), w(_w)
+	{
+		widgetUpdate();
+		if (autoup)
+		{
+			connect(w, SIGNAL(valueChanged(int)), this, SLOT(commit()));
+		}
+		connect(v, SIGNAL(updateWidget()), this, SLOT(widgetUpdate()));
+	}
+	virtual void commitImp()
+	{
+		*v = (T)w->value();
+	}
+	virtual void reloadImp()
+	{
+		w->setValue(v->val());
+	}
+
+	virtual void widgetUpdate()
+	{
+		w->setRange(v->minVal, v->maxVal);
+	}
+
+private:
+	QSpinBox *w;
+	TypeProp<T> *v;
+};
+
 
 
 template<class T>

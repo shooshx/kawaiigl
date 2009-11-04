@@ -10,6 +10,7 @@
 #include "OpenGL/MyFramebufferObject.h"
 #include "Renderable.h"
 #include "NoiseGenerator.h"
+#include "GaussianGenerator.h"
 
 #include <QRubberBand>
 
@@ -57,6 +58,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	,m_doc(doc), m_useProg(true)
 	,m_rubberBand(NULL)
 	,m_framesThisSecond(0), m_framesLast(0)
+	,m_curTexTarget(0)
 {
 	m_bBackFaceCulling = false; // needed or else upsidedown faces are bad.
 	m_bSkewReset = false;
@@ -86,11 +88,14 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.bPoly, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bPoints, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bUnusedPoints, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.bAllPolyPoints, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bCoordNum, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bCoordName, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.backCol, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.lineColor, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bTriangulate, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.pointSize, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.bDepthTest, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
 
@@ -102,14 +107,17 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.materialShine, SIGNAL(changed()), this, SLOT(reconfLight()));
 	connect(&conf.bLitBackFace, SIGNAL(changed()), this, SLOT(reconfLight()));
 	connect(&conf.isPointLight, SIGNAL(changed()), this, SLOT(reconfLight()));
+	connect(&conf.bBlend, SIGNAL(changed()), this, SLOT(reconfBlend()));
 
 	connect(&conf.selectedCol, SIGNAL(changed()), this, SLOT(changedSelectedCol()) );
 	connect(&conf.materialCol, SIGNAL(changed()), this, SLOT(reconfLight()));
 
 	connect(&conf.bCull, SIGNAL(changed()), this, SLOT(reconfCull()));
 	connect(&conf.trackForParam, SIGNAL(changed()), this, SLOT(updateMouseTracking()));
-	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(changedFps()));
+	connect(&conf.fullFps, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&m_fpsTimer, SIGNAL(timeout()), this, SLOT(fpsTimeout()));
+
+	connect(&conf.vSync, SIGNAL(changed()), this, SLOT(reconfVSync()));
 
 	//connect(&conf.runType, SIGNAL(changed()), this, SLOT(changedRunType()));
 	//connect(&conf.quadMultiSamp, SIGNAL(changed()), this, SLOT(changedRunType()));
@@ -122,8 +130,14 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	reconfLight();
 	reconfProj();
 	reconfCull();
+	reconfVSync();
+	reconfBlend();
+
 	updateMouseTracking();
-	changedFps();
+
+	m_framesLast = 0;
+	m_framesThisSecond = 0;
+	m_fpsTimer.start(1000);
 
 	//setAutoBufferSwap(false);
 
@@ -141,7 +155,6 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 
 void T2GLWidget::reconfLight()
 {
-
 	m_lightAmbient = Vec(conf.lightAmb);
 	m_lightDiffuse = Vec(conf.lightDiff);
 	m_lightSpecular = Vec(conf.lightSpec);
@@ -163,6 +176,36 @@ void T2GLWidget::reconfCull()
 {
 	setCullFace(conf.bCull, true);
 }
+void T2GLWidget::reconfVSync()
+{
+	if (!conf.vSync)
+	{
+		if (WGLEW_EXT_swap_control)			
+			wglSwapIntervalEXT(0); // disable vertical sync
+		else
+			printf("Can't disable vSync since WGL_EXT_swap_control is not supported");
+	}
+	else
+	{
+		if (WGLEW_EXT_swap_control)			
+			wglSwapIntervalEXT(1);
+	}
+}
+void T2GLWidget::reconfBlend()
+{
+	if (conf.bBlend)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+	{
+		glDisable(GL_BLEND);
+	}
+	updateGL();
+}
+
+
 void T2GLWidget::updateMouseTracking()
 {
 	//setMouseTracking(conf.trackForParam > 0);
@@ -193,31 +236,16 @@ void T2GLWidget::initializeGL()
 	glEnable(GL_LINE_SMOOTH);
 	glEnable(GL_POINT_SMOOTH);
 
-	if (WGLEW_EXT_swap_control) {
-		// disable vertical sync
-		wglSwapIntervalEXT(0);
-	}
-
 }
 
-void T2GLWidget::changedFps()
-{
-	if (conf.fullFps)
-	{
-		m_framesLast = 0;
-		m_framesThisSecond = 0;
-		m_fpsTimer.start(1000);
-		updateGL();
-	}
-	else
-	{
-		m_fpsTimer.stop();
-	}
-}
+
 void T2GLWidget::fpsTimeout()
 {
 	m_framesLast = m_framesThisSecond;
 	m_framesThisSecond = 0;
+
+	QString s = QString("Vertices: %1 | Polygons: %2 | %3 FPS").arg(m_countVtx).arg(m_countPoly).arg(m_framesLast);
+	emit message(s);
 }
 
 
@@ -271,6 +299,17 @@ void T2GLWidget::setTexture(int which)
 		else
 			doBindTexture(which, NULL);
 
+	}
+	else if (filename.startsWith("gaussian") && filename.endsWith(")"))
+	{
+		QStringList args = filename.split(QRegExp("[\\s,()]"), QString::SkipEmptyParts);
+		int size = 128;
+		if (args.size() > 1)
+			size = args[1].toInt();
+
+		GaussianGenerator gen;
+		shared_ptr<GlTexture> ntex(gen.make2D(size));
+		doTakeTexture(which, ntex);
 	}
 	else // it probably is a filename
 	{
@@ -384,14 +423,7 @@ void T2GLWidget::paintFlat()
 
 	drawAddTracker(m_doc->m_addTrack);
 
-	
-	//GL_BEGIN_TEXT();
-	//glColor3f(0.3f, 0.3f, 1.0f);
-	//glRasterPos2f(-0.95f, -0.92f);
 
-
-
-	//GL_END_TEXT();
 
 	if (isUsingLight())
 		glEnable(GL_LIGHTING);
@@ -401,33 +433,23 @@ void T2GLWidget::paintPoly()
 {
 	glPolygonOffset(1.0, 1.0);
 
-	if (conf.bPoly)
-	{
-		ProgramUser proguser;
-		if (m_curPass->conf.incPoly && shouldUseProg())
-			proguser.use(&m_curPass->prog);
+	if (!conf.bPoly)
+		return;
 
-		glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
+	ProgramUser proguser;
+	if (shouldUseProg() && m_curPass->conf.incPoly)
+		proguser.use(&m_curPass->prog);
 
-		int texunit = (int)conf.texAct.val();
-		GLenum target = 0;
-		if ((conf.texAct != DisplayConf::Tex_None) && (isTextureValid(texunit)))
-		{
-			glActiveTexture(GL_TEXTURE0 + texunit);
-			target = m_textures[texunit]->target();
-			glEnable(target); // changes the state of the active texture unit!
-		}
-// 		else
-// 		{
-// 			glDisable(GL_TEXTURE_2D);
-// 		}
+	glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
 
-		drawSolids(true);
-		if (target != 0)
-			glDisable(target);
-		glActiveTexture(GL_TEXTURE0);
+	if (m_curTexTarget)
+		glEnable(m_curTexTarget);
 
-	}
+	drawSolids(true);
+
+	if (m_curTexTarget)
+		glDisable(m_curTexTarget);
+
 }
 
 void T2GLWidget::drawSolids(bool colorize)
@@ -465,26 +487,43 @@ void T2GLWidget::programConfig(const RenderPassPtr& pass)
 
 bool T2GLWidget::shouldUseProg() const
 {
-	return m_useProg && m_curPass.get() != NULL && m_curPass->prog.isOk();
+	return m_useProg && m_curPass && m_curPass->prog.isOk();
 }
 
 
 void T2GLWidget::paint3DScene(bool clearBack)
 {
-	Vec backCol = Vec(conf.backCol);
-	glClearColor(backCol.r, backCol.g, backCol.b, 0.0f);
-	if (clearBack)
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	if (shouldUseProg())
-		programConfig(m_curPass);
+	if (clearBack)  // depth is no cleared?
+	{
+		Vec backCol = Vec(conf.backCol);
+		glClearColor(backCol.r, backCol.g, backCol.b, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
+		if (conf.bDepthTest)
+			glEnable(GL_DEPTH_TEST);
+		else
+			glDisable(GL_DEPTH_TEST);
+	}
 
 	if (!m_doc->isValid())
 		return;
 
+	// set up texture
+	int texunit = (int)conf.texAct.val();
+	m_curTexTarget = 0;
+	if ((conf.texAct != DisplayConf::Tex_None) && (isTextureValid(texunit)))
+	{
+		glActiveTexture(GL_TEXTURE0 + texunit);
+		m_curTexTarget = m_textures[texunit]->target();
+		//glEnable(m_curTexTarget); // changes the state of the active texture unit!
+	}
+
+	if (m_curPass)
+		programConfig(m_curPass);
+
+
 	m_countPoly = 0; m_countVtx = 0;
 
-	if (!m_bShowHiddenPoints)
+	if (!m_bShowHiddenPoints || !conf.bDepthTest)
 	{ // this is faster
 		paintFlat();
 
@@ -493,11 +532,14 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	else
 	{ // needed to 
 		paintPoly();
-		//if (conf.bPoly) // needs to be before
-		//	glFlush();
+
 		glClear(GL_DEPTH_BUFFER_BIT);
 		paintFlat();
 	}
+
+	// tear down texture
+
+	//glActiveTexture(GL_TEXTURE0);
 
 	mglCheckErrorsC("paint");
 }
@@ -513,7 +555,7 @@ void T2GLWidget::resizeGL(int width, int height)
 void T2GLWidget::redoFrameBuffers()
 {
 	bool touched[N_TEX] = {0}; // has this run touched texUnit[i] ?
-
+	bool multisampled[N_TEX] = {0}; // is this buffer multisampled?
 
 	if (m_doc->isProgEnabled())
 	{
@@ -541,12 +583,28 @@ void T2GLWidget::redoFrameBuffers()
 			}
 			else // swap!
 			{
-				index = 1;
+				SwapOpPassPtr spass = dynamic_pointer_cast<SwapOpPass>(pass); 
+				if (touched[spass->a] && touched[spass->b] || !touched[spass->a] && !touched[spass->b])
+					continue; // if both are touched or none are touched, there's nothing to do
+				else if (touched[spass->a])
+				{  // otherwise we need to create the other buffer that is not the one that is already created
+				   // and create it with the same multisampling.
+					index = spass->b;
+					multisamp = multisampled[spass->a];
+				}
+				else if (touched[spass->b])
+				{
+					index = spass->a;
+					multisamp = multisampled[spass->b];
+				}
 			}
 			
 
 			if (index != PassConf::Display)  // to frame buffer (texture)
 			{
+				if (touched[index])
+					continue;
+
 				bool doMulti = GLEW_EXT_framebuffer_blit && multisamp;
 				
 				glActiveTexture(GL_TEXTURE0 + index); // all binding are going to happen in the right unit
@@ -569,6 +627,7 @@ void T2GLWidget::redoFrameBuffers()
 
 				m_texUnits[index].outputOf = pass;
 				touched[index] = true;
+				multisampled[index] = multisamp;
 			} // display
 		} // passes for
 	} // prog enabled
@@ -585,6 +644,9 @@ void T2GLWidget::redoFrameBuffers()
 	emit changedFBOs();
 	updateGL();
 }
+
+
+
 
 
 void T2GLWidget::myPaintGL()
@@ -605,12 +667,18 @@ void T2GLWidget::myPaintGL()
 					if (m_offbufA[sb] != NULL)
 					{
 						glActiveTexture(GL_TEXTURE0 + sa);
-						m_offbufA[sb]->texture()->bind();
+						if (m_offbufB[sb]) // multi sampled
+							m_offbufB[sb]->texture()->bind();
+						else
+							m_offbufA[sb]->texture()->bind();
 					}
 					if (m_offbufA[sa] != NULL)
 					{
 						glActiveTexture(GL_TEXTURE0 + sb);
-						m_offbufA[sa]->texture()->bind();
+						if (m_offbufB[sa]) // multi sampled
+							m_offbufB[sa]->texture()->bind();
+						else
+							m_offbufA[sa]->texture()->bind();
 					}
 				}
 				continue;
@@ -629,7 +697,7 @@ void T2GLWidget::myPaintGL()
 			MyFramebufferObject::doBind(fbo);
 			if (pconf.what == PassConf::Model)
 			{
-				paint3DScene();
+				paint3DScene(pconf.clear);
 			}
 			else // Quad_TexX
 			{
@@ -667,172 +735,13 @@ void T2GLWidget::myPaintGL()
 		paint3DScene();
 	}
 
-	QString s = QString("Vertices: %1 / Polygons: %2").arg(m_countVtx).arg(m_countPoly);
+	++m_framesThisSecond;
 	if (conf.fullFps)
 	{
-		s += QString(" %1 FPS").arg(m_framesLast);
-	}
-	emit message(s);
-
-	if (conf.fullFps)
-	{
-		++m_framesThisSecond;
 		update();
 	}
 }
 
-#if 0
-void T2GLWidget::changedRunType()
-{
-	delete m_offbuf; m_offbuf = NULL;
-	delete m_offbuf2; m_offbuf2 = NULL;
-
-	if (conf.runType == DisplayConf::RunQuadProcess)
-	{
-		//glActiveTexture(GL_TEXTURE0);
-		bool doMulti = GLEW_EXT_framebuffer_blit && conf.quadMultiSamp;
-
-		//if (m_offbuf == NULL || m_offbuf->size() != size() || conf.quadMultiSamp.checkChanged())
-
-		if (doMulti)
-		{
-			m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 4);
-			m_offbuf2 = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA, 0, MyFramebufferObject::FI_LINEAR);
-			printf("created multisample off-screen buffer (%d,%d)\n", width(), height());
-		}
-		else
-		{
-			m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
-			printf("created off-screen buffer (%d,%d)\n", width(), height());
-		}
-
-	}
-	else if (conf.runType == DisplayConf::RunTex2Tex)
-	{
-
-		delete m_offbuf; m_offbuf = NULL;
-		delete m_offbuf2; m_offbuf2 = NULL;
-		m_offbuf = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
-		m_offbuf2 = new MyFramebufferObject(size(), MyFramebufferObject::Depth, GL_TEXTURE_2D, MyFramebufferObject::FMT_RGBA);
-		printf("created two off-screen buffers (%d,%d)\n", width(), height());
-
-		glActiveTexture(GL_TEXTURE0);
-		m_offbuf->texture()->bind();
-		glActiveTexture(GL_TEXTURE1);
-		m_offbuf2->texture()->bind();
-
-		m_doc->m_inputUnit = 1;
-		m_doc->m_outputUnit = 0;
-
-	}
-	else if (conf.runType == DisplayConf::RunNormal)
-	{
-
-	}
-	updateGL();
-}
-
-
-void T2GLWidget::myPaintGLx()
-{
-	try {
-
-		if (m_doc->m_passes.isEmpty())
-			return;
-
-		m_curPass = m_doc->m_passes[0];
-
-		if (m_curPass->conf.runType == DisplayConf::RunQuadProcess)
-		{
-
-			bool doMulti = GLEW_EXT_framebuffer_blit && conf.quadMultiSamp;
-
-			m_offbuf->bind();
-			m_useProg = false;
-			paint3DScene(); // paint 3d scene on texture
-			m_useProg = true;
-			m_offbuf->release();
-			
-			const GlTexture* drawTex = NULL;
-			if (doMulti)
-			{ // can't read directly from a multi-sample render buffer, need to copy it to a texture.
-				glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_offbuf->handle());
-				glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_offbuf2->handle());
-				// using GL_ARB_framebuffer_object
-				glBlitFramebuffer(0, 0, width(), height(), 0, 0, width(), height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
-				glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
-				drawTex = m_offbuf2->texture();
-			}
-			else
-			{
-				drawTex = m_offbuf->texture();
-			}
-
-			glActiveTexture(GL_TEXTURE0);
-			glEnable(GL_TEXTURE_2D);
-			
-			drawTex->bind(); // we're going to draw a quad with this texture.
-			ProgramUser proguser;  //... through the program
-			if (m_useProg && m_doc->m_prog.isOk())
-				proguser.use(&m_doc->m_prog);
-			
-			WholeScreenQuad wsq(this);
-			wsq.render();
-
-			drawTex->unbind();
-			glDisable(GL_TEXTURE_2D);
-			
-		}
-		else if (m_curPass->conf.runType == DisplayConf::RunTex2Tex)
-		{
-			m_offbuf->bind(); // draw into buffer
-			
-			WholeScreenQuad wsq(this, Vec(conf.backCol));
-			{
-				ProgramUser proguser;
-				if (m_useProg && m_doc->m_prog.isOk())
-					proguser.use(&m_doc->m_prog);
-				m_doc->updateFrameParams(); // set the input texture uniform if it exists.
-				
-				wsq.render();
-			}
-		
-			m_useProg = false;
-			paint3DScene(false); // paint 3d scene on texture
-			m_useProg = true;
-
-			m_offbuf->release();
-
-			// draw buffer to screen
-			glActiveTexture(GL_TEXTURE0 + m_doc->m_outputUnit);
-			glEnable(GL_TEXTURE_2D);
-			WholeScreenQuad wsq2(this);
-			wsq2.render();
-			glDisable(GL_TEXTURE_2D);
-
-			qSwap(m_offbuf, m_offbuf2);
-			qSwap(m_doc->m_inputUnit, m_doc->m_outputUnit);
-
-		}
-		else if (m_curPass->conf.runType == DisplayConf::RunNormal)
-		{
-			paint3DScene();
-		}
-
-		if (conf.fullFps)
-		{
-			++m_framesThisSecond;
-			update();
-		}
-
-	} 
-	catch (...)
-	{
-		printf("cought exception in myPaintGL()\n");
-	}
-}
-#endif
 
 
 class VertexDrawer
@@ -932,7 +841,26 @@ void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 		} 
 		glEnd();
 	}
+}
 
+
+void T2GLWidget::drawObjectPoints(const MyObject& obj)
+{
+	if (obj.points.isEmpty())
+		return;
+
+	glBegin(GL_POINTS);
+	
+	for(int pi = 0; pi < obj.points.size(); ++pi)
+	{
+		MyPoint &curpn = *obj.points[pi];
+	
+		glColor3fv(curpn.col.v);
+		glVertex3fv(curpn.p.v);
+		// no normals.
+	}
+
+	glEnd();
 }
 
 void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
@@ -986,17 +914,33 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 }
 
 
+void T2GLWidget::drawMeshPoints(const RMesh* rmesh)
+{
+	if (rmesh->numVtx() == 0)
+		return;
+
+	glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
+	glBegin(GL_POINTS);
+	for(RMesh::Vertex_const_iterator it = rmesh->vertices_begin(); it != rmesh->vertices_end(); ++it)
+	{
+		RMesh::Vertex_const_handle vh = &(*it);
+		glVertex3fv(vh->point().v);
+	}
+
+	glEnd();
+}
+
 
 	
 class PointDrawer : public PointActor
 {
 public:
 	PointDrawer(DisplayConf &conf, T2GLWidget* glw) 
-		: m_conf(conf), m_glw(glw) {}
+		: m_conf(conf), m_bShowUnused(conf.bUnusedPoints), m_glw(glw) {}
 
 	bool shouldShow(bool used)
 	{
-		return (m_conf.bUnusedPoints || used);
+		return (m_bShowUnused || used);
 	}
 
 	Vec pointCol(IPoint* handle)
@@ -1008,6 +952,7 @@ public:
 	}
 protected:
 	DisplayConf &m_conf;
+	bool m_bShowUnused;
 	T2GLWidget *m_glw;
 };
 
@@ -1031,17 +976,37 @@ void T2GLWidget::drawPointDots()
 	//if (m_bBackFaceCulling)
 	//	glDisable(GL_CULL_FACE);
 
-	glPointSize(14.0);
+	glPointSize(conf.pointSize);
 
 	ProgramUser proguser;
-	if (m_curPass->conf.incPoints && shouldUseProg())
+	if (shouldUseProg() && m_curPass->conf.incPoints)
 		proguser.use(&m_curPass->prog);
+
+	bool dotex = m_curPass && m_curPass->conf.pointSpirits;
+
+	if (m_curTexTarget && dotex)
+		glEnable(m_curTexTarget);
 
 	glBegin(GL_POINTS);
 
 	m_doc->m_kparser.creator()->foreachPoints(PointVertexDrawer(conf, this));
 
 	glEnd();
+
+	if (conf.bAllPolyPoints)
+	{
+		if (m_doc->m_obj != NULL)
+			drawObjectPoints(*m_doc->m_obj);
+		foreach(shared_ptr<RMesh> mesh, m_doc->m_meshs)
+		{
+			drawMeshPoints(mesh.get());
+		}
+	}
+
+	if (m_curTexTarget && dotex)
+		glDisable(m_curTexTarget);
+
+
 
 	//if (m_bBackFaceCulling)
 	//	glEnable(GL_CULL_FACE);

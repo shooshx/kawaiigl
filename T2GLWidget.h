@@ -53,11 +53,14 @@ private slots:
 	void reconfLight();
 	void reconfProj();
 	void reconfCull();
+	void reconfVSync();
+	void reconfBlend();
+
 	void updateMouseTracking();
 
 	void updateSelPointColor();
 	void changedSelectedCol();
-	void changedFps();
+//	void changedFps();
 	void fpsTimeout();
 
 public slots:
@@ -73,7 +76,9 @@ signals:
 
 private:
 	void drawObject(const MyObject& obj, bool colorize);
+	void drawObjectPoints(const MyObject& obj);
 	void drawMesh(const RMesh* rmesh, bool colorize);
+	void drawMeshPoints(const RMesh* rmesh);
 	void drawPointDots();
 	void drawSolids(bool colorize);
 	void drawAddTracker(AddTracker& at);
@@ -104,6 +109,7 @@ private:
 	bool m_bShowHiddenPoints;
 
 	bool m_useProg;
+	uint m_curTexTarget; // the current target if texturing of 0 if not.
 
 	DisplayConf &conf;
 	RenderPassPtr m_curPass;

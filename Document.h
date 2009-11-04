@@ -116,6 +116,7 @@ signals:
 	void progParamChanged();
 	void textChanged(const QString& text);
 
+	void goingToClearProg();
 	void didReadProg(ProgKeep* prog);
 	void didReadModel(DocSrc* src);
 
@@ -199,7 +200,7 @@ public:
 
 	//GenericShader m_prog;
 
-	int m_inputUnit, m_outputUnit; // used in Tex2Tex;
+	//int m_inputUnit, m_outputUnit; // used in Tex2Tex; not any more
 	// these are here since they need to be sent as uniforms and we need access to them.
 
 	typedef QList<PassPtr> TPasses;

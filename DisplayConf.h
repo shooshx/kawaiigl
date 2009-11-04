@@ -19,10 +19,13 @@ public:
 	TypeProp<int> numberOfPasses; // 0, 1, 2, 3, 4, 5
 	TypeProp<bool> *passRound[N_PASS];
 	TypeProp<bool> bVtxNormals;
-	TypeProp<bool> bLines, bPoly, bPoints, bUnusedPoints, bLinesAll, bCull, bCoordNum, bCoordName;
+	TypeProp<bool> bLines, bPoly, bPoints, bUnusedPoints, bAllPolyPoints, bLinesAll, bCull, bCoordNum, bCoordName;
 	TypeProp<bool> bTriangulate;
+	TypeProp<bool> bBlend;
+	TypeProp<bool> bDepthTest;
 	TypeProp<bool> perspective, lighting;
 	TypeProp<int> coordFontSize;
+	TypeProp<int> pointSize;
 	TypeProp<bool> bLitBackFace;
 	TypeProp<bool> bLightMove, isPointLight;
 	TypeProp<ETexAct> texAct;
@@ -33,6 +36,7 @@ public:
 	TypeProp<QColor> backCol, materialCol, selectedCol, lineColor;
 	TypeProp<int> editFontSize;
 	TypeProp<bool> fullFps;
+	TypeProp<bool> vSync;
 
 	TypeProp<bool> addFace;
 	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
@@ -47,10 +51,14 @@ public:
 		,bPoly(this, "bPoly", "Show Polygons", true)
 		,bPoints(this, "bPoints", "Show Points", false)
 		,bUnusedPoints(this, "bUnusedPoints", "Show unused Points", false)
+		,bAllPolyPoints(this, "bAllPolyPoints", "Show all points of polygons", false)
 		,bLightMove(this, "bLightMove", "Move Light", false)
 		,bLinesAll(this, "bLinesAll", "Show all Lines", false)
 		,bTriangulate(this, "bTriangulate", "Triangulate Quads", false)
-		,coordFontSize(this, "coordFontSize", "Font Size", 10)
+		,bBlend(this, "bBlend", "Alpha Blending", false)
+		,bDepthTest(this, "bDepthTest", "Enable Depth Test", true)
+		,coordFontSize(this, "coordFontSize", "Font Size", init(10, 1, 72))
+		,pointSize(this, "pointSize", "Point Size", init(14, 1, 200))
 		,bCoordNum(this, "bCoordNum", "Show coordinates", false)
 		,bCoordName(this, "bCoordName", "Show Names", false)
 		,bCull(this, "bCull", "Show Cull", false)
@@ -73,6 +81,7 @@ public:
 		,trackForParam(this, "trackForParam", "trackForParam", 0)
 		,lastDir(this, "lastDir", "lastDir", "")
 		,fullFps(this, "fullFps", "fullFps", false)
+		,vSync(this, "vSync", "vSync", true)
 	//	,runType(this, "runType", "runType", RunNormal)
 	{
 		for(int i = 0; i < N_PASS; ++i)

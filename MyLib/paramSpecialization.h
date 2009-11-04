@@ -89,7 +89,7 @@ bool TypeProp<T>::fromStringImp(const QString& s)
 	{
 		QString us = s.toLower().trimmed();
 		int index = 0;
-		while (us != QString(me.key(index)).toLower())
+		while (index < me.keyCount() && us != QString(me.key(index)).toLower())
 			++index;
 		if (index < me.keyCount())
 		{

@@ -44,8 +44,6 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 		connect(conf->texFile[i], SIGNAL(changed()), this, SLOT(changedTexFile()));
 	}
 
-
-
 	(new CheckBoxIn(&conf->lighting, ui.SD_light))->reload();
 	(new CheckBoxIn(&conf->bVtxNormals, ui.SD_vtxNormals))->reload();
 	(new CheckBoxIn(&conf->bLightMove, ui.SD_lightMove))->reload();
@@ -56,9 +54,13 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 	(new CheckBoxIn(&conf->bLines, ui.SD_lines))->reload();
 	(new CheckBoxIn(&conf->bLinesAll, ui.SD_linesAll))->reload();
 	(new CheckBoxIn(&conf->bTriangulate, ui.SD_triang))->reload();
+	(new CheckBoxIn(&conf->bBlend, ui.blendBox))->reload();
+	(new CheckBoxIn(&conf->bDepthTest, ui.zbufBox))->reload();
 	(new CheckBoxIn(&conf->bPoly, ui.SD_polygons))->reload();
 	(new CheckBoxIn(&conf->bPoints, ui.SD_points))->reload();
 	(new CheckBoxIn(&conf->bUnusedPoints, ui.SD_unused))->reload();
+	(new CheckBoxIn(&conf->bAllPolyPoints, ui.SD_allpoly))->reload();
+	(new SpinBoxIn<int>(&conf->pointSize, ui.pointSizeSpin))->reload();
 	(new CheckBoxIn(&conf->bCoordNum, ui.coordNum))->reload();
 	(new CheckBoxIn(&conf->bCoordName, ui.coordName))->reload();
 	(new ColorSelIn(&conf->lightAmb, ui.ambBot, WidgetIn::DoModal))->reload();
@@ -74,8 +76,9 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 	connect(&conf->bCoordName, SIGNAL(changed()), this, SLOT(chFontEnable()));
 	connect(&conf->bCoordNum, SIGNAL(changed()), this, SLOT(chFontEnable()));
 
-	//(new WidgetTIn<int>::LineEditIn(&conf->coordFontSize, ui.coordFontSize))->reload();
-	connect(ui.coordFontSize, SIGNAL(valueChanged(int)), this, SLOT(coordFontSizeChanged(int)));
+	(new SpinBoxIn<int>(&conf->coordFontSize, ui.coordFontSize))->reload();
+	connect(&conf->coordFontSize, SIGNAL(changed()), this, SIGNAL(changedFont()));
+	//connect(ui.coordFontSize, SIGNAL(valueChanged(int)), this, SLOT(coordFontSizeChanged(int)));
 
 	connect(ui.resetView, SIGNAL(clicked(bool)), this, SIGNAL(resetView()));
 	connect(ui.resetLight, SIGNAL(clicked(bool)), this, SIGNAL(resetLight()));
@@ -88,7 +91,7 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 }
 
 
-void ControlPanel::coordFontSizeChanged(int v) { conf->coordFontSize = v; emit changedFont(); }
+//void ControlPanel::coordFontSizeChanged(int v) { conf->coordFontSize = v; emit changedFont(); }
 
 void ControlPanel::chFontEnable() 
 { 
@@ -209,3 +212,10 @@ void ControlPanel::updateTexEdits()
 	//emit doUpdate();
 }
 
+
+
+void ControlPanel::on_resetBot_clicked()
+{
+	conf->reset();
+
+}

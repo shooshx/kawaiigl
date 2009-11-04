@@ -12,8 +12,13 @@ PParamsWidget::PParamsWidget(QWidget *parent)
 	: QWidget(parent), m_view(NULL)
 {
 	ui.setupUi(this);
-	
 }
+
+PParamsWidget::~PParamsWidget() 
+{
+	clearParam(); // need to dispose of all of the params before closing
+}
+
 
 
 void PParamsWidget::init(T2GLWidget* view, Document* doc, RenderPass* pass)

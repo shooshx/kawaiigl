@@ -158,6 +158,7 @@ public:
 	TypeProp<ERenderWhat> what;
 	TypeProp<ERenderTo> to;
 	TypeProp<bool> toMultisample;  // relevant only if to is not display
+	TypeProp<bool> clear; // relevant only if we're printing a model
 
 	PassConf() 
 		:incPoly(this, "includePoly", true)
@@ -172,6 +173,7 @@ public:
 		,what(this, "what", Model)
 		,to(this, "to", Display)
 		,toMultisample(this, "toMultisample", true)
+		,clear(this, "clear", true)
 	{}
 
 };

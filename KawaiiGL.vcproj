@@ -1089,14 +1089,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\NoiseGenerator.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\NoiseGenerator.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Pass.h"
 				>
 				<FileConfiguration
@@ -1172,6 +1164,26 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<Filter
+				Name="Textures"
+				>
+				<File
+					RelativePath=".\GaussianGenerator.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\GaussianGenerator.h"
+					>
+				</File>
+				<File
+					RelativePath=".\NoiseGenerator.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\NoiseGenerator.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="GUI"
@@ -1615,7 +1627,7 @@
 						Name="VCCustomBuildTool"
 						Description="Rcc&apos;ing KawaiiGL.qrc..."
 						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;KawaiiGL&quot; -no-compress &quot;.\KawaiiGL.qrc&quot; -o .\GeneratedFiles\qrc_KawaiiGL.cpp&#x0D;&#x0A;"
-						AdditionalDependencies=".\KawaiiGL.qrc;.\images\arrow-down.png;.\images\arrow-switch-270.png;.\images\arrow-up.png;.\images\cross.png;.\images\doc_frag.png;.\images\doc_geom.png;.\images\doc_model.png;.\images\doc_vtx.png;.\images\gear.png;.\images\save.png"
+						AdditionalDependencies=".\KawaiiGL.qrc;.\images\arrow-circle.png;.\images\arrow-down.png;.\images\arrow-switch-270.png;.\images\arrow-up.png;.\images\cross.png;.\images\doc_frag.png;.\images\doc_geom.png;.\images\doc_model.png;.\images\doc_vtx.png;.\images\gear.png;.\images\save.png"
 						Outputs=".\GeneratedFiles\qrc_KawaiiGL.cpp"
 					/>
 				</FileConfiguration>
@@ -1626,7 +1638,7 @@
 						Name="VCCustomBuildTool"
 						Description="Rcc&apos;ing KawaiiGL.qrc..."
 						CommandLine="&quot;$(QTDIR)\bin\rcc.exe&quot; -name &quot;KawaiiGL&quot; -no-compress &quot;.\KawaiiGL.qrc&quot; -o .\GeneratedFiles\qrc_KawaiiGL.cpp&#x0D;&#x0A;"
-						AdditionalDependencies=".\KawaiiGL.qrc;.\images\arrow-down.png;.\images\arrow-switch-270.png;.\images\arrow-up.png;.\images\cross.png;.\images\doc_frag.png;.\images\doc_geom.png;.\images\doc_model.png;.\images\doc_vtx.png;.\images\gear.png;.\images\save.png"
+						AdditionalDependencies=".\KawaiiGL.qrc;.\images\arrow-circle.png;.\images\arrow-down.png;.\images\arrow-switch-270.png;.\images\arrow-up.png;.\images\cross.png;.\images\doc_frag.png;.\images\doc_geom.png;.\images\doc_model.png;.\images\doc_vtx.png;.\images\gear.png;.\images\save.png"
 						Outputs=".\GeneratedFiles\qrc_KawaiiGL.cpp"
 					/>
 				</FileConfiguration>
@@ -1820,6 +1832,46 @@
 			UniqueIdentifier="{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}"
 			ParseFiles="false"
 			>
+			<File
+				RelativePath=".\images\arrow-circle-045-left.png"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\images\arrow-circle.png"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
 			<File
 				RelativePath=".\images\arrow-down.png"
 				>

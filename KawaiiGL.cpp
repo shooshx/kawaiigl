@@ -106,6 +106,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_browse, SIGNAL(openDocText(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
 	connect(m_browse, SIGNAL(openPassConf(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
 
+	connect(m_doc, SIGNAL(goingToClearProg()), m_edDlg, SLOT(clearingProg()));
 	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_edDlg, SLOT(readProg(ProgKeep*)) );
 	connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_browse, SLOT(readProg(ProgKeep*)) );
 	connect(m_doc, SIGNAL(didReadModel(DocSrc*)), m_browse, SLOT(readModel()) );
@@ -113,7 +114,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 
 	connect(&m_sett.disp.bVtxNormals, SIGNAL(changed()), m_doc, SLOT(calcNoParse())); // TBD - this is bad.
 
-	connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
+	//connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
 
 	m_kView->setContextMenuPolicy(Qt::ActionsContextMenu);
 
@@ -123,10 +124,15 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	QMenu *view = new QMenu("View");
 	viewBot->setMenu(view);
 
-	QPushButton *fpsBot = new QPushButton("O");
+	QPushButton *fpsBot = new QPushButton(QIcon(":/images/arrow-circle.png"), QString());
 	fpsBot->setMaximumSize(20, 19);
 	statusBar()->addPermanentWidget(fpsBot);
 	(new CheckBoxIn(&m_sett.disp.fullFps, fpsBot))->reload();
+
+	QCheckBox *vSyncBox = new QCheckBox("vSync");
+	vSyncBox->setMaximumHeight(19);
+	statusBar()->addPermanentWidget(vSyncBox);
+	(new CheckBoxIn(&m_sett.disp.vSync, vSyncBox))->reload();
 
 	QAction *confVis = new QAction("Display", view);
 	view->addAction(confVis);

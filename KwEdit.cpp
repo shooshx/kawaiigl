@@ -71,6 +71,7 @@ static QFont fixedFont("Courier", 10);
 
 KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *view)
 :MyDialog(parent), m_conf(conf), m_doc(doc), m_view(view)
+,m_lastActiveTabIndex(0)
 {
 	setWindowTitle("Kawaii Script");
 	ui.setupUi(this);
@@ -367,11 +368,16 @@ void ProgTextEdit::setFontSize(int size)
 
 void KwEdit::readModel(DocSrc* src)
 {
-	// automatically
-	RenderPassPtr rpass = m_doc->passForModel();
-	if (rpass)
-		addPage(rpass->model.get());
-
+	if (src)
+	{
+		addPage(src);
+	}
+	else
+	{ // need to go there and find it
+		RenderPassPtr rpass = m_doc->passForModel();
+		if (rpass)
+			addPage(rpass->model.get());
+	}
 }
 
 void KwEdit::setText(const QString& text)
@@ -383,6 +389,12 @@ void KwEdit::setText(const QString& text)
 void KwEdit::removePage(DocElement* src)
 {
 	m_pages.remove(src);
+}
+
+
+void KwEdit::clearingProg()
+{
+	m_lastActiveTabIndex = ui.tabs->currentIndex();
 }
 
 // read a program from the reposityry
@@ -399,20 +411,25 @@ void KwEdit::readProg(ProgKeep* prog)
 
 	if (rpass) 
 	{
+		int i = 1;
+		QWidget *cw = NULL;
 		foreach(const shared_ptr<DocSrc>& s, rpass->shaders)
 		{
 			if (s->type != SRC_GEOM || !s->text.isEmpty()) // don't open geometry by default
-				addPage(s.get());
+			{
+				QWidget* w = addPage(s.get());
+				if (i++ == m_lastActiveTabIndex)
+					cw = w;
+			}
 		}
-		ui.tabs->setCurrentIndex(0);
+		if (cw == NULL)
+			ui.tabs->setCurrentIndex(0);
+		else
+			ui.tabs->setCurrentWidget(cw);
 	}
 
+	int x = ui.tabs->count();
 
-	if (prog != NULL)
-	{
-		m_lastLoadedProg = prog->name; // for reload
-
-	}
 
 	ui.shaderEnable->setChecked(true);
 
@@ -554,14 +571,14 @@ KPagePtr KwEdit::addDlgPage(RenderPass* pass)
 	return page;
 }
 
-void KwEdit::addPage(DocElement* elem, int index)
+QWidget* KwEdit::addPage(DocElement* elem, int index)
 {
 	// check if it's already open
 	TPages::iterator it = m_pages.find(elem);
 	if (it != m_pages.end())
 	{
 		ui.tabs->setCurrentWidget((*it)->tab);
-		return;
+		return (*it)->tab;
 	}
 
 	KPagePtr page;
@@ -570,7 +587,7 @@ void KwEdit::addPage(DocElement* elem, int index)
 	else if (elem->type == SRC_RENDER)
 		page = addDlgPage(static_cast<RenderPass*>(elem));
 	else
-		return;
+		return NULL;
 
 	page->elem = elem;
 
@@ -583,5 +600,6 @@ void KwEdit::addPage(DocElement* elem, int index)
 	else
 		ui.tabs->insertTab(index, page->tab, Document::getTypeIcon(page->elem->type), page->elem->displayName());
 	ui.tabs->setCurrentWidget(page->tab);
+	return page->tab;
 }
 

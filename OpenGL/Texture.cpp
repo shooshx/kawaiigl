@@ -32,6 +32,12 @@ void GlTexture::init(GLenum target, const QSize& size, int depth, GLenum interna
 		mglCheckErrorsC("tex3d");
 	}
 
+	if (minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_NEAREST_MIPMAP_LINEAR ||
+		minFilter == GL_LINEAR_MIPMAP_NEAREST || minFilter == GL_NEAREST_MIPMAP_NEAREST)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+	}
+
 	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
 	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
 	glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);

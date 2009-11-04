@@ -237,22 +237,37 @@
 	<group display="Dynamic">
 		<program display="Paint">
 			<fragtext>frag.paint.glsl.txt</fragtext>
-			<param name="img" type="texture">input()</param> <!-- the input texture -->
+			<param name="img" type="texture">0</param> <!-- the input texture -->
 			<param name="curs" type="vec2" gui="screen">{0.0, 0.0}</param>
 			<runtype>tex2tex</runtype>
 		</program>
 		<program display="Paint-Fade">
 			<fragtext>frag.paint_fade.glsl.txt</fragtext>
-			<param name="img" type="texture">input()</param> <!-- the input texture -->
+			<param name="img" type="texture">0</param> <!-- the input texture -->
 			<param name="curs" type="vec2" gui="screen">{0.0, 0.0}</param>
 			<runtype>tex2tex</runtype>
 		</program>
 		<program display="Game Of Life">
 			<fragtext>frag.game_of_life.glsl.txt</fragtext>
-			<param name="img" type="texture">input()</param> <!-- the input texture -->
+			<param name="img" type="texture">0</param> <!-- the input texture -->
 			<param name="curs" type="vec2" gui="screen">{100.0, 100.0}</param>
 			<param name="run" type="int">1</param>
 			<runtype>tex2tex</runtype>
+		</program>
+	</group>
+	<group display="Particle">
+		<program display="Basic Tex (no prog)">
+			<arg name="bBlend">1</arg>
+			<arg name="bDepthTest">0</arg>
+			<arg name="bPoly">0</arg>
+			<arg name="pointSize">26</arg>
+			<arg name="texAct">Tex_File0</arg>
+			<arg name="texFile0">gaussian(256)</arg>
+			<arg name="bAllPolyPoints">1</arg>
+			<pass>
+				<conf name="pointSpirits">1</conf>
+				<!-- no GLSL code -->
+			</pass>
 		</program>
 	</group>
 </programs>

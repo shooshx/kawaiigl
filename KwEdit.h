@@ -92,10 +92,12 @@ public:
 public slots:
 	void readModel(DocSrc* src);
 	void readProg(ProgKeep* prog);
+	void clearingProg();
+
 	void doShadersUpdate();
 	void setText(const QString& text);
 
-	void addPage(DocElement*, int index = -1);
+	QWidget* addPage(DocElement*, int index = -1);
 
 	void removePage(DocElement* src);
 
@@ -143,6 +145,7 @@ private:
 
 	Document *m_doc;
 	T2GLWidget *m_view;
+	int m_lastActiveTabIndex;
 
 	DisplayConf &m_conf;
 	

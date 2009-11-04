@@ -18,6 +18,7 @@ ShaderConfigDlg::ShaderConfigDlg(QWidget *parent, RenderPass* pass, T2GLWidget* 
 	(new ComboBoxIn<PassConf::ERenderWhat>(&conf.what, ui.whatCombo))->reload();
 	(new ComboBoxIn<PassConf::ERenderTo>(&conf.to, ui.toCombo))->reload();
 	(new CheckBoxIn(&conf.toMultisample, ui.toMulti))->reload();
+	(new CheckBoxIn(&conf.clear, ui.clear))->reload();
 
 	(new CheckBoxIn(&conf.incPoly, ui.incPoly))->reload();
 	(new CheckBoxIn(&conf.incPoints, ui.incPoints))->reload();

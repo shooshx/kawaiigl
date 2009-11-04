@@ -50,7 +50,8 @@ EParamType getBaseType(EParamType t)
 Document::Document(KawaiiGL* mainc)
 	:m_nPoly(0), m_nPoints(0), m_errAct(NULL), m_frameObj(NULL), m_obj(NULL)
 	,m_conf(mainc->sett().disp), m_main(mainc)
-	,m_inputUnit(-1), m_outputUnit(-1), m_confxmls(mainc)
+	//,m_inputUnit(-1), m_outputUnit(-1),
+	,m_confxmls(mainc)
 	,m_shaderEnabled(false)
 {
 	connect(&m_conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
@@ -109,7 +110,7 @@ RenderPassPtr Document::passForModel()
 	for (TPasses::iterator it = m_passes.begin(); it != m_passes.end(); ++it)
 	{
 		rpass = dynamic_pointer_cast<RenderPass>(*it);
-		if (rpass)
+		if (rpass && rpass->conf.what == PassConf::Model)
 			break;
 	}
 	return rpass;
@@ -133,6 +134,7 @@ void Document::readProg(ProgKeep* prog)
 		}
 	}
 
+	emit goingToClearProg();
 	clearPasses(); // removes them from the edit window as well
 
 	foreach(const ProgKeep::PassKeep* pk, prog->m_passes)
@@ -263,9 +265,9 @@ void Document::removePass(Pass* pass)
 
 void Document::readModel(const QString& name, const ModelData& md)
 {
-	if (m_passes.isEmpty())
+	RenderPassPtr pass = passForModel();
+	if (!pass)
 		return;
-	RenderPassPtr pass = static_pointer_cast<RenderPass>(m_passes[0]);
 
 	QString text; 
 
@@ -802,6 +804,7 @@ bool Document::parseParam(const ParamInput& pi)
 				prog.setUniform(ti, pi.index);
 				m_onFrameEvals[uniqueParamId(pi)].reset();
 			}
+/*
 			else
 			{
 				QString v = pi.value.trimmed().toLower();
@@ -813,7 +816,8 @@ bool Document::parseParam(const ParamInput& pi)
 					pa->update(prog);
 					ok = true;
 				}
-			}
+			}*/
+
 		}
 		break;
 	}
@@ -838,10 +842,11 @@ void Document::VecParamAdapter::update(GenericShader &prog) const
 
 void Document::TexParamAdapter::update(GenericShader &prog) const
 {
+/*
 	int tex = m_doc->m_inputUnit;
 	if (tex == -1)
 		return;
-	prog.setUniform(tex, index);
+	prog.setUniform(tex, index);*/
 }
 
 

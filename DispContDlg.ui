@@ -6,7 +6,7 @@
     <x>0</x>
     <y>0</y>
     <width>208</width>
-    <height>525</height>
+    <height>522</height>
    </rect>
   </property>
   <property name="minimumSize" >
@@ -30,7 +30,7 @@
      <property name="minimumSize" >
       <size>
        <width>0</width>
-       <height>360</height>
+       <height>380</height>
       </size>
      </property>
      <widget class="Line" name="line_2" >
@@ -49,8 +49,8 @@
      <widget class="QCheckBox" name="SD_points" >
       <property name="geometry" >
        <rect>
-        <x>106</x>
-        <y>116</y>
+        <x>99</x>
+        <y>137</y>
         <width>71</width>
         <height>18</height>
        </rect>
@@ -65,8 +65,8 @@
       </property>
       <property name="geometry" >
        <rect>
-        <x>38</x>
-        <y>240</y>
+        <x>30</x>
+        <y>249</y>
         <width>44</width>
         <height>22</height>
        </rect>
@@ -100,7 +100,7 @@
      <widget class="QCheckBox" name="SD_litback" >
       <property name="geometry" >
        <rect>
-        <x>105</x>
+        <x>99</x>
         <y>65</y>
         <width>81</width>
         <height>18</height>
@@ -113,8 +113,8 @@
      <widget class="QCheckBox" name="SD_polygons" >
       <property name="geometry" >
        <rect>
-        <x>106</x>
-        <y>194</y>
+        <x>99</x>
+        <y>233</y>
         <width>71</width>
         <height>18</height>
        </rect>
@@ -165,7 +165,7 @@
      <widget class="QCheckBox" name="SD_light" >
       <property name="geometry" >
        <rect>
-        <x>105</x>
+        <x>99</x>
         <y>5</y>
         <width>81</width>
         <height>18</height>
@@ -217,8 +217,8 @@
      <widget class="Line" name="line" >
       <property name="geometry" >
        <rect>
-        <x>101</x>
-        <y>109</y>
+        <x>102</x>
+        <y>130</y>
         <width>85</width>
         <height>3</height>
        </rect>
@@ -230,7 +230,7 @@
      <widget class="QCheckBox" name="SD_cull" >
       <property name="geometry" >
        <rect>
-        <x>105</x>
+        <x>99</x>
         <y>84</y>
         <width>81</width>
         <height>18</height>
@@ -243,8 +243,8 @@
      <widget class="QCheckBox" name="SD_lines" >
       <property name="geometry" >
        <rect>
-        <x>106</x>
-        <y>156</y>
+        <x>99</x>
+        <y>195</y>
         <width>71</width>
         <height>18</height>
        </rect>
@@ -256,7 +256,7 @@
      <widget class="QCheckBox" name="SD_persp" >
       <property name="geometry" >
        <rect>
-        <x>105</x>
+        <x>99</x>
         <y>45</y>
         <width>81</width>
         <height>18</height>
@@ -308,8 +308,8 @@
      <widget class="QCheckBox" name="coordNum" >
       <property name="geometry" >
        <rect>
-        <x>107</x>
-        <y>243</y>
+        <x>99</x>
+        <y>252</y>
         <width>81</width>
         <height>20</height>
        </rect>
@@ -321,7 +321,7 @@
      <widget class="QCheckBox" name="SD_lightMove" >
       <property name="geometry" >
        <rect>
-        <x>125</x>
+        <x>119</x>
         <y>25</y>
         <width>71</width>
         <height>18</height>
@@ -334,8 +334,8 @@
      <widget class="QCheckBox" name="SD_unused" >
       <property name="geometry" >
        <rect>
-        <x>122</x>
-        <y>136</y>
+        <x>115</x>
+        <y>157</y>
         <width>71</width>
         <height>18</height>
        </rect>
@@ -386,8 +386,8 @@
      <widget class="QCheckBox" name="SD_linesAll" >
       <property name="geometry" >
        <rect>
-        <x>122</x>
-        <y>176</y>
+        <x>115</x>
+        <y>214</y>
         <width>61</width>
         <height>18</height>
        </rect>
@@ -399,7 +399,7 @@
      <widget class="QPushButton" name="resetLight" >
       <property name="geometry" >
        <rect>
-        <x>172</x>
+        <x>166</x>
         <y>24</y>
         <width>20</width>
         <height>20</height>
@@ -415,8 +415,8 @@
       </property>
       <property name="geometry" >
        <rect>
-        <x>88</x>
-        <y>244</y>
+        <x>80</x>
+        <y>253</y>
         <width>16</width>
         <height>18</height>
        </rect>
@@ -468,7 +468,7 @@
       <property name="geometry" >
        <rect>
         <x>12</x>
-        <y>160</y>
+        <y>154</y>
         <width>71</width>
         <height>21</height>
        </rect>
@@ -481,7 +481,7 @@
       <property name="geometry" >
        <rect>
         <x>62</x>
-        <y>307</y>
+        <y>321</y>
         <width>61</width>
         <height>24</height>
        </rect>
@@ -494,7 +494,7 @@
       <property name="geometry" >
        <rect>
         <x>124</x>
-        <y>283</y>
+        <y>297</y>
         <width>71</width>
         <height>24</height>
        </rect>
@@ -507,7 +507,7 @@
       <property name="geometry" >
        <rect>
         <x>62</x>
-        <y>283</y>
+        <y>297</y>
         <width>61</width>
         <height>24</height>
        </rect>
@@ -520,7 +520,7 @@
       <property name="geometry" >
        <rect>
         <x>79</x>
-        <y>334</y>
+        <y>348</y>
         <width>41</width>
         <height>21</height>
        </rect>
@@ -533,7 +533,7 @@
       <property name="geometry" >
        <rect>
         <x>9</x>
-        <y>283</y>
+        <y>297</y>
         <width>51</width>
         <height>24</height>
        </rect>
@@ -546,7 +546,7 @@
       <property name="geometry" >
        <rect>
         <x>9</x>
-        <y>307</y>
+        <y>321</y>
         <width>51</width>
         <height>24</height>
        </rect>
@@ -559,7 +559,7 @@
       <property name="geometry" >
        <rect>
         <x>9</x>
-        <y>331</y>
+        <y>345</y>
         <width>51</width>
         <height>24</height>
        </rect>
@@ -572,7 +572,7 @@
       <property name="geometry" >
        <rect>
         <x>12</x>
-        <y>266</y>
+        <y>280</y>
         <width>46</width>
         <height>14</height>
        </rect>
@@ -585,7 +585,7 @@
       <property name="geometry" >
        <rect>
         <x>67</x>
-        <y>267</y>
+        <y>281</y>
         <width>46</width>
         <height>14</height>
        </rect>
@@ -598,7 +598,7 @@
       <property name="geometry" >
        <rect>
         <x>10</x>
-        <y>184</y>
+        <y>195</y>
         <width>41</width>
         <height>23</height>
        </rect>
@@ -614,7 +614,7 @@
       <property name="geometry" >
        <rect>
         <x>144</x>
-        <y>307</y>
+        <y>321</y>
         <width>51</width>
         <height>24</height>
        </rect>
@@ -626,7 +626,7 @@
      <widget class="QCheckBox" name="SD_pntLight" >
       <property name="geometry" >
        <rect>
-        <x>158</x>
+        <x>152</x>
         <y>5</y>
         <width>72</width>
         <height>18</height>
@@ -639,14 +639,85 @@
      <widget class="QCheckBox" name="SD_triang" >
       <property name="geometry" >
        <rect>
-        <x>120</x>
-        <y>214</y>
+        <x>12</x>
+        <y>175</y>
         <width>81</width>
         <height>18</height>
        </rect>
       </property>
       <property name="text" >
        <string>Triangulate</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="blendBox" >
+      <property name="geometry" >
+       <rect>
+        <x>99</x>
+        <y>104</y>
+        <width>72</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Blend</string>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="SD_allpoly" >
+      <property name="geometry" >
+       <rect>
+        <x>115</x>
+        <y>176</y>
+        <width>72</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>All Poly</string>
+      </property>
+     </widget>
+     <widget class="QSpinBox" name="pointSizeSpin" >
+      <property name="geometry" >
+       <rect>
+        <x>155</x>
+        <y>135</y>
+        <width>42</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="accelerated" >
+       <bool>true</bool>
+      </property>
+      <property name="maximum" >
+       <number>200</number>
+      </property>
+      <property name="value" >
+       <number>14</number>
+      </property>
+     </widget>
+     <widget class="QCheckBox" name="zbufBox" >
+      <property name="geometry" >
+       <rect>
+        <x>149</x>
+        <y>104</y>
+        <width>72</width>
+        <height>18</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Z-buf</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="resetBot" >
+      <property name="geometry" >
+       <rect>
+        <x>36</x>
+        <y>221</y>
+        <width>51</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="text" >
+       <string>Reset</string>
       </property>
      </widget>
     </widget>
@@ -665,27 +736,7 @@
     </spacer>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" >
-     <item>
-      <widget class="QLabel" name="label_2" >
-       <property name="text" >
-        <string>Clip</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QSlider" name="clipSlider" >
-       <property name="focusPolicy" >
-        <enum>Qt::NoFocus</enum>
-       </property>
-       <property name="maximum" >
-        <number>100</number>
-       </property>
-       <property name="orientation" >
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-     </item>
+    <layout class="QHBoxLayout" name="horizontalLayout_5" >
      <item>
       <widget class="QPushButton" name="resetView" >
        <property name="maximumSize" >
@@ -702,10 +753,6 @@
        </property>
       </widget>
      </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_5" >
      <item>
       <spacer name="horizontalSpacer" >
        <property name="orientation" >

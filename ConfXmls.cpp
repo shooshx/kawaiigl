@@ -316,13 +316,19 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			}
 		case RunTex2Tex:
 			{
-				tempPass->name = "Pass 1";
+				tempPass->name = "Screen Pass";
 				prog->m_passes.append(tempPass);
 				tempPass->conf->what = PassConf::Quad_Tex1;
 				tempPass->conf->to = PassConf::Texture0;
 				tempPass->conf->toMultisample = false;
 
-				ProgKeep::RenderPassKeep *disp = new ProgKeep::RenderPassKeep("Pass 2");
+				ProgKeep::RenderPassKeep *model = new ProgKeep::RenderPassKeep("Model Pass");
+				model->conf->what = PassConf::Model;
+				model->conf->to = PassConf::Texture0;
+				model->conf->clear = false;
+				prog->m_passes.append(model);
+
+				ProgKeep::RenderPassKeep *disp = new ProgKeep::RenderPassKeep("To Display Pass");
 				disp->conf->what = PassConf::Quad_Tex0;
 				disp->conf->to = PassConf::Display;
 				prog->m_passes.append(disp);

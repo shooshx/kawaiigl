@@ -43,7 +43,7 @@
          <property name="minimumSize" >
           <size>
            <width>260</width>
-           <height>80</height>
+           <height>100</height>
           </size>
          </property>
          <widget class="QCheckBox" name="toMulti" >
@@ -97,7 +97,7 @@
           <property name="geometry" >
            <rect>
             <x>13</x>
-            <y>40</y>
+            <y>55</y>
             <width>131</width>
             <height>18</height>
            </rect>
@@ -113,7 +113,7 @@
           <property name="geometry" >
            <rect>
             <x>13</x>
-            <y>60</y>
+            <y>75</y>
             <width>131</width>
             <height>18</height>
            </rect>
@@ -157,6 +157,19 @@
             <width>69</width>
             <height>22</height>
            </rect>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="clear" >
+          <property name="geometry" >
+           <rect>
+            <x>60</x>
+            <y>29</y>
+            <width>91</width>
+            <height>18</height>
+           </rect>
+          </property>
+          <property name="text" >
+           <string>Clear Before</string>
           </property>
          </widget>
         </widget>

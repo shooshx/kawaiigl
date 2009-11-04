@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'DispContDlg.ui'
 **
-** Created: Tue Oct 20 20:14:46 2009
+** Created: Mon Nov 2 01:16:52 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -22,7 +22,6 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
-#include <QtGui/QSlider>
 #include <QtGui/QSpacerItem>
 #include <QtGui/QSpinBox>
 #include <QtGui/QVBoxLayout>
@@ -81,12 +80,14 @@ public:
     QPushButton *lineColBot;
     QCheckBox *SD_pntLight;
     QCheckBox *SD_triang;
+    QCheckBox *blendBox;
+    QCheckBox *SD_allpoly;
+    QSpinBox *pointSizeSpin;
+    QCheckBox *zbufBox;
+    QPushButton *resetBot;
     QSpacerItem *verticalSpacer;
-    QHBoxLayout *horizontalLayout;
-    QLabel *label_2;
-    QSlider *clipSlider;
-    QPushButton *resetView;
     QHBoxLayout *horizontalLayout_5;
+    QPushButton *resetView;
     QSpacerItem *horizontalSpacer;
     QComboBox *texSel;
     QWidget *tex0cont;
@@ -112,7 +113,7 @@ public:
     {
         if (DispContDlg->objectName().isEmpty())
             DispContDlg->setObjectName(QString::fromUtf8("DispContDlg"));
-        DispContDlg->resize(208, 525);
+        DispContDlg->resize(208, 522);
         DispContDlg->setMinimumSize(QSize(208, 0));
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
@@ -120,7 +121,7 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         widget = new QWidget(DispContDlg);
         widget->setObjectName(QString::fromUtf8("widget"));
-        widget->setMinimumSize(QSize(0, 360));
+        widget->setMinimumSize(QSize(0, 380));
         line_2 = new QFrame(widget);
         line_2->setObjectName(QString::fromUtf8("line_2"));
         line_2->setGeometry(QRect(10, 150, 85, 3));
@@ -128,11 +129,11 @@ public:
         line_2->setFrameShadow(QFrame::Sunken);
         SD_points = new QCheckBox(widget);
         SD_points->setObjectName(QString::fromUtf8("SD_points"));
-        SD_points->setGeometry(QRect(106, 116, 71, 18));
+        SD_points->setGeometry(QRect(99, 137, 71, 18));
         coordFontSize = new QSpinBox(widget);
         coordFontSize->setObjectName(QString::fromUtf8("coordFontSize"));
         coordFontSize->setEnabled(false);
-        coordFontSize->setGeometry(QRect(38, 240, 44, 22));
+        coordFontSize->setGeometry(QRect(30, 249, 44, 22));
         coordFontSize->setMinimum(6);
         coordFontSize->setMaximum(72);
         coordFontSize->setValue(8);
@@ -142,10 +143,10 @@ public:
         label->setAlignment(Qt::AlignCenter);
         SD_litback = new QCheckBox(widget);
         SD_litback->setObjectName(QString::fromUtf8("SD_litback"));
-        SD_litback->setGeometry(QRect(105, 65, 81, 18));
+        SD_litback->setGeometry(QRect(99, 65, 81, 18));
         SD_polygons = new QCheckBox(widget);
         SD_polygons->setObjectName(QString::fromUtf8("SD_polygons"));
-        SD_polygons->setGeometry(QRect(106, 194, 71, 18));
+        SD_polygons->setGeometry(QRect(99, 233, 71, 18));
         frame = new QFrame(widget);
         frame->setObjectName(QString::fromUtf8("frame"));
         frame->setGeometry(QRect(7, 26, 81, 25));
@@ -159,7 +160,7 @@ public:
         SD_p1r->setGeometry(QRect(61, 4, 16, 18));
         SD_light = new QCheckBox(widget);
         SD_light->setObjectName(QString::fromUtf8("SD_light"));
-        SD_light->setGeometry(QRect(105, 5, 81, 18));
+        SD_light->setGeometry(QRect(99, 5, 81, 18));
         frame_2 = new QFrame(widget);
         frame_2->setObjectName(QString::fromUtf8("frame_2"));
         frame_2->setGeometry(QRect(7, 119, 81, 25));
@@ -173,18 +174,18 @@ public:
         SD_p5r->setGeometry(QRect(61, 5, 21, 18));
         line = new QFrame(widget);
         line->setObjectName(QString::fromUtf8("line"));
-        line->setGeometry(QRect(101, 109, 85, 3));
+        line->setGeometry(QRect(102, 130, 85, 3));
         line->setFrameShape(QFrame::HLine);
         line->setFrameShadow(QFrame::Sunken);
         SD_cull = new QCheckBox(widget);
         SD_cull->setObjectName(QString::fromUtf8("SD_cull"));
-        SD_cull->setGeometry(QRect(105, 84, 81, 18));
+        SD_cull->setGeometry(QRect(99, 84, 81, 18));
         SD_lines = new QCheckBox(widget);
         SD_lines->setObjectName(QString::fromUtf8("SD_lines"));
-        SD_lines->setGeometry(QRect(106, 156, 71, 18));
+        SD_lines->setGeometry(QRect(99, 195, 71, 18));
         SD_persp = new QCheckBox(widget);
         SD_persp->setObjectName(QString::fromUtf8("SD_persp"));
-        SD_persp->setGeometry(QRect(105, 45, 81, 18));
+        SD_persp->setGeometry(QRect(99, 45, 81, 18));
         frame1 = new QFrame(widget);
         frame1->setObjectName(QString::fromUtf8("frame1"));
         frame1->setGeometry(QRect(7, 96, 81, 25));
@@ -198,13 +199,13 @@ public:
         SD_p4r->setGeometry(QRect(61, 5, 21, 18));
         coordNum = new QCheckBox(widget);
         coordNum->setObjectName(QString::fromUtf8("coordNum"));
-        coordNum->setGeometry(QRect(107, 243, 81, 20));
+        coordNum->setGeometry(QRect(99, 252, 81, 20));
         SD_lightMove = new QCheckBox(widget);
         SD_lightMove->setObjectName(QString::fromUtf8("SD_lightMove"));
-        SD_lightMove->setGeometry(QRect(125, 25, 71, 18));
+        SD_lightMove->setGeometry(QRect(119, 25, 71, 18));
         SD_unused = new QCheckBox(widget);
         SD_unused->setObjectName(QString::fromUtf8("SD_unused"));
-        SD_unused->setGeometry(QRect(122, 136, 71, 18));
+        SD_unused->setGeometry(QRect(115, 157, 71, 18));
         frame2 = new QFrame(widget);
         frame2->setObjectName(QString::fromUtf8("frame2"));
         frame2->setGeometry(QRect(7, 73, 81, 25));
@@ -218,14 +219,14 @@ public:
         SD_p3r->setGeometry(QRect(61, 4, 21, 18));
         SD_linesAll = new QCheckBox(widget);
         SD_linesAll->setObjectName(QString::fromUtf8("SD_linesAll"));
-        SD_linesAll->setGeometry(QRect(122, 176, 61, 18));
+        SD_linesAll->setGeometry(QRect(115, 214, 61, 18));
         resetLight = new QPushButton(widget);
         resetLight->setObjectName(QString::fromUtf8("resetLight"));
-        resetLight->setGeometry(QRect(172, 24, 20, 20));
+        resetLight->setGeometry(QRect(166, 24, 20, 20));
         coordName = new QCheckBox(widget);
         coordName->setObjectName(QString::fromUtf8("coordName"));
         coordName->setEnabled(true);
-        coordName->setGeometry(QRect(88, 244, 16, 18));
+        coordName->setGeometry(QRect(80, 253, 16, 18));
         frame3 = new QFrame(widget);
         frame3->setObjectName(QString::fromUtf8("frame3"));
         frame3->setGeometry(QRect(7, 49, 81, 25));
@@ -239,46 +240,64 @@ public:
         SD_p2r->setGeometry(QRect(61, 5, 21, 18));
         SD_vtxNormals = new QCheckBox(widget);
         SD_vtxNormals->setObjectName(QString::fromUtf8("SD_vtxNormals"));
-        SD_vtxNormals->setGeometry(QRect(12, 160, 71, 21));
+        SD_vtxNormals->setGeometry(QRect(12, 154, 71, 21));
         selColBot = new QPushButton(widget);
         selColBot->setObjectName(QString::fromUtf8("selColBot"));
-        selColBot->setGeometry(QRect(62, 307, 61, 24));
+        selColBot->setGeometry(QRect(62, 321, 61, 24));
         backColBot = new QPushButton(widget);
         backColBot->setObjectName(QString::fromUtf8("backColBot"));
-        backColBot->setGeometry(QRect(124, 283, 71, 24));
+        backColBot->setGeometry(QRect(124, 297, 71, 24));
         mattColBot = new QPushButton(widget);
         mattColBot->setObjectName(QString::fromUtf8("mattColBot"));
-        mattColBot->setGeometry(QRect(62, 283, 61, 24));
+        mattColBot->setGeometry(QRect(62, 297, 61, 24));
         shineEdit = new QLineEdit(widget);
         shineEdit->setObjectName(QString::fromUtf8("shineEdit"));
-        shineEdit->setGeometry(QRect(79, 334, 41, 21));
+        shineEdit->setGeometry(QRect(79, 348, 41, 21));
         ambBot = new QPushButton(widget);
         ambBot->setObjectName(QString::fromUtf8("ambBot"));
-        ambBot->setGeometry(QRect(9, 283, 51, 24));
+        ambBot->setGeometry(QRect(9, 297, 51, 24));
         diffBot = new QPushButton(widget);
         diffBot->setObjectName(QString::fromUtf8("diffBot"));
-        diffBot->setGeometry(QRect(9, 307, 51, 24));
+        diffBot->setGeometry(QRect(9, 321, 51, 24));
         specBot = new QPushButton(widget);
         specBot->setObjectName(QString::fromUtf8("specBot"));
-        specBot->setGeometry(QRect(9, 331, 51, 24));
+        specBot->setGeometry(QRect(9, 345, 51, 24));
         label_6 = new QLabel(widget);
         label_6->setObjectName(QString::fromUtf8("label_6"));
-        label_6->setGeometry(QRect(12, 266, 46, 14));
+        label_6->setGeometry(QRect(12, 280, 46, 14));
         label_7 = new QLabel(widget);
         label_7->setObjectName(QString::fromUtf8("label_7"));
-        label_7->setGeometry(QRect(67, 267, 46, 14));
+        label_7->setGeometry(QRect(67, 281, 46, 14));
         saveBot = new QPushButton(widget);
         saveBot->setObjectName(QString::fromUtf8("saveBot"));
-        saveBot->setGeometry(QRect(10, 184, 41, 23));
+        saveBot->setGeometry(QRect(10, 195, 41, 23));
         lineColBot = new QPushButton(widget);
         lineColBot->setObjectName(QString::fromUtf8("lineColBot"));
-        lineColBot->setGeometry(QRect(144, 307, 51, 24));
+        lineColBot->setGeometry(QRect(144, 321, 51, 24));
         SD_pntLight = new QCheckBox(widget);
         SD_pntLight->setObjectName(QString::fromUtf8("SD_pntLight"));
-        SD_pntLight->setGeometry(QRect(158, 5, 72, 18));
+        SD_pntLight->setGeometry(QRect(152, 5, 72, 18));
         SD_triang = new QCheckBox(widget);
         SD_triang->setObjectName(QString::fromUtf8("SD_triang"));
-        SD_triang->setGeometry(QRect(120, 214, 81, 18));
+        SD_triang->setGeometry(QRect(12, 175, 81, 18));
+        blendBox = new QCheckBox(widget);
+        blendBox->setObjectName(QString::fromUtf8("blendBox"));
+        blendBox->setGeometry(QRect(99, 104, 72, 18));
+        SD_allpoly = new QCheckBox(widget);
+        SD_allpoly->setObjectName(QString::fromUtf8("SD_allpoly"));
+        SD_allpoly->setGeometry(QRect(115, 176, 72, 18));
+        pointSizeSpin = new QSpinBox(widget);
+        pointSizeSpin->setObjectName(QString::fromUtf8("pointSizeSpin"));
+        pointSizeSpin->setGeometry(QRect(155, 135, 42, 21));
+        pointSizeSpin->setAccelerated(true);
+        pointSizeSpin->setMaximum(200);
+        pointSizeSpin->setValue(14);
+        zbufBox = new QCheckBox(widget);
+        zbufBox->setObjectName(QString::fromUtf8("zbufBox"));
+        zbufBox->setGeometry(QRect(149, 104, 72, 18));
+        resetBot = new QPushButton(widget);
+        resetBot->setObjectName(QString::fromUtf8("resetBot"));
+        resetBot->setGeometry(QRect(36, 221, 51, 23));
 
         verticalLayout->addWidget(widget);
 
@@ -286,32 +305,14 @@ public:
 
         verticalLayout->addItem(verticalSpacer);
 
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-        label_2 = new QLabel(DispContDlg);
-        label_2->setObjectName(QString::fromUtf8("label_2"));
-
-        horizontalLayout->addWidget(label_2);
-
-        clipSlider = new QSlider(DispContDlg);
-        clipSlider->setObjectName(QString::fromUtf8("clipSlider"));
-        clipSlider->setFocusPolicy(Qt::NoFocus);
-        clipSlider->setMaximum(100);
-        clipSlider->setOrientation(Qt::Horizontal);
-
-        horizontalLayout->addWidget(clipSlider);
-
+        horizontalLayout_5 = new QHBoxLayout();
+        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
         resetView = new QPushButton(DispContDlg);
         resetView->setObjectName(QString::fromUtf8("resetView"));
         resetView->setMaximumSize(QSize(21, 21));
 
-        horizontalLayout->addWidget(resetView);
+        horizontalLayout_5->addWidget(resetView);
 
-
-        verticalLayout->addLayout(horizontalLayout);
-
-        horizontalLayout_5 = new QHBoxLayout();
-        horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout_5->addItem(horizontalSpacer);
@@ -476,7 +477,10 @@ public:
         lineColBot->setText(QApplication::translate("DispContDlg", "Lines", 0, QApplication::UnicodeUTF8));
         SD_pntLight->setText(QApplication::translate("DispContDlg", "Pnt", 0, QApplication::UnicodeUTF8));
         SD_triang->setText(QApplication::translate("DispContDlg", "Triangulate", 0, QApplication::UnicodeUTF8));
-        label_2->setText(QApplication::translate("DispContDlg", "Clip", 0, QApplication::UnicodeUTF8));
+        blendBox->setText(QApplication::translate("DispContDlg", "Blend", 0, QApplication::UnicodeUTF8));
+        SD_allpoly->setText(QApplication::translate("DispContDlg", "All Poly", 0, QApplication::UnicodeUTF8));
+        zbufBox->setText(QApplication::translate("DispContDlg", "Z-buf", 0, QApplication::UnicodeUTF8));
+        resetBot->setText(QApplication::translate("DispContDlg", "Reset", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         resetView->setToolTip(QApplication::translate("DispContDlg", "Reset View", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
