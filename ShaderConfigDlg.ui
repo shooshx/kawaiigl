@@ -64,7 +64,7 @@
            <rect>
             <x>58</x>
             <y>2</y>
-            <width>91</width>
+            <width>111</width>
             <height>22</height>
            </rect>
           </property>
@@ -72,7 +72,7 @@
          <widget class="QLabel" name="label_5" >
           <property name="geometry" >
            <rect>
-            <x>156</x>
+            <x>180</x>
             <y>5</y>
             <width>21</width>
             <height>16</height>
@@ -152,7 +152,7 @@
          <widget class="QComboBox" name="toCombo" >
           <property name="geometry" >
            <rect>
-            <x>178</x>
+            <x>202</x>
             <y>3</y>
             <width>69</width>
             <height>22</height>

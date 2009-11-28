@@ -45,20 +45,23 @@ struct PaintTransformations
 		glGetFloatv(GL_MODELVIEW_MATRIX, mat);
 		glLoadIdentity();
 		
-		// we want to do the user transformations first.
+		//Vec center = (glw->aqmax + glw->aqmin)/2;
+		//glTranslated(-center.x, -center.y, -center.z); // ??
 
-		//double zv = m_zoomVal / 100.0;
+		if (glw->m_renderFromLight == -1)
+		{
+			Vec camera = Vec(0,0,4);
+			gluLookAt(camera.x, camera.y, camera.z, 0, 0, 0, 0, 1, 0);
 
-		Vec center = (glw->aqmax + glw->aqmin)/2;
-		glTranslated(-center.x, -center.y, -center.z); // ??
-		glTranslated(0,0,-4); 
+			glMultMatrixf(mat);
 
-		double zv = zoomFactor(glw->m_zoomVal / 100.0);
-		
-
-		glMultMatrixf(mat);
-
-		glScaled(zv, zv, zv);
+			double zv = zoomFactor(glw->m_zoomVal / 100.0);
+			glScaled(zv, zv, zv);
+		}
+		else
+		{
+			gluLookAt(glw->m_lightPos.x, glw->m_lightPos.y, glw->m_lightPos.z, 0, 0, 0, 0, 1, 0);
+		}
 	}
 
 	~PaintTransformations()
@@ -108,6 +111,7 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *sharefrom)
 	m_materialShininess = 120;
 
 	m_clipView = 0.0f;
+	m_renderFromLight = -1;
 }
 
 void GLWidget::resetLight()
@@ -395,10 +399,10 @@ void GLWidget::reCalcLight()
 		glPushMatrix();
 
 		glLoadIdentity();
-		glTranslatef(0, 0, -4);
+		//glTranslatef(0, 0, -4);
 		//PaintTransformations ptran(this);  don't want this here - includes rotations
 
-		float position[] = {m_lightPos[0], m_lightPos[1], m_lightPos[2], m_pointLight?1.0f:0.0f}; 
+		float position[] = {m_lightPos.x, m_lightPos.y, m_lightPos.z, m_pointLight?1.0f:0.0f}; 
 		glLightfv(GL_LIGHT0, GL_POSITION, position);
 
 		//float position2[] = {-m_lightPos[0], -m_lightPos[1], -m_lightPos[2], 1.0f};

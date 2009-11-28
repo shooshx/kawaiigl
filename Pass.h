@@ -118,7 +118,7 @@ public:
 	Q_ENUMS(EGeomInType);
 	enum EGeomOutType
 	{
-		_POINTS = GL_POINTS, 
+		POINTS_ = GL_POINTS, 
 		LINE_STRIP = GL_LINE_STRIP, 
 		TRIANGLE_STRIP = GL_TRIANGLE_STRIP 
 	};
@@ -127,6 +127,7 @@ public:
 	enum ERenderWhat
 	{
 		Model = -1,
+		Model_From_Light = -2,
 		Quad_Tex0 = 0,
 		Quad_Tex1,
 		Quad_Tex2,
@@ -167,7 +168,7 @@ public:
 		,pointSpirits(this, "pointSpirits", false)
 		,spiriteReplace(this, "spiriteReplace", true)
 		,geomInput(this, "geomInput", POINTS)
-		,geomOutput(this, "geomOutput", _POINTS)
+		,geomOutput(this, "geomOutput", POINTS_)
 		,geomVtxCount(this, "geomVtxCount", 3)
 		//,runType(this, "runType", DisplayConf::RunNormal)
 		,what(this, "what", Model)

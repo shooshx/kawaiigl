@@ -428,7 +428,7 @@ void KwEdit::readProg(ProgKeep* prog)
 			ui.tabs->setCurrentWidget(cw);
 	}
 
-	int x = ui.tabs->count();
+	//int x = ui.tabs->count();
 
 
 	ui.shaderEnable->setChecked(true);

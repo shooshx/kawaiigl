@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'DispContDlg.ui'
 **
-** Created: Mon Nov 2 01:16:52 2009
+** Created: Thu Nov 26 00:37:58 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -85,9 +85,9 @@ public:
     QSpinBox *pointSizeSpin;
     QCheckBox *zbufBox;
     QPushButton *resetBot;
+    QPushButton *resetView;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_5;
-    QPushButton *resetView;
     QSpacerItem *horizontalSpacer;
     QComboBox *texSel;
     QWidget *tex0cont;
@@ -297,7 +297,11 @@ public:
         zbufBox->setGeometry(QRect(149, 104, 72, 18));
         resetBot = new QPushButton(widget);
         resetBot->setObjectName(QString::fromUtf8("resetBot"));
-        resetBot->setGeometry(QRect(36, 221, 51, 23));
+        resetBot->setGeometry(QRect(10, 221, 61, 23));
+        resetView = new QPushButton(widget);
+        resetView->setObjectName(QString::fromUtf8("resetView"));
+        resetView->setGeometry(QRect(72, 221, 21, 23));
+        resetView->setMaximumSize(QSize(21, 23));
 
         verticalLayout->addWidget(widget);
 
@@ -307,12 +311,6 @@ public:
 
         horizontalLayout_5 = new QHBoxLayout();
         horizontalLayout_5->setObjectName(QString::fromUtf8("horizontalLayout_5"));
-        resetView = new QPushButton(DispContDlg);
-        resetView->setObjectName(QString::fromUtf8("resetView"));
-        resetView->setMaximumSize(QSize(21, 21));
-
-        horizontalLayout_5->addWidget(resetView);
-
         horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout_5->addItem(horizontalSpacer);
@@ -480,7 +478,7 @@ public:
         blendBox->setText(QApplication::translate("DispContDlg", "Blend", 0, QApplication::UnicodeUTF8));
         SD_allpoly->setText(QApplication::translate("DispContDlg", "All Poly", 0, QApplication::UnicodeUTF8));
         zbufBox->setText(QApplication::translate("DispContDlg", "Z-buf", 0, QApplication::UnicodeUTF8));
-        resetBot->setText(QApplication::translate("DispContDlg", "Reset", 0, QApplication::UnicodeUTF8));
+        resetBot->setText(QApplication::translate("DispContDlg", "Reset All", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_TOOLTIP
         resetView->setToolTip(QApplication::translate("DispContDlg", "Reset View", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP

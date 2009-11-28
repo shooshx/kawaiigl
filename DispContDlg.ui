@@ -710,14 +710,36 @@
      <widget class="QPushButton" name="resetBot" >
       <property name="geometry" >
        <rect>
-        <x>36</x>
+        <x>10</x>
         <y>221</y>
-        <width>51</width>
+        <width>61</width>
         <height>23</height>
        </rect>
       </property>
       <property name="text" >
-       <string>Reset</string>
+       <string>Reset All</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="resetView" >
+      <property name="geometry" >
+       <rect>
+        <x>72</x>
+        <y>221</y>
+        <width>21</width>
+        <height>23</height>
+       </rect>
+      </property>
+      <property name="maximumSize" >
+       <size>
+        <width>21</width>
+        <height>23</height>
+       </size>
+      </property>
+      <property name="toolTip" >
+       <string>Reset View</string>
+      </property>
+      <property name="text" >
+       <string>0</string>
       </property>
      </widget>
     </widget>
@@ -737,22 +759,6 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5" >
-     <item>
-      <widget class="QPushButton" name="resetView" >
-       <property name="maximumSize" >
-        <size>
-         <width>21</width>
-         <height>21</height>
-        </size>
-       </property>
-       <property name="toolTip" >
-        <string>Reset View</string>
-       </property>
-       <property name="text" >
-        <string>0</string>
-       </property>
-      </widget>
-     </item>
      <item>
       <spacer name="horizontalSpacer" >
        <property name="orientation" >

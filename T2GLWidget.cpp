@@ -510,11 +510,18 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	// set up texture
 	int texunit = (int)conf.texAct.val();
 	m_curTexTarget = 0;
-	if ((conf.texAct != DisplayConf::Tex_None) && (isTextureValid(texunit)))
+	if (conf.texAct != DisplayConf::Tex_None)
 	{
-		glActiveTexture(GL_TEXTURE0 + texunit);
-		m_curTexTarget = m_textures[texunit]->target();
-		//glEnable(m_curTexTarget); // changes the state of the active texture unit!
+		if (isTextureValid(texunit))
+		{
+			glActiveTexture(GL_TEXTURE0 + texunit);
+			m_curTexTarget = m_textures[texunit]->target();
+		}
+		else if (m_offbufA[texunit] != NULL)
+		{
+			glActiveTexture(GL_TEXTURE0 + texunit);
+			m_curTexTarget = GL_TEXTURE_2D; // frame buffers render to 2D
+		}
 	}
 
 	if (m_curPass)
@@ -646,7 +653,27 @@ void T2GLWidget::redoFrameBuffers()
 }
 
 
-
+void T2GLWidget::doSwapPass(int sa, int sb)
+{
+	qSwap(m_offbufA[sa], m_offbufA[sb]);
+	qSwap(m_offbufB[sa], m_offbufB[sb]);
+	if (m_offbufA[sb] != NULL)
+	{
+		glActiveTexture(GL_TEXTURE0 + sa);
+		if (m_offbufB[sb]) // multi sampled
+			m_offbufB[sb]->texture()->bind();
+		else
+			m_offbufA[sb]->texture()->bind();
+	}
+	if (m_offbufA[sa] != NULL)
+	{
+		glActiveTexture(GL_TEXTURE0 + sb);
+		if (m_offbufB[sa]) // multi sampled
+			m_offbufB[sa]->texture()->bind();
+		else
+			m_offbufA[sa]->texture()->bind();
+	}
+}
 
 
 void T2GLWidget::myPaintGL()
@@ -659,27 +686,9 @@ void T2GLWidget::myPaintGL()
 			if (!m_curPass)
 			{
 				SwapOpPassPtr spass = dynamic_pointer_cast<SwapOpPass>(m_doc->m_passes[passi]);
-				if (spass)
+				if (spass) // do swap pass.
 				{
-					int sa = spass->a, sb = spass->b;
-					qSwap(m_offbufA[sa], m_offbufA[sb]);
-					qSwap(m_offbufB[sa], m_offbufB[sb]);
-					if (m_offbufA[sb] != NULL)
-					{
-						glActiveTexture(GL_TEXTURE0 + sa);
-						if (m_offbufB[sb]) // multi sampled
-							m_offbufB[sb]->texture()->bind();
-						else
-							m_offbufA[sb]->texture()->bind();
-					}
-					if (m_offbufA[sa] != NULL)
-					{
-						glActiveTexture(GL_TEXTURE0 + sb);
-						if (m_offbufB[sa]) // multi sampled
-							m_offbufB[sa]->texture()->bind();
-						else
-							m_offbufA[sa]->texture()->bind();
-					}
+					doSwapPass(spass->a, spass->b);
 				}
 				continue;
 			}
@@ -698,6 +707,16 @@ void T2GLWidget::myPaintGL()
 			if (pconf.what == PassConf::Model)
 			{
 				paint3DScene(pconf.clear);
+			}
+			else if (pconf.what == PassConf::Model_From_Light)
+			{
+				Vec lpos = lightPos();
+				glMatrixMode(GL_MODELVIEW);
+				glPushMatrix();
+				glLoadIdentity();
+				gluLookAt( lpos.x, lpos.y, lpos.z, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+				paint3DScene(pconf.clear);
+				glPopMatrix();
 			}
 			else // Quad_TexX
 			{

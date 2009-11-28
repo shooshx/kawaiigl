@@ -87,6 +87,7 @@ private:
 	void drawPointCoords();
 	void updateTrack(IPoint* sel);
 	boost::shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd);
+	void doSwapPass(int sa, int sb);
 
 	bool shouldUseProg() const;
 
