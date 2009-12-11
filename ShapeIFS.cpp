@@ -1,5 +1,6 @@
 
 #include "ShapeIFS.h"
+#include "KwParser.h"
 
 int MyPoint::g_ctorCount = 0, MyPoint::g_dtorCount = 0;
 int MyPolygon::g_ctorCount = 0, MyPolygon::g_dtorCount = 0;
@@ -16,10 +17,11 @@ void MyObject::MyPointWrapper::detach(MyAllocator *m_alloc) const
 
 // checks if a point is in m_tmppoints, if not, copy and insert it
 // returns the pointer to the permanent point
-MyPoint* MyObject::CopyCheckPoint(const Vec *c)
+MyPoint* MyObject::CopyCheckPoint(const Vec *c, const string* name)
 {
-	static MyPoint p;
+	MyPoint p;
 	p.setp(*c);
+	p.name = name;
 	const MyPointWrapper &realpntw = *m_tmppoints.insert(MyPointWrapper(&p));
 	if (realpntw.ptr == &p) // it was inserted
 		realpntw.detach(m_alloc);
@@ -52,17 +54,18 @@ MyPolygon* MyObject::AddPoly(Vec *inplst, TexAnchor *ancs, Texture *tex)
 
 // copies the points in the points array
 // returns the polygon inserted for reference and additional tweaking
-MyPolygon* MyObject::AddPoly(const Vec *p1, const Vec *p2, const Vec *p3, const Vec *p4, TexAnchor *ancs, Texture *tex)
+MyPolygon* MyObject::AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
+							 TexAnchor *ancs, Texture *tex)
 {
 	MyPolygon *nply = m_alloc->m_polyPool.allocate();
 	nply->init(ancs, tex);
 
-	nply->vtx[0] = CopyCheckPoint(p1);
-	nply->vtx[1] = CopyCheckPoint(p2);
-	nply->vtx[2] = CopyCheckPoint(p3);
+	nply->vtx[0] = CopyCheckPoint(&p1->getCoord(), &p1->getName());
+	nply->vtx[1] = CopyCheckPoint(&p2->getCoord(), &p2->getName());
+	nply->vtx[2] = CopyCheckPoint(&p3->getCoord(), &p3->getName());
 	if (p4 != NULL)
 	{
-		nply->vtx[3] = CopyCheckPoint(p4);
+		nply->vtx[3] = CopyCheckPoint(&p4->getCoord(), &p4->getName());
 		nply->pnum = 4;
 	}
 	else 

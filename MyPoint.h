@@ -54,11 +54,11 @@ class MyPoint
 {
 public:
 	MyPoint(float inX = 0.0, float inY = 0.0, float inZ = 0.0)
-		:p(inX, inY, inZ), he(NULL), touched(false), col(INVALID_COLOR) { ++g_ctorCount; }
+		:p(inX, inY, inZ), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
 	MyPoint(const MyPoint& a)
-		:p(a.p), he(NULL), touched(false), col(INVALID_COLOR) { ++g_ctorCount; }
+		:p(a.p), he(NULL), touched(false), col(INVALID_COLOR), name(a.name) { ++g_ctorCount; }
 	explicit MyPoint(const Vec& c) 
-		:p(c), he(NULL), touched(false), col(INVALID_COLOR) { ++g_ctorCount; }
+		:p(c), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
 
 	~MyPoint() { ++g_dtorCount; }
 
@@ -68,16 +68,22 @@ public:
 		to.index = index;
 		to.he = NULL;
 		to.touched = false;
+		to.name = name;
 	}
 	
-	void clear() { p.clear(); n.clear(); }
+	void clear() { p.clear(); n.clear(); name = NULL; }
 	void setp(const Vec &c) { p = c; }
 	uint hash() const { const uint *up = reinterpret_cast<const uint*>(p.ptr()); return (bXor(up[0], bXor(up[1] >> 8, up[2] >> 16))); }
 
 	MyPoint &operator+=(const MyPoint& a) { p += a.p; return *this; }
 	MyPoint &operator/=(float s) { p /= s; return *this; }
 	MyPoint &operator*=(float s) { p *= s; return *this; }
-	MyPoint &operator=(const MyPoint& a) { p = a.p; return *this; }
+	MyPoint &operator=(const MyPoint& a)
+	{ 
+		p = a.p;
+		name = a.name;
+		return *this; 
+	}
 
 	Vec p;
 	Vec n; // normal.
@@ -85,6 +91,7 @@ public:
 
 	int index;
 	Vec col;
+	const std::string* name; // a non owning pointer to the ast parsed tree
 
 	// managment
 	static int g_ctorCount, g_dtorCount;

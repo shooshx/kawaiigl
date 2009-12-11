@@ -429,7 +429,7 @@ struct MyObjAdder : public PolyAdder
 	{
 		if (v.size() < 3)
 			return;
-		MyPolygon *poly = m_obj->AddPoly(&v[0]->getCoord(), &v[1]->getCoord(), &v[2]->getCoord(), (v.size() > 3)?(&v[3]->getCoord()):NULL, constAncs);
+		MyPolygon *poly = m_obj->AddPoly(v[0], v[1], v[2], (v.size() > 3)?(v[3]):NULL, constAncs);
 		for(size_t i = 0; i < v.size(); ++i)
 		{
 			Vec gc = v[i]->getColor();
@@ -567,15 +567,12 @@ void Document::updateTrack(IPoint* sel)
 	if (!m_conf.addFace)
 		return;
 
-	QString curtext;
 	if (m_addTrack.add(sel))
 	{
 		int size = m_addTrack.m_added.size();
 		if (size == 3 || size == 4)
 		{
 			QString line;
-			if (curtext.size() > 0 && curtext[curtext.size() - 1] != '\n')
-				line += '\n';
 			line += "add(";
 			line += m_addTrack.m_added[0]->getName().c_str();
 			for(int i = 1; i < m_addTrack.m_added.size(); ++i)
@@ -586,9 +583,8 @@ void Document::updateTrack(IPoint* sel)
 			}
 			line += ")\n";
 
-			curtext += line;
 			m_addTrack.reset();
-			emit textChanged(curtext);
+			emit addModelLine(line);
 		}
 
 		m_addTrack.reset();

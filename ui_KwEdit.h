@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading ui file 'KwEdit.ui'
 **
-** Created: Tue Oct 20 15:29:28 2009
+** Created: Fri Dec 11 14:50:28 2009
 **      by: Qt User Interface Compiler version 4.5.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling ui file!
@@ -37,6 +37,7 @@ public:
     QWidget *modelControl;
     QHBoxLayout *horizontalLayout_3;
     QSpacerItem *horizontalSpacer_2;
+    QPushButton *decompBot;
     QPushButton *addFaceBot;
     QPushButton *saveBot1;
     QWidget *shaderControl;
@@ -78,6 +79,12 @@ public:
         horizontalSpacer_2 = new QSpacerItem(23, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         horizontalLayout_3->addItem(horizontalSpacer_2);
+
+        decompBot = new QPushButton(modelControl);
+        decompBot->setObjectName(QString::fromUtf8("decompBot"));
+        decompBot->setMaximumSize(QSize(65, 16777215));
+
+        horizontalLayout_3->addWidget(decompBot);
 
         addFaceBot = new QPushButton(modelControl);
         addFaceBot->setObjectName(QString::fromUtf8("addFaceBot"));
@@ -160,6 +167,7 @@ public:
     {
         KwEdit->setWindowTitle(QApplication::translate("KwEdit", "KawaiiGL Control", 0, QApplication::UnicodeUTF8));
         tabs->setTabText(tabs->indexOf(tab), QApplication::translate("KwEdit", "Model", 0, QApplication::UnicodeUTF8));
+        decompBot->setText(QApplication::translate("KwEdit", "Decompile", 0, QApplication::UnicodeUTF8));
         addFaceBot->setText(QApplication::translate("KwEdit", "Add", 0, QApplication::UnicodeUTF8));
 #ifndef QT_NO_STATUSTIP
         saveBot1->setStatusTip(QApplication::translate("KwEdit", "Save", 0, QApplication::UnicodeUTF8));

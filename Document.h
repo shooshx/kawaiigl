@@ -114,7 +114,7 @@ signals:
 	void modelChanged();
 	void progChanged(); // just compiled a program, update the view
 	void progParamChanged();
-	void textChanged(const QString& text);
+	void addModelLine(const QString& text);
 
 	void goingToClearProg();
 	void didReadProg(ProgKeep* prog);

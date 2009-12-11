@@ -91,7 +91,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 	connect(m_kView, SIGNAL(changedFBOs()), m_contDlg, SLOT(updateTexEdits()));
 
 	connect(m_doc, SIGNAL(progParamChanged()), m_kView, SLOT(updateGL()));
-	connect(m_doc, SIGNAL(textChanged(const QString&)), m_edDlg, SLOT(setText(const QString&)));
+	connect(m_doc, SIGNAL(addModelLine(const QString&)), m_edDlg, SLOT(addModelLine(const QString&)));
 
 	connect(m_contDlg, SIGNAL(changedRend()), m_doc, SLOT(calcNoParse())); // passes update
 	connect(m_contDlg, SIGNAL(changedFont()), m_kView, SLOT(updateCoordFont()));

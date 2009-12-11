@@ -24,6 +24,7 @@
 class PicGroupDef;
 class ShapeIFS;
 struct MyAllocator;
+struct IPoint;
 
 class MyObject // should be called MyMesh
 {
@@ -49,7 +50,8 @@ public:
 	bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
 
 	MyPolygon* AddPoly(Vec *inplst, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
-	MyPolygon* AddPoly(const Vec *p1, const Vec *p2, const Vec *p3, const Vec *p4, TexAnchor *ancs = NULL, Texture *tex = NULL);
+	MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
+					   TexAnchor *ancs = NULL, Texture *tex = NULL);
 
 	void AddLine(Vec *inp1, Vec *inp2, double inR, double inG, double inB, MyLine::ELineType type);
 	void setNakedLineColor(float color) { nakedLinesColor = color; }
@@ -61,7 +63,7 @@ public:
 	
 private:
 	///////////////////// structures for startup
-	MyPoint* CopyCheckPoint(const Vec *p);
+	MyPoint* CopyCheckPoint(const Vec *p, const string* name = NULL);
 
 	typedef QList<MyPolygon*> TPolyList;
 	typedef QLinkedList<MyLine> TLineList;

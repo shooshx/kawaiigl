@@ -93,8 +93,6 @@ public:
 	QString text;
 
 
-signals:
-	void externalTextChange();
 
 private:
 	bool changedSinceLoad;

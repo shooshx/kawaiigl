@@ -5,9 +5,9 @@
 #include <QtGui>
 #include "KawaiiGL.h"
 
+#include <iostream>
 
 extern QGLFormat g_format;
-
 
 
 

@@ -86,6 +86,7 @@ KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *vi
 	connect(close, SIGNAL(clicked()), this, SLOT(tabsBarClose()));
 
 	(new CheckBoxIn(&conf.addFace, ui.addFaceBot))->reload();
+	connect(ui.decompBot, SIGNAL(clicked()), this, SLOT(decompile()));
 
 	connect(ui.update_shader, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.shaderEnable, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
@@ -193,6 +194,7 @@ void KwEdit::zoomEdits(int delta)
 	}
 }
 
+// the text is edited in the text box by the user
 void KwEdit::editTextChanged(int pos, int rem, int add)
 {
 	if (rem == 0 && add == 0)
@@ -294,6 +296,57 @@ void KwEdit::finishErrors(DocSrc* src)
 }
 
 
+// create a model text from the current document
+// this allows moving of the points to be saved
+void KwEdit::decompile()
+{
+	MyObject* obj = m_doc->m_frameObj;
+	QString s;
+	QTextStream out(&s);
+
+	// write all points
+	for(int i = 0; i < obj->points.size(); ++i)
+	{
+		MyPoint *pnt = obj->points[i];
+		if (pnt->name == NULL)
+			out << "p" << pnt->index; // shouldn't happen...
+		else
+			out << pnt->name->c_str();
+		out << " = {" << pnt->p.x << ", " << pnt->p.y << ", " <<  pnt->p.z << "}\n";
+	}
+	out << "\n";
+
+	// wirte polygons
+	for(int i = 0; i < obj->poly.size(); ++i)
+	{
+		MyPolygon *poly = obj->poly[i];
+		out << "add(";
+		for(int j = 0; j < poly->pnum; ++j)
+		{
+			if (j != 0)
+				out << ", ";
+			MyPoint* pp = poly->vtx[j];
+			if (pp->name == NULL)
+				out << "p" << pp->index;
+			else
+				out << pp->name->c_str();
+		}
+		out << ")\n";
+	}
+
+	KPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+
+	EditPage* page = static_cast<EditPage*>(curEd.get());
+	DocSrc *src = page->src;
+
+	src->text = s;
+	page->ed->document()->blockSignals(true); // not user input
+	page->ed->setPlainText(src->text);
+	page->ed->document()->blockSignals(false);
+}
+
 ////////////////////////////////// Edit widget
 
 void ProgTextEdit::keyPressEvent(QKeyEvent * event)
@@ -380,9 +433,25 @@ void KwEdit::readModel(DocSrc* src)
 	}
 }
 
-void KwEdit::setText(const QString& text)
+void KwEdit::addModelLine(const QString& line)
 {
-	//ui.ed->setPlainText(text);
+	//	if (curtext.size() > 0 && curtext[curtext.size() - 1] != '\n')
+	//		line += '\n';
+
+
+	KPagePtr curEd;
+	if (!(curEd = m_curEd.lock()))
+		return;
+
+	EditPage* page = static_cast<EditPage*>(curEd.get());
+	DocSrc *src = page->src;
+
+	QString merge = src->text + line;
+	page->ed->document()->blockSignals(true);
+	page->ed->setPlainText(merge);
+	page->ed->document()->blockSignals(false);
+
+	emit changedModel(src);
 }
 
 

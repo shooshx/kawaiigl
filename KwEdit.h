@@ -95,7 +95,7 @@ public slots:
 	void clearingProg();
 
 	void doShadersUpdate();
-	void setText(const QString& text);
+	void addModelLine(const QString& line);
 
 	QWidget* addPage(DocElement*, int index = -1);
 
@@ -109,6 +109,7 @@ private slots:
 	void tabsBarClose();
 	void pageNameChanged(const QString&);
 	void saveCurDoc();
+	void decompile();
 
 	void updateCursorPosLine();
 	void zoomEdits(int delta);

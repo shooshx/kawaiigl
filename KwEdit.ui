@@ -80,6 +80,19 @@
        </spacer>
       </item>
       <item>
+       <widget class="QPushButton" name="decompBot" >
+        <property name="maximumSize" >
+         <size>
+          <width>65</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Decompile</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="addFaceBot" >
         <property name="maximumSize" >
          <size>
