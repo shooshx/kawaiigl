@@ -44,7 +44,7 @@ void GlTexture::init(GLenum target, const QSize& size, int depth, GLenum interna
 	glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
 	glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
 
-	m_size = Vec(size.width(), size.height(), depth);
+	m_size = Vec3(size.width(), size.height(), depth);
 }
 
 
@@ -53,7 +53,7 @@ GlTexture::GlTexture(const QGLContext* context, const QImage* img, uint target)
 	m_fromContext = const_cast<QGLContext*>(context);
 	m_obj = m_fromContext->bindTexture(*img, target);
 	m_target = target;
-	m_size = Vec(img->width(), img->height(), 1.0);
+	m_size = Vec3(img->width(), img->height(), 1.0);
 }
 
 GlTexture::~GlTexture()

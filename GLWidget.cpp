@@ -45,12 +45,12 @@ struct PaintTransformations
 		glGetFloatv(GL_MODELVIEW_MATRIX, mat);
 		glLoadIdentity();
 		
-		//Vec center = (glw->aqmax + glw->aqmin)/2;
+		//Vec3 center = (glw->aqmax + glw->aqmin)/2;
 		//glTranslated(-center.x, -center.y, -center.z); // ??
 
 		if (glw->m_renderFromLight == -1)
 		{
-			Vec camera = Vec(0,0,4);
+			Vec3 camera = Vec3(0,0,4);
 			gluLookAt(camera.x, camera.y, camera.z, 0, 0, 0, 0, 1, 0);
 
 			glMultMatrixf(mat);
@@ -98,16 +98,16 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *sharefrom)
 	m_nYDelt = 0;
 
 	// PATCH
-	aqmin = Vec(-3, -3, -3);
-	aqmax = Vec(3, 3, 3);
+	aqmin = Vec3(-3, -3, -3);
+	aqmax = Vec3(3, 3, 3);
 
 	m_zoomVal = 100;
-	m_lightPos = Vec(0.0f, 0.0f, 100.0f);
+	m_lightPos = Vec3(0.0f, 0.0f, 100.0f);
 	m_pointLight = false;
 
-	m_lightAmbient = Vec(0.1f, 0.1f, 0.1f);
-	m_lightDiffuse = Vec(0.9f, 0.9f, 0.9f);
-	m_lightSpecular = Vec(0.0f, 0.0f, 0.0f);
+	m_lightAmbient = Vec3(0.1f, 0.1f, 0.1f);
+	m_lightDiffuse = Vec3(0.9f, 0.9f, 0.9f);
+	m_lightSpecular = Vec3(0.0f, 0.0f, 0.0f);
 	m_materialShininess = 120;
 
 	m_clipView = 0.0f;
@@ -116,7 +116,7 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *sharefrom)
 
 void GLWidget::resetLight()
 {
-	m_lightPos = Vec(0.0f, 0.0f, 100.0f);
+	m_lightPos = Vec3(0.0f, 0.0f, 100.0f);
 	reCalcLight();
 	updateGL();
 }
@@ -326,9 +326,9 @@ void GLWidget::setUsingLight(bool use)
 	updateGL();
 }
 
-void GLWidget::setLightPos(const Vec &c)
+void GLWidget::setLightPos(const Vec3 &c)
 {
-	if (Vec::exactEqual(m_lightPos, c))
+	if (Vec3::exactEqual(m_lightPos, c))
 		return;
 	m_lightPos = c; 
 
@@ -339,7 +339,7 @@ void GLWidget::setLightPos(const Vec &c)
 	updateGL();
 }
 
-// void GLWidget::setLightColor(const Vec& c)
+// void GLWidget::setLightColor(const Vec3& c)
 // {
 // 	if (m_lightColor == c)
 // 		return;
@@ -444,7 +444,7 @@ void GLWidget::DoReset()
 	emit callReset();
 } 
 
-void GLWidget::setNewMinMax(const Vec& min, const Vec& max, bool scale)
+void GLWidget::setNewMinMax(const Vec3& min, const Vec3& max, bool scale)
 {
 	aqmin = min; aqmax = max;
 	if (scale)
@@ -698,19 +698,19 @@ void PointMover::setDelta(float dx, float dy)
 }
 
 
-Vec PointMover::movePointXY(const Vec& in) const
+Vec3 PointMover::movePointXY(const Vec3& in) const
 {
 	double wx, wy, wz, ox, oy, oz;
 	gluProject(in.x, in.y, in.z, m_modelMat, m_projMat, m_viewport, &wx, &wy, &wz);
 	gluUnProject(wx + m_dx, wy - m_dy, wz, m_modelMat, m_projMat, m_viewport, &ox, &oy, &oz);
-	return Vec(ox, oy, oz);
+	return Vec3(ox, oy, oz);
 }
-Vec PointMover::movePointXZ(const Vec& in) const
+Vec3 PointMover::movePointXZ(const Vec3& in) const
 {
 	double wx, wy, wz, ox, oy, oz;
 	gluProject(in.x, in.y, in.z, m_modelMat, m_projMat, m_viewport, &wx, &wy, &wz);
 	gluUnProject(wx + m_dx, wy, wz - (float)m_dy/m_glw->m_cyClient/100.0f, m_modelMat, m_projMat, m_viewport, &ox, &oy, &oz);
-	return Vec(ox, oy, oz);
+	return Vec3(ox, oy, oz);
 }
 
 

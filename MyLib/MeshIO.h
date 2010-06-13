@@ -3,27 +3,27 @@
 #define MESHIO_H_INCLUDED
 
 #include "Vec.h"
-#include "RMesh.h"
+#include "Mesh.h"
 
 class QString;
-class RMeshBuilder;
+class MeshBuilder;
 
 
 class FileReader
 {
 public:
-	FileReader(RMeshBuilder* bld) :m_build(bld) {}
+	FileReader(MeshBuilder* bld) :m_build(bld) {}
 	virtual bool read(const QString& filename) = 0;
 
 protected:
-	RMeshBuilder* m_build;
+	MeshBuilder* m_build;
 };
 
 
-class RMeshBuilder 
+class MeshBuilder 
 {
 public:
-	RMeshBuilder(RMesh* rmesh) : m_rmesh(rmesh), m_countOutFaces(0)
+	MeshBuilder(Mesh* rmesh) : m_rmesh(rmesh), m_countOutFaces(0)
 		, m_vtxIndex(0), m_faceIndex(0)
 	{}
 
@@ -70,23 +70,23 @@ public:
 
 	virtual int addVtx(float x, float y, float z)
 	{
-		RMesh::Vertex &v = m_rmesh->addVertex(Vec(x, y, z));
+		Mesh::Vertex &v = m_rmesh->addVertex(Vec3(x, y, z));
 		v.index() = m_vtxIndex++;
 		return v.index();
 	}
 	virtual void setNormal(int iv, float x, float y, float z)
 	{
-		RMesh::Vertex_handle v = m_rmesh->find_vertex(iv);
-		v->normal() = Vec(x, y, z);
+		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
+		v->normal() = Vec3(x, y, z);
 	}
 	virtual void setVtxProp(int p, int iv, float x, float y, float z)
 	{
-		RMesh::Vertex_handle v = m_rmesh->find_vertex(iv);
-		v->prop<Vec>(p) = Vec(x, y, z);
+		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
+		v->prop<Vec3>(p) = Vec3(x, y, z);
 	}
 	virtual void setVtxProp(int p, int iv, float x, float y)
 	{
-		RMesh::Vertex_handle v = m_rmesh->find_vertex(iv);
+		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
 		v->prop<Vec2>(p) = Vec2(x, y);
 	}
 
@@ -99,7 +99,7 @@ public:
 
 	void setHas(bool hasVtxNormals, bool hasFaceNormals)
 	{
-		m_rmesh->setHasExternal(hasVtxNormals, hasFaceNormals);
+	//	m_rmesh->setHasExternal(hasVtxNormals, hasFaceNormals);
 	}
 	template<typename T>
 	void createVtxProp(int id)
@@ -123,12 +123,12 @@ public:
 	{
 		if (m_countOutFaces > 0)
 		{
-			printf("RMeshBuilder: %d of %d faces contained invalid vertices\n", m_countOutFaces, m_countOutFaces + m_rmesh->numFaces());
+			printf("MeshBuilder: %d of %d faces contained invalid vertices\n", m_countOutFaces, m_countOutFaces + m_rmesh->numFaces());
 		}
 	}
 
 protected:
-	RMesh *m_rmesh;
+	Mesh *m_rmesh;
 	int m_vtxSz, m_facesSz;
 
 	int m_countOutFaces;
@@ -145,7 +145,7 @@ protected:
 class Ply2Reader : public FileReader
 {
 public:
-	Ply2Reader(RMeshBuilder *bld) : FileReader(bld) {}
+	Ply2Reader(MeshBuilder *bld) : FileReader(bld) {}
 	virtual ~Ply2Reader() {}
 	virtual bool read(const QString& filename);
 
@@ -159,7 +159,7 @@ private:
 class ObjReader : public FileReader
 {
 public:
-	ObjReader(RMeshBuilder *bld) : FileReader(bld) {}
+	ObjReader(MeshBuilder *bld) : FileReader(bld) {}
 	virtual ~ObjReader() {}
 	virtual bool read(const QString& filename);
 
@@ -169,7 +169,7 @@ public:
 class VrmlReader : public FileReader
 {
 public:
-	VrmlReader(RMeshBuilder *bld) : FileReader(bld) {}
+	VrmlReader(MeshBuilder *bld) : FileReader(bld) {}
 	virtual ~VrmlReader() {}
 	virtual bool read(const QString& filename);
 
@@ -179,7 +179,7 @@ public:
 class GSDReader : public FileReader
 {
 public:
-	GSDReader(RMeshBuilder *bld) : FileReader(bld) {}
+	GSDReader(MeshBuilder *bld) : FileReader(bld) {}
 	virtual ~GSDReader() {}
 	virtual bool read(const QString& filename);
 
@@ -189,22 +189,22 @@ public:
 class MeshIO
 {
 public:
-	static bool read_OffPly2(const QString& filename, RMesh* rmesh);
-	static bool read_Obj(const QString& filename, RMesh* rmesh);
-	static bool write_Obj(const QString& filename, RMesh* rmesh);
+	static bool read_OffPly2(const QString& filename, Mesh* rmesh);
+	static bool read_Obj(const QString& filename, Mesh* rmesh);
+	static bool write_Obj(const QString& filename, Mesh* rmesh);
 
-	static bool read_Ext(const QString& filename, RMesh* rmesh); // choose by the extension
+	static bool read_Ext(const QString& filename, Mesh* rmesh); // choose by the extension
 };
 
 class ObjWriter
 {
 public:
-	ObjWriter(RMesh* rmesh) : m_rmesh(rmesh) {}
+	ObjWriter(Mesh* rmesh) : m_rmesh(rmesh) {}
 
 	void writeVertices(QTextStream& out);
 	void writeFaces(QTextStream& out);
 private:
-	RMesh *m_rmesh;
+	Mesh *m_rmesh;
 };
 
 

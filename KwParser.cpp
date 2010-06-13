@@ -61,7 +61,7 @@ struct writer
 	}
 };
 
-ostream& operator<<(ostream& out, const Vec& v)
+ostream& operator<<(ostream& out, const Vec3& v)
 {
 	out << v.toString().toStdString();
 	return out;
@@ -101,7 +101,7 @@ struct vec_ast;
 struct Evalable
 {
 	virtual ~Evalable() {}
-	virtual Vec eval() = 0;
+	virtual Vec3 eval() = 0;
 
 // 	void printSpaces() const
 // 	{
@@ -120,7 +120,7 @@ struct vec_ast
 		: expr(new EvalablePtr(NULL)), used(false), isCached(false) {}
 
 	vec_ast(const vec_ast& a) : expr(a.expr), isCached(false), used(false) {}
-	vec_ast(const Vec& expr);
+	vec_ast(const Vec3& expr);
 	vec_ast(const float& expr);
 
 	vec_ast& operator+=(vec_ast const& rhs);
@@ -138,7 +138,7 @@ struct vec_ast
 
 
 	EvalablePtr *expr;
-	mutable Vec cache;
+	mutable Vec3 cache;
 	mutable bool isCached;
 	bool used;
 };
@@ -151,18 +151,18 @@ struct symbol_ast : public vec_ast, public IPoint
 	symbol_ast(const vec_ast& v, const string& name) : vec_ast(v), color(INVALID_COLOR), myname(name)
 	{}
 
-	virtual void setCoord(const Vec& v);
-	virtual const Vec& getCoord() const
+	virtual void setCoord(const Vec3& v);
+	virtual const Vec3& getCoord() const
 	{
 		if (!isCached)
 			doCache();
 		return cache;
 	}
-	virtual void setColor(const Vec& c)
+	virtual void setColor(const Vec3& c)
 	{
 		color = c;
 	}
-	virtual const Vec& getColor() const
+	virtual const Vec3& getColor() const
 	{
 		return color;
 	}
@@ -172,7 +172,7 @@ struct symbol_ast : public vec_ast, public IPoint
 	}
 
 	string myname;
-	Vec color;
+	Vec3 color;
 };
 
 template< typename Op>
@@ -182,26 +182,26 @@ struct binary_op : public Evalable
 		: left(const_cast<EvalablePtr*>(_left.expr) ), 
 		  right(const_cast<EvalablePtr*>(_right.expr) ) {}
 
-	virtual Vec eval();
+	virtual Vec3 eval();
 
 	EvalablePtr *left;
 	EvalablePtr *right;
 };
 
 
-Vec binary_op<addOp>::eval()
+Vec3 binary_op<addOp>::eval()
 {
 	return (*left)->eval() + (*right)->eval();
 }
-Vec binary_op<subOp>::eval()
+Vec3 binary_op<subOp>::eval()
 {
 	return (*left)->eval() - (*right)->eval();
 }
-Vec binary_op<multOp>::eval()
+Vec3 binary_op<multOp>::eval()
 {
 	return (*left)->eval() * (*right)->eval();
 }
-Vec binary_op<divOp>::eval()
+Vec3 binary_op<divOp>::eval()
 {
 	return (*left)->eval() / (*right)->eval();
 }
@@ -212,7 +212,7 @@ struct unary_op : public Evalable
 	unary_op(vec_ast const& _subject)
 		: subject(const_cast<EvalablePtr*>(_subject.expr) ) {}
 
-	virtual Vec eval()
+	virtual Vec3 eval()
 	{
 		return -(*subject)->eval();
 	}
@@ -223,25 +223,25 @@ struct unary_op : public Evalable
 
 struct vec_val : public Evalable
 {
-	vec_val(const Vec& v) : val(v) {}
-	virtual Vec eval()
+	vec_val(const Vec3& v) : val(v) {}
+	virtual Vec3 eval()
 	{
 		return val;
 	}
-	Vec val;
+	Vec3 val;
 };
 
 struct float_val : public Evalable
 {
 	float_val(float v) : val(v) {}
-	virtual Vec eval()
+	virtual Vec3 eval()
 	{
-		return Vec(val, val, val);
+		return Vec3(val, val, val);
 	}
 	float val;
 };
 
-void symbol_ast::setCoord(const Vec& v) 
+void symbol_ast::setCoord(const Vec3& v) 
 {
 // 	vec_val *e = dynamic_cast<vec_val*>(expr);
 // 	if (e != NULL)
@@ -251,7 +251,7 @@ void symbol_ast::setCoord(const Vec& v)
 }
 
 
-vec_ast::vec_ast(const Vec& expr)
+vec_ast::vec_ast(const Vec3& expr)
 : expr(new EvalablePtr(new vec_val(expr) )), used(false), isCached(false)
 {}
 vec_ast::vec_ast(const float& expr)
@@ -421,7 +421,7 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
             ;
 
         vecFactor =
-            ivec                               [_val = construct<Vec>(_1,_2,_3)]
+            ivec                               [_val = construct<Vec3>(_1,_2,_3)]
 		    |   vecsym                         [_val = _1]
             |   '(' >> vecExpression           [_val = _1] >> ')'
             |   ('-' >> vecFactor              [_val = neg(_1)]) // unary

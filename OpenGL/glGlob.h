@@ -12,7 +12,7 @@ extern void mglCheckErrorsC(const QString& s);
 class SwitchColor
 {
 public:
-	SwitchColor(const Vec& col, const Vec& oldcol) :m_oldc(oldcol)
+	SwitchColor(const Vec3& col, const Vec3& oldcol) :m_oldc(oldcol)
 	{
 		glColor3fv(col.v);
 	}
@@ -22,5 +22,5 @@ public:
 	}
 
 private:
-	Vec m_oldc;
+	Vec3 m_oldc;
 };

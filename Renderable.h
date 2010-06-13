@@ -24,14 +24,14 @@ protected:
 class WholeScreenQuad : public Renderable
 {
 public:
-	WholeScreenQuad(GLWidget *glw, int _texUnit, const Vec& _backCol = Vec(1.0, 1.0, 1.0)) 
+	WholeScreenQuad(GLWidget *glw, int _texUnit, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0)) 
 		: Renderable(glw), backCol(_backCol), texUnit(_texUnit) {}
 
-	WholeScreenQuad(GLWidget *glw, const Vec& _backCol = Vec(1.0, 1.0, 1.0), int _texUnit = 1) 
+	WholeScreenQuad(GLWidget *glw, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0), int _texUnit = 1) 
 		: Renderable(glw), backCol(_backCol), texUnit(_texUnit) {}
 	virtual void render();
 
-	Vec backCol;
+	Vec3 backCol;
 	uint texUnit;
 };
 

@@ -15,7 +15,7 @@ using namespace boost; // shared_ptr
 // ADDTYPE
 template<> bool isEType(EParamType t, const float&) { return (t == EPFloatRange || t == EPFloat || t == EPFloatTime); }
 template<> bool isEType(EParamType t, const int& v) { return (t == EPInt || t == EPTexture); }
-template<> bool isEType(EParamType t, const Vec&) { return (t == EPVec3 || t == EPVec3Color); }
+template<> bool isEType(EParamType t, const Vec3&) { return (t == EPVec3 || t == EPVec3Color); }
 template<> bool isEType(EParamType t, const Vec2&) { return (t == EPVec2); }
 template<> bool isEType(EParamType t, const Vec4&) { return (t == EPVec4 || t == EPVec4Color); }
 
@@ -71,6 +71,12 @@ Document::Document(KawaiiGL* mainc)
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
 	addPass(p);
+}
+
+
+KwSettings& Document::sett() 
+{ 
+	return m_main->sett();
 }
 
 
@@ -408,13 +414,42 @@ void Document::calcNoParse()
 	calc(NULL, false); 
 }
 
+
+#define FILTER_OBJ "object files (*.obj)"
+#define FILTER_JSON_FACES "JSON faces (*.json)"
+#define FILTER_JSON_LINES "JSON lines (*.json)"
+
 void Document::calcSave()
 {
-	QString filename = QFileDialog::getSaveFileName(m_main, "Save Object", "", "object files (*.obj)");
+	QString selectedFilter;
+	QString filename = QFileDialog::getSaveFileName(m_main, "Save Object", sett().gui.saveDir, 
+		FILTER_OBJ ";;" FILTER_JSON_FACES ";;" FILTER_JSON_LINES, &selectedFilter);
 	if (filename.isEmpty())
 		return;
 
-	calc(NULL, false, filename);
+	sett().gui.saveDir = QFileInfo(filename).path();
+
+	if (!m_obj)
+		calc(NULL, false); // can this happen?
+
+	if (selectedFilter == FILTER_OBJ)
+	{
+		m_obj->saveAs(filename, "obj");
+	}
+	else if (selectedFilter == FILTER_JSON_FACES)
+	{
+		m_obj->saveAs(filename, "json");	
+	}
+	else if (selectedFilter == FILTER_JSON_LINES)
+	{
+		m_obj->saveAs(filename, "json", MyObject::SaveEdges);	
+	}
+	else
+	{
+		printf("unknown filter\n");
+	}
+
+
 }
 
 
@@ -432,14 +467,14 @@ struct MyObjAdder : public PolyAdder
 		MyPolygon *poly = m_obj->AddPoly(v[0], v[1], v[2], (v.size() > 3)?(v[3]):NULL, constAncs);
 		for(size_t i = 0; i < v.size(); ++i)
 		{
-			Vec gc = v[i]->getColor();
+			Vec3 gc = v[i]->getColor();
 			if (!gc.isValidColor())
 				gc = m_defColor;
 			poly->vtx[i]->col = gc;
 		}
 	}
 
-	Vec m_defColor; // default color;
+	Vec3 m_defColor; // default color;
 	MyObject* m_obj;
 	static TexAnchor constAncs[4];
 };
@@ -454,14 +489,14 @@ struct MeshAdder : public StringAdder
 	{
 		QString filename = QString::fromStdString(s).toLower();
 		Document::TMeshIndex::iterator it = m_doc->m_meshIndex.find(filename);
-		shared_ptr<RMesh> mesh;
+		shared_ptr<Mesh> mesh;
 		if (it != m_doc->m_meshIndex.end())
 		{  // TBD: compare date as well
 			mesh = it.value();
 		}
 		else
 		{
-			mesh.reset(new RMesh(filename));
+			mesh.reset(new Mesh(filename.toAscii().data()));
 			if (MeshIO::read_Ext(filename, mesh.get()))
 			{
 				mesh->finalize(false);
@@ -487,7 +522,7 @@ struct FuncAdder : public StringAdder
 	Document *m_doc;
 };
 
-void Document::calc(DocSrc* src, bool doParse, QString saveAs)
+void Document::calc(DocSrc* src, bool doParse)
 {
 	if (doParse)
 	{
@@ -538,6 +573,7 @@ void Document::calc(DocSrc* src, bool doParse, QString saveAs)
 	m_frameObj->vectorify();
 	m_frameObj->clacNormals(m_conf.bVtxNormals);
 
+	delete m_obj;
 	m_obj = new MyObject(*m_frameObj); // copy it
 	m_obj->detachPoints();
 
@@ -550,10 +586,6 @@ void Document::calc(DocSrc* src, bool doParse, QString saveAs)
 	m_nPoints = m_obj->nPoints;
 	m_obj->clacNormals(m_conf.bVtxNormals);
 
-	if (!saveAs.isEmpty())
-	{
-		m_obj->saveAs(saveAs);
-	}
 
 
 	g_alloc.checkMaxAlloc(); // pool maintainance
@@ -827,7 +859,7 @@ void Document::VecParamAdapter::update(GenericShader &prog) const
 {
 	if (pe == NULL)
 		return;
-	Vec ev = pe->getCoord();
+	Vec3 ev = pe->getCoord();
 	prog.setUniform(ev, index);
 
 	if (toprop != NULL)
@@ -855,7 +887,7 @@ void Document::updateParams(TAdaptersList &adapters)
 		//foreach(const shared_ptr<ParamAdapter>& pa, adapters)
 		{
 		//	if (pa.get() != NULL)
-		//		pa->update(m_prog); // there are only Vec that need updates at the moment.
+		//		pa->update(m_prog); // there are only Vec3 that need updates at the moment.
 		}
 	}
 
@@ -871,16 +903,16 @@ struct TangentAttribEval : public Document::AttribEval
 		//m_prog->setAttrib(poly->tangent, index);
 		m_prog->setAttrib(poly->vtx[vi]->tangent, index);
 	}
-	virtual bool initWithMesh(const RMesh *rmesh)
+	virtual bool initWithMesh(const Mesh *rmesh)
 	{
 		m_enabled = rmesh->hasVtxProp(MPROP_TANGENT);
 		return m_enabled;
 	}
-	virtual void setAttribVal(RMesh::Vertex_const_handle vh)
+	virtual void setAttribVal(Mesh::Vertex_const_handle vh)
 	{
 		if (!m_enabled)
 			return;
-		m_prog->setAttrib(vh->prop<Vec>(MPROP_TANGENT), index);
+		m_prog->setAttrib(vh->prop<Vec3>(MPROP_TANGENT), index);
 	}
 	bool m_enabled;
 };
@@ -891,16 +923,16 @@ struct BiTangentAttribEval : public Document::AttribEval
 		//m_prog->setAttrib(poly->bitangent, index);
 		m_prog->setAttrib(poly->vtx[vi]->bitangent, index);
 	}
-	virtual bool initWithMesh(const RMesh *rmesh)
+	virtual bool initWithMesh(const Mesh *rmesh)
 	{
 		m_enabled = rmesh->hasVtxProp(MPROP_BITANGENT);
 		return m_enabled;
 	}
-	virtual void setAttribVal(RMesh::Vertex_const_handle vh)
+	virtual void setAttribVal(Mesh::Vertex_const_handle vh)
 	{
 		if (!m_enabled)
 			return;
-		m_prog->setAttrib(vh->prop<Vec>(MPROP_BITANGENT), index);
+		m_prog->setAttrib(vh->prop<Vec3>(MPROP_BITANGENT), index);
 	}
 
 	bool m_enabled;
@@ -924,7 +956,7 @@ bool Document::parseAttrib(const ParamInput &pi)
 	return true;
 }
 
-void Document::initAttribMesh(const RMesh* rmesh)
+void Document::initAttribMesh(const Mesh* rmesh)
 {
 	for(int i = 0; i < m_attribEval.size(); ++i)
 	{
@@ -941,7 +973,7 @@ void Document::setAttribs(MyPolygon* poly, int vi) // set values to attributes
 	}
 }
 
-void Document::setAttribs(RMesh::Vertex_const_handle vh)
+void Document::setAttribs(Mesh::Vertex_const_handle vh)
 {
 	for(int i = 0; i < m_attribEval.size(); ++i)
 	{

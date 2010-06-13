@@ -2,7 +2,7 @@
 
 #include <QTextStream>
 
-#include "RMesh.h"
+#include "Mesh.h"
 #include "Vec.h"
 
 #include "MeshIO.h"
@@ -50,7 +50,7 @@ private:
 #endif
 //typedef QVector<Face> TFaceList;
 
-void RMeshBuilder::addFace(Face& f)
+void MeshBuilder::addFace(Face& f)
 {
 	bool good = true;
 	for (int fii = 0; fii < f.size(); ++fii)
@@ -66,7 +66,7 @@ void RMeshBuilder::addFace(Face& f)
 
 	if (f.size() == 3)
 	{
-		RMesh::Face& addf = m_rmesh->addTriangle(f.v[0], f.v[1], f.v[2]);
+		Mesh::Face& addf = m_rmesh->addTriangle(f.v[0], f.v[1], f.v[2]);
 		if (m_rmesh->hasEachProp(0))
 		{
 			if (f.vt.size() == 3 && m_rmesh->hasEachProp(0))
@@ -80,7 +80,7 @@ void RMeshBuilder::addFace(Face& f)
 	}
 }
 
-typedef RMeshBuilder::Face Face;
+typedef MeshBuilder::Face Face;
 
 
 
@@ -328,17 +328,17 @@ bool VrmlReader::read(const QString& filename)
 
 void ObjWriter::writeVertices(QTextStream& out)
 {
-	for(RMesh::Vertex_const_iterator it = m_rmesh->vertices_begin(); it != m_rmesh->vertices_end(); ++it)
+	for(Mesh::Vertex_const_iterator it = m_rmesh->vertices_begin(); it != m_rmesh->vertices_end(); ++it)
 	{
-		RMesh::Vertex_const_handle v = &(*it);
+		Mesh::Vertex_const_handle v = &(*it);
 		out << "v " << v->point().x << " " << v->point().y << " " << v->point().z << "\n";
 	}
 }
 void ObjWriter::writeFaces(QTextStream& out)
 {
-	for(RMesh::Facet_const_iterator it = m_rmesh->facets_begin(); it != m_rmesh->facets_end(); ++it)
+	for(Mesh::Face_const_iterator it = m_rmesh->faces_begin(); it != m_rmesh->faces_end(); ++it)
 	{
-		RMesh::Facet_const_handle f = &(*it);
+		Mesh::Face_const_handle f = &(*it);
 		out << "f ";
 		for(int i = 0; i < f->size(); ++i)
 		{
@@ -350,7 +350,7 @@ void ObjWriter::writeFaces(QTextStream& out)
 
 
 
-bool MeshIO::write_Obj(const QString& filename, RMesh* rmesh)
+bool MeshIO::write_Obj(const QString& filename, Mesh* rmesh)
 {
 	QFile file(filename);
 	file.open(QIODevice::WriteOnly);
@@ -362,21 +362,21 @@ bool MeshIO::write_Obj(const QString& filename, RMesh* rmesh)
 }
 
 
-bool MeshIO::read_OffPly2(const QString& filename, RMesh* rmesh)
+bool MeshIO::read_OffPly2(const QString& filename, Mesh* rmesh)
 {
-	RMeshBuilder b(rmesh);
+	MeshBuilder b(rmesh);
 	Ply2Reader r(&b);
 	return r.read(filename);
 }
-bool MeshIO::read_Obj(const QString& filename, RMesh* rmesh)
+bool MeshIO::read_Obj(const QString& filename, Mesh* rmesh)
 {
-	RMeshBuilder b(rmesh);
+	MeshBuilder b(rmesh);
 	ObjReader r(&b);
 	return r.read(filename);
 }
 
 
-bool MeshIO::read_Ext(const QString& filename, RMesh* rmesh)
+bool MeshIO::read_Ext(const QString& filename, Mesh* rmesh)
 {
 	QFileInfo fii(filename);
 	QString extension(fii.suffix().toLower());
@@ -384,7 +384,7 @@ bool MeshIO::read_Ext(const QString& filename, RMesh* rmesh)
 		return read_Obj(filename, rmesh);
 	else if (extension == "gsd")
 	{
-		RMeshBuilder b(rmesh);
+		MeshBuilder b(rmesh);
 		GSDReader r(&b);
 		return r.read(filename);
 	}

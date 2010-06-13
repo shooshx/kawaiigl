@@ -43,7 +43,7 @@ void T2GLWidget::changedSelectedCol()
 {
 	if (m_selPnt == NULL)
 		return;
-	Vec c(conf.selectedCol);
+	Vec3 c(conf.selectedCol);
 	m_selPnt->setColor(c); 
 	// TBD: color more than one point at a time.
 	m_doc->calcNoParse(); 
@@ -63,9 +63,9 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	m_bBackFaceCulling = false; // needed or else upsidedown faces are bad.
 	m_bSkewReset = false;
 
-	aqmin = Vec(-2, -2, -2);
-	aqmax = Vec(2, 2, 2);
-	m_lightPos = Vec(0.0f, 0.0f, 20.0f);
+	aqmin = Vec3(-2, -2, -2);
+	aqmax = Vec3(2, 2, 2);
+	m_lightPos = Vec3(0.0f, 0.0f, 20.0f);
 
 	for(int i = 0; i < N_TEX; ++i)
 	{
@@ -155,11 +155,11 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 
 void T2GLWidget::reconfLight()
 {
-	m_lightAmbient = Vec(conf.lightAmb);
-	m_lightDiffuse = Vec(conf.lightDiff);
-	m_lightSpecular = Vec(conf.lightSpec);
+	m_lightAmbient = Vec3(conf.lightAmb);
+	m_lightDiffuse = Vec3(conf.lightDiff);
+	m_lightSpecular = Vec3(conf.lightSpec);
 	m_materialShininess = conf.materialShine;
-	m_materialDiffAmb = Vec(conf.materialCol);
+	m_materialDiffAmb = Vec3(conf.materialCol);
 	m_pointLight = conf.isPointLight;
 
 	m_fUseLight = conf.lighting; 
@@ -390,7 +390,7 @@ void T2GLWidget::paintFlat()
 		glPolygonOffset(0.0, 0.0);
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glColor3fv(Vec(conf.lineColor).v);
+		glColor3fv(Vec3(conf.lineColor).v);
 
 		if (m_bBackFaceCulling)
 			glDisable(GL_CULL_FACE);
@@ -456,7 +456,7 @@ void T2GLWidget::drawSolids(bool colorize)
 {
 	if (m_doc->m_obj != NULL)
 		drawObject(*m_doc->m_obj, colorize);
-	foreach(shared_ptr<RMesh> mesh, m_doc->m_meshs)
+	foreach(shared_ptr<Mesh> mesh, m_doc->m_meshs)
 	{
 		drawMesh(mesh.get(), colorize);
 	}
@@ -495,7 +495,7 @@ void T2GLWidget::paint3DScene(bool clearBack)
 {
 	if (clearBack)  // depth is no cleared?
 	{
-		Vec backCol = Vec(conf.backCol);
+		Vec3 backCol = Vec3(conf.backCol);
 		glClearColor(backCol.r, backCol.g, backCol.b, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); 
 		if (conf.bDepthTest)
@@ -710,7 +710,7 @@ void T2GLWidget::myPaintGL()
 			}
 			else if (pconf.what == PassConf::Model_From_Light)
 			{
-				Vec lpos = lightPos();
+				Vec3 lpos = lightPos();
 				glMatrixMode(GL_MODELVIEW);
 				glPushMatrix();
 				glLoadIdentity();
@@ -882,7 +882,7 @@ void T2GLWidget::drawObjectPoints(const MyObject& obj)
 	glEnd();
 }
 
-void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
+void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 {
 	if (rmesh->numFaces() == 0)
 		return;
@@ -891,7 +891,7 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 	bool revNormals = false;
 
 	bool vtxTexCoord = colorize && rmesh->hasVtxProp(MPROP_TEXCOORD);
-	bool eachTexCoord = colorize && rmesh->hasEachProp(MPROP_TEXCOORD);
+	//bool eachTexCoord = colorize && rmesh->hasEachProp(MPROP_TEXCOORD);
 	m_doc->initAttribMesh(rmesh);
 
 	int texUnit = (int)(conf.texAct.val());
@@ -901,20 +901,20 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 
 	glBegin(GL_TRIANGLES);
 
-	for(RMesh::Facet_const_iterator it = rmesh->facets_begin(); it != rmesh->facets_end(); ++it)
+	for(Mesh::Face_const_iterator it = rmesh->faces_begin(); it != rmesh->faces_end(); ++it)
 	{
-		RMesh::Facet_const_handle fh = &(*it);
+		Mesh::Face_const_handle fh = &(*it);
 
 		if (!vtxNormals)
 			glNormal3fv((revNormals?-fh->normal():fh->normal()).v);
 		for(int i = 0; i < 3; ++i)
 		{
-			RMesh::Vertex_const_handle vh = fh->vertex(i);
+			Mesh::Vertex_const_handle vh = fh->vertex(i);
 
 			if (vtxNormals)
 				glNormal3fv((revNormals?-vh->normal():vh->normal()).v);
-			if (eachTexCoord)
-				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(MPROP_TEXCOORD, i).v);
+			//if (eachTexCoord)
+			//	glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(MPROP_TEXCOORD, i).v);
 			else if (vtxTexCoord)
 				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, vh->prop<Vec2>(MPROP_TEXCOORD).v);
 			
@@ -933,16 +933,16 @@ void T2GLWidget::drawMesh(const RMesh* rmesh, bool colorize)
 }
 
 
-void T2GLWidget::drawMeshPoints(const RMesh* rmesh)
+void T2GLWidget::drawMeshPoints(const Mesh* rmesh)
 {
 	if (rmesh->numVtx() == 0)
 		return;
 
 	glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
 	glBegin(GL_POINTS);
-	for(RMesh::Vertex_const_iterator it = rmesh->vertices_begin(); it != rmesh->vertices_end(); ++it)
+	for(Mesh::Vertex_const_iterator it = rmesh->vertices_begin(); it != rmesh->vertices_end(); ++it)
 	{
-		RMesh::Vertex_const_handle vh = &(*it);
+		Mesh::Vertex_const_handle vh = &(*it);
 		glVertex3fv(vh->point().v);
 	}
 
@@ -962,12 +962,12 @@ public:
 		return (m_bShowUnused || used);
 	}
 
-	Vec pointCol(IPoint* handle)
+	Vec3 pointCol(IPoint* handle)
 	{
 		if (m_glw->m_dragPnts.contains(handle))
-			return Vec(1.0f, 0.3f, 0.3f);
+			return Vec3(1.0f, 0.3f, 0.3f);
 		else
-			return Vec(0.0f, 0.0f, 1.0f);
+			return Vec3(0.0f, 0.0f, 1.0f);
 	}
 protected:
 	DisplayConf &m_conf;
@@ -978,7 +978,7 @@ protected:
 struct PointVertexDrawer : public PointDrawer
 {
 	PointVertexDrawer(DisplayConf &conf, T2GLWidget* glw) : PointDrawer(conf, glw) {}
-	virtual void operator()(const string& name, const Vec& p, bool used, IPoint* handle)
+	virtual void operator()(const string& name, const Vec3& p, bool used, IPoint* handle)
 	{
 		if (!shouldShow(used))
 			return;
@@ -1016,7 +1016,7 @@ void T2GLWidget::drawPointDots()
 	{
 		if (m_doc->m_obj != NULL)
 			drawObjectPoints(*m_doc->m_obj);
-		foreach(shared_ptr<RMesh> mesh, m_doc->m_meshs)
+		foreach(shared_ptr<Mesh> mesh, m_doc->m_meshs)
 		{
 			drawMeshPoints(mesh.get());
 		}
@@ -1035,7 +1035,7 @@ void T2GLWidget::drawPointDots()
 struct PointTextDrawer : public PointDrawer
 {
 	PointTextDrawer(DisplayConf &conf, T2GLWidget* glw) : PointDrawer(conf, glw) {}
-	virtual void operator()(const string& name, const Vec& p, bool used, IPoint* handle)
+	virtual void operator()(const string& name, const Vec3& p, bool used, IPoint* handle)
 	{
 		if (!shouldShow(used))
 			return;
@@ -1071,7 +1071,7 @@ struct PointNameDrawer : public PointDrawer
 		PNT_SZ = 0.1 / (glw->getZoomVal() / 100.0); // targets should always be the same size
 	}
 
-	virtual void operator()(const string& name, const Vec& p, bool used, IPoint* handle)
+	virtual void operator()(const string& name, const Vec3& p, bool used, IPoint* handle)
 	{
 		if (!shouldShow(used))
 			return;
@@ -1178,7 +1178,7 @@ void T2GLWidget::wheelEvent(QWheelEvent *event)
 {
 	if (conf.bLightMove)
 	{
-		Vec lp = lightPos();
+		Vec3 lp = lightPos();
 		float len = lp.length();
 		float fact = 5.0f;
 		if ((event->modifiers() & Qt::ControlModifier) != 0)
@@ -1228,7 +1228,7 @@ void T2GLWidget::mouseMoveEvent(QMouseEvent *event)
 	{
 		for(TIPoints::const_iterator it = m_dragPnts.begin(); it != m_dragPnts.end(); ++it)
 		{
-			Vec v = (*it)->getCoord();
+			Vec3 v = (*it)->getCoord();
 			v = mvp.movePointXY(v);
 
 			(*it)->setCoord(v);

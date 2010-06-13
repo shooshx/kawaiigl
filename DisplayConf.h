@@ -105,14 +105,16 @@ Q_DECLARE_METATYPE(DisplayConf::ETexAct);
 
 
 
-class GUIPos : public ParamBase
+class GUIParams : public ParamBase
 {
 public:
-	TypeProp<int> configWindowTab;
+	//TypeProp<int> configWindowTab;
+	TypeProp<QString> saveDir;
 	//TypeProp<int> editWindowTab;
 
-	GUIPos()
-		:configWindowTab(this, "configWindowTab", 0)
+	GUIParams()
+	//	:configWindowTab(this, "configWindowTab", 0)
+		:saveDir(this, "saveDir", "saveDir", "")
 		//,editWindowTab(this, "editWindowTab", 0)
 	{}
 };
@@ -124,11 +126,11 @@ public:
 		:MySettings("ShyResearch", "KawaiiGL")
 	{
 		addParam(&disp, "disp");
-	//	addParam(&gui, "gui");
+		addParam(&gui, "gui");
 	}
 
 	DisplayConf disp;
-	//GUIPos gui;
+	GUIParams gui;
 
 };
 

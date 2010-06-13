@@ -789,6 +789,14 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\MyLib\Mesh.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MyLib\Mesh.h"
+				>
+			</File>
+			<File
 				RelativePath=".\MyLib\MeshIO.cpp"
 				>
 			</File>
@@ -914,14 +922,6 @@
 			</File>
 			<File
 				RelativePath=".\MyLib\paramSpecialization.h"
-				>
-			</File>
-			<File
-				RelativePath=".\MyLib\RMesh.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MyLib\RMesh.h"
 				>
 			</File>
 			<File

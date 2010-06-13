@@ -65,7 +65,7 @@ struct DummieData
 //--------------------------------------------------------------------------------------
 //##ModelId=42305DF20294
 //CBasicDummie 
-bool CGSDParser::CCreateCompositeObjectFromGSD(RMeshBuilder *bld)
+bool CGSDParser::CCreateCompositeObjectFromGSD(MeshBuilder *bld)
 {
   //std::list<GenericObjectData *> meshesList;
   std::list<DummieData *> dummieList;  
@@ -137,8 +137,8 @@ bool CGSDParser::CCreateCompositeObjectFromGSD(RMeshBuilder *bld)
 	bld->setVtxStart(0);
 	bld->setHas(true, false);
 	bld->createVtxProp<Vec2>(0); // tex-coord
-	bld->createVtxProp<Vec>(1); // tangent
-	bld->createVtxProp<Vec>(2); // bitangent
+	bld->createVtxProp<Vec3>(1); // tangent
+	bld->createVtxProp<Vec3>(2); // bitangent
 
 	for(uint i = 0; i < o->vC; ++i)
 	{
@@ -152,7 +152,7 @@ bool CGSDParser::CCreateCompositeObjectFromGSD(RMeshBuilder *bld)
 
 	for(uint i = 0; i < o->iC; i += 3)
 	{
-		bld->addFace(RMeshBuilder::Face(o->Index[i], o->Index[i + 1], o->Index[i + 2]));
+		bld->addFace(MeshBuilder::Face(o->Index[i], o->Index[i + 1], o->Index[i + 2]));
 	}
 	bld->endSurface();
     
@@ -162,7 +162,7 @@ bool CGSDParser::CCreateCompositeObjectFromGSD(RMeshBuilder *bld)
     strcpy(node->parent,o->ParentName);
     CBuildTreeData(node);
 
-	break; // read only the first one. RMesh doesn't support multiple meshes.
+	break; // read only the first one. Mesh doesn't support multiple meshes.
   }
   //===========================================
   //        END OF READING MESHES

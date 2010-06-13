@@ -60,4 +60,18 @@ typedef QVector<int> TTransformVec;
 // profile command line VC6
 // /SF ?CubeEngineProc@@YAIPAX@Z
 
+
+#define DISALLOW_COPY_AND_ASSIGN(ClassName) \
+	private: ClassName(const ClassName&);\
+	const ClassName& operator=(const ClassName&);
+
+template<typename T>
+inline void mySwap(T& a, T& b)
+{
+	T tmp = a;
+	a = b;
+	b = tmp;
+}
+
+
 #endif

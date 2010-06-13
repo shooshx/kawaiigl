@@ -14,7 +14,7 @@ void UniformParam::set(const float& v) const
 }
 
 template<> 
-void UniformParam::set(const Vec& v) const
+void UniformParam::set(const Vec3& v) const
 {
 	// when calling this, a program should be in use
 	if (m_uid != -1)
@@ -58,7 +58,7 @@ void AttribParam::set(const float& v) const
 }
 
 template<> 
-void AttribParam::set(const Vec& v) const
+void AttribParam::set(const Vec3& v) const
 {
 	// when calling this, a program should be in use
 	if (m_uid != -1)

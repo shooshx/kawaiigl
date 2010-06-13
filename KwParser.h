@@ -14,10 +14,10 @@ class QString;
 
 struct IPoint
 {
-	virtual void setCoord(const Vec& v) = 0;
-	virtual const Vec& getCoord() const = 0;
-	virtual void setColor(const Vec& c) = 0;
-	virtual const Vec& getColor() const = 0;
+	virtual void setCoord(const Vec3& v) = 0;
+	virtual const Vec3& getCoord() const = 0;
+	virtual void setColor(const Vec3& c) = 0;
+	virtual const Vec3& getColor() const = 0;
 	virtual const std::string& getName() const = 0;
 };
 
@@ -33,7 +33,7 @@ struct StringAdder
 
 struct PointActor
 {
-	virtual void operator()(const std::string& name, const Vec& p, bool used, IPoint* handle) = 0;
+	virtual void operator()(const std::string& name, const Vec3& p, bool used, IPoint* handle) = 0;
 };
 
 class IPolyCreator

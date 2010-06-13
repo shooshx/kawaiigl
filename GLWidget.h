@@ -57,9 +57,9 @@ public slots:
 	void zoom(int v); // v between 0 and 100
 
 	void setUsingLight(bool use);
-	Vec lightPos() { return m_lightPos; }
-	void setLightPos(const Vec& c);
-	//void setLightColor(const Vec& c);
+	Vec3 lightPos() { return m_lightPos; }
+	void setLightPos(const Vec3& c);
+	//void setLightColor(const Vec3& c);
 	void reLight() { makeCurrent(); reCalcLight(); updateGL(); }
 	void setClipValue(int percent);
 
@@ -71,7 +71,7 @@ signals:
 public:
 	int DoChoise(int chX, int chY);
 	void DoReset();
-	void setNewMinMax(const Vec& min, const Vec& max, bool scale); 
+	void setNewMinMax(const Vec3& min, const Vec3& max, bool scale); 
 
 	void mglPrint(const QString &str, int fontIndex);			// Custom GL "Print" Routine
 	void setFont(int fontIndex, QFont font);
@@ -109,7 +109,7 @@ protected:
 
 	int m_nRotSens, m_nScaleSens, m_nTransSens;
 
-	Vec aqmin, aqmax; // bbox for everything, floats as an optinimazation, no conversion 
+	Vec3 aqmin, aqmax; // bbox for everything, floats as an optinimazation, no conversion 
 	QPoint m_lastPos;					// hold last mouse x,y coord
 
 	EViewState m_viewState;
@@ -121,11 +121,11 @@ protected:
 	int m_renderFromLight; // -1 for normal rendering;
 
 	bool m_fUseLight;
-	Vec m_lightPos;
+	Vec3 m_lightPos;
 	bool m_pointLight;
-	Vec m_lightAmbient, m_lightDiffuse, m_lightSpecular;
+	Vec3 m_lightAmbient, m_lightDiffuse, m_lightSpecular;
 	int m_materialShininess;
-	Vec m_materialDiffAmb;
+	Vec3 m_materialDiffAmb;
 
 	bool m_bSkewReset; // should the reset be slighty rotated for better view or not
 
@@ -162,7 +162,7 @@ private:
 	double scrScale, realScale;
 	double m_osf; // moving scale
 	
-	Vec m_exTranslate; // external translate, from gui translate
+	Vec3 m_exTranslate; // external translate, from gui translate
 
 	void reCalcProj(bool fFromScratch = true);
 	void reCalcLight();
@@ -182,8 +182,8 @@ public:
 	PointMover(GLWidget *glw);
 	void setDelta(float dx, float dy);
 
-	Vec movePointXY(const Vec& in) const;
-	Vec movePointXZ(const Vec& in) const;
+	Vec3 movePointXY(const Vec3& in) const;
+	Vec3 movePointXZ(const Vec3& in) const;
 
 private:
 	double m_modelMat[16], m_projMat[16];

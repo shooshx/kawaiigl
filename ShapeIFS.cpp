@@ -17,7 +17,7 @@ void MyObject::MyPointWrapper::detach(MyAllocator *m_alloc) const
 
 // checks if a point is in m_tmppoints, if not, copy and insert it
 // returns the pointer to the permanent point
-MyPoint* MyObject::CopyCheckPoint(const Vec *c, const string* name)
+MyPoint* MyObject::CopyCheckPoint(const Vec3 *c, const string* name)
 {
 	MyPoint p;
 	p.setp(*c);
@@ -28,7 +28,7 @@ MyPoint* MyObject::CopyCheckPoint(const Vec *c, const string* name)
 	return realpntw.ptr;
 }
 
-void MyObject::AddLine(Vec *inp1, Vec *inp2, double inR, double inG, double inB, MyLine::ELineType type)
+void MyObject::AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double inB, MyLine::ELineType type)
 {	
 	MyLine pln(NULL, NULL, inR, inG, inB, type);
 
@@ -39,7 +39,7 @@ void MyObject::AddLine(Vec *inp1, Vec *inp2, double inR, double inG, double inB,
 }
 
 // copies the points in the points array
-MyPolygon* MyObject::AddPoly(Vec *inplst, TexAnchor *ancs, Texture *tex)
+MyPolygon* MyObject::AddPoly(Vec3 *inplst, TexAnchor *ancs, Texture *tex)
 {
 	MyPolygon *nply = m_alloc->m_polyPool.allocate();
 	nply->init(ancs, tex);
@@ -231,9 +231,9 @@ bool MyObject::clacNormals(bool vtxNorms)
 			MyPoint *p = points[pn];
 			p->n.unitize();
 			//p->tangent.unitize();
-			Vec &n = p->n;
-			Vec &t = p->tangent;
-			t = (t - n * Vec::dotProd(n, t)).unitized(); // this still has a few problems.
+			Vec3 &n = p->n;
+			Vec3 &t = p->tangent;
+			t = (t - n * Vec3::dotProd(n, t)).unitized(); // this still has a few problems.
 
 			p->bitangent.unitize();
 
@@ -435,7 +435,7 @@ bool MyObject::subdivide(bool smooth)
 				if (pol.vtx[i]->touched)
 					continue;
 
-				Vec F, E; // average of all Face points near of op[i]
+				Vec3 F, E; // average of all Face points near of op[i]
 
 				double n = 0;
 				he = pol.vtx[i]->he;
@@ -517,8 +517,33 @@ bool MyObject::subdivide(bool smooth)
 	return true;
 }
 
+class OrderedPair
+{
+public:
+	OrderedPair(int _a, int _b) :a(_a), b(_b)
+	{
+		if (a > b)
+			qSwap(a,b);
+	}
+	bool operator==(const OrderedPair& o) const
+	{
+		return a==o.a && b==o.b;
+	}
 
-void MyObject::saveAs(const QString& filename)
+	bool operator<(const OrderedPair& o) const
+	{
+		if (a != o.a)
+			return a < o.a;
+		return b < o.b;
+
+	}
+
+	int a, b; // a<b
+};
+
+
+
+void MyObject::saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat)
 {
 
 	QFile file(filename);
@@ -526,22 +551,111 @@ void MyObject::saveAs(const QString& filename)
 	file.setTextModeEnabled(true);
 	QTextStream out(&file);
 
-	for(int i = 0; i < nPoints; ++i)
-	{
-		MyPoint *p = points[i];
-		out << "v " << p->p[0] << " " << p->p[1] << " " << p->p[2] << "\n";
-	}
-	out << "\n";
+	QString fmt = format.toLower();
 
-	for(int i = 0; i < nPolys; ++i)
+	if (fmt == "obj")
 	{
-		MyPolygon *p = poly[i];
-		out << "f ";
-		for(int i = 0; i < 4; ++i)
-			out << p->vtx[i]->index + 1<< " ";
+		for(int i = 0; i < nPoints; ++i)
+		{
+			MyPoint *p = points[i];
+			out << "v " << p->p[0] << " " << p->p[1] << " " << p->p[2] << "\n";
+		}
+		out << "\n";
+
+		for(int i = 0; i < nPolys; ++i)
+		{
+			MyPolygon *p = poly[i];
+			out << "f ";
+			for(int i = 0; i < 4; ++i)
+				out << p->vtx[i]->index + 1<< " ";
+			out << "\n";
+		}
 		out << "\n";
 	}
-	out << "\n";
+	else if (fmt == "json")
+	{
+		out << "{\n";
+		out << " \"vertexPositions\" : [";
+		MyPoint *p = points[0];
+		out << p->p[0] << "," << p->p[1] << "," << p->p[2];
+		for(int i = 1; i < nPoints; ++i)
+		{
+			p = points[i];
+			out << "," << p->p[0] << "," << p->p[1] << "," << p->p[2];
+		}
+		out << "],\n";
+		out << " \"vertexNormals\" : [";
+		p = points[0];
+		out << p->n[0] << "," << p->n[1] << "," << p->n[2];
+		for(int i = 1; i < nPoints; ++i)
+		{
+			p = points[i];
+			out << "," << p->n[0] << "," << p->n[1] << "," << p->n[2];
+		}
+		out << "],\n";
+
+		if (saveWhat == SaveFaces)
+		{
+			if (false)
+			{
+				out << " \"quads\" : [";
+				MyPolygon *pl = poly[0];
+				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+				for(int i = 1; i < nPolys; ++i)
+				{
+					pl = poly[i];
+					out << ",";
+					out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+				}
+				out << "]\n";
+			}
+			else
+			{
+				out << " \"triangles\" : [";
+				MyPolygon *pl = poly[0];
+				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
+				out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+				for(int i = 1; i < nPolys; ++i)
+				{
+					pl = poly[i];
+					out << ",";
+					out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
+					out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+				}
+				out << "]\n";
+			}
+		}		
+		else if (saveWhat == SaveEdges)
+		{
+			// find unique pairs
+			typedef map<OrderedPair, int> TUniqIndexes;
+			TUniqIndexes uniq;
+			for(int i = 0; i < nPolys; ++i)
+			{
+				MyPolygon *pl = poly[i];
+				for(int pli = 0; pli < 4; ++pli)
+				{
+					OrderedPair o(pl->vtx[pli]->index, pl->vtx[(pli+1)%4]->index);
+					TUniqIndexes::iterator fit = uniq.find(o);
+					if (fit != uniq.end())
+						++(fit->second);
+					else
+						uniq[o] = 1;
+				}
+			}
+
+			out << " \"lines\" : [";
+			TUniqIndexes::iterator it = uniq.begin();
+			out << it->first.a << "," << it->first.b;
+			for(++it; it != uniq.end(); ++it)
+			{
+				out << "," << it->first.a << "," << it->first.b;
+			}
+			out << "]\n";
+
+		}
+		out << "}\n";
+	}
 
 
 }

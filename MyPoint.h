@@ -57,7 +57,7 @@ public:
 		:p(inX, inY, inZ), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
 	MyPoint(const MyPoint& a)
 		:p(a.p), he(NULL), touched(false), col(INVALID_COLOR), name(a.name) { ++g_ctorCount; }
-	explicit MyPoint(const Vec& c) 
+	explicit MyPoint(const Vec3& c) 
 		:p(c), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
 
 	~MyPoint() { ++g_dtorCount; }
@@ -72,7 +72,7 @@ public:
 	}
 	
 	void clear() { p.clear(); n.clear(); name = NULL; }
-	void setp(const Vec &c) { p = c; }
+	void setp(const Vec3 &c) { p = c; }
 	uint hash() const { const uint *up = reinterpret_cast<const uint*>(p.ptr()); return (bXor(up[0], bXor(up[1] >> 8, up[2] >> 16))); }
 
 	MyPoint &operator+=(const MyPoint& a) { p += a.p; return *this; }
@@ -85,12 +85,12 @@ public:
 		return *this; 
 	}
 
-	Vec p;
-	Vec n; // normal.
-	Vec tangent, bitangent;
+	Vec3 p;
+	Vec3 n; // normal.
+	Vec3 tangent, bitangent;
 
 	int index;
-	Vec col;
+	Vec3 col;
 	const std::string* name; // a non owning pointer to the ast parsed tree
 
 	// managment
@@ -106,12 +106,12 @@ inline MyPoint operator+(const MyPoint& a, const MyPoint& b) { MyPoint r(a); r +
 inline MyPoint operator/(const MyPoint& a, float s) { MyPoint r(a); r /= s; return r; }
 inline MyPoint operator*(float s, const MyPoint& a) { MyPoint r(a); r *= s; return r; }
 inline MyPoint operator*(const MyPoint& a, float s) { MyPoint r(a); r *= s; return r; }
-inline bool operator==(const MyPoint &p1, const MyPoint &p2) { return (Vec::exactEqual(p1.p, p2.p)); }
+inline bool operator==(const MyPoint &p1, const MyPoint &p2) { return (Vec3::exactEqual(p1.p, p2.p)); }
 
 class MyLine  
 {
 public:
-	Vec color;
+	Vec3 color;
 	MyPoint *p1, *p2; 
 
 	enum ELineType

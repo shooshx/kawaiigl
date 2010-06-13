@@ -46,7 +46,7 @@ struct IVec2
 	float* ptr() { return &x; }
 };
 
-// immediate Vec - for initialization using an init list. where is C++0x when you need it?
+// immediate Vec3 - for initialization using an init list. where is C++0x when you need it?
 struct IVec
 {
 	float x, y, z;
@@ -63,35 +63,35 @@ struct IVec4
 class VecI;
 
 // this is the ultimate vector class.
-class Vec
+class Vec3
 {
 public:
-	Vec() : x(0.0f), y(0.0f), z(0.0f) {}
-	Vec(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
-	Vec(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b) {} // alphs is discarded
+	Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
+	Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+	Vec3(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b) {} // alphs is discarded
 
-	Vec(Qt::GlobalColor qc) 
+	Vec3(Qt::GlobalColor qc) 
 	{
 		initFromColor(qc);
 	}
-	Vec(const QColor& c) 
+	Vec3(const QColor& c) 
 	{
 		initFromColor(c);
 	}
 
-	Vec(const IVec& iv) : x(iv.x), y(iv.y), z(iv.z) {}
+	Vec3(const IVec& iv) : x(iv.x), y(iv.y), z(iv.z) {}
 
-	Vec(const Vec& a, const Vec& b) // from, to
+	Vec3(const Vec3& a, const Vec3& b) // from, to
 	{
-		*this = Vec(b);
+		*this = Vec3(b);
 		*this -= a;
 	}
 
 	void initFromColor(const QColor& c); // need MAX_VEC
 
-	static Vec fromRgb(uint c)
+	static Vec3 fromRgb(uint c)
 	{
-		return Vec( (float)(c & 0xFF) / 255.0,
+		return Vec3( (float)(c & 0xFF) / 255.0,
 		            (float)((c >> 8) & 0xFF) / 255.0,
 			        (float)((c >> 16) & 0xFF) / 255.0);
 	}
@@ -109,50 +109,50 @@ public:
 		float v[3];
 	};
 
-	Vec& operator+=(const Vec& a)
+	Vec3& operator+=(const Vec3& a)
 	{
 		x += a.x; y += a.y; z += a.z;
 		return *this;
 	}
-	Vec& operator-=(const Vec& a)
+	Vec3& operator-=(const Vec3& a)
 	{
 		x -= a.x; y -= a.y; z -= a.z;
 		return *this;
 	}
-	Vec& operator+=(float v)
+	Vec3& operator+=(float v)
 	{
 		x += v; y += v; z += v;
 		return *this;
 	}
-	Vec& operator-=(float v)
+	Vec3& operator-=(float v)
 	{
 		x -= v; y -= v; z -= v;
 		return *this;
 	}
-	Vec& operator/=(float v)
+	Vec3& operator/=(float v)
 	{
 		x /= v; y /= v; z /= v;
 		return *this;
 	}
-	Vec& operator*=(float v)
+	Vec3& operator*=(float v)
 	{
 		x *= v; y *= v; z *= v;
 		return *this;
 	}
-	Vec& operator*=(const Vec& b)
+	Vec3& operator*=(const Vec3& b)
 	{
 		x *= b.x; y *= b.y; z *= b.z;
 		return *this;
 	}
-	Vec& operator/=(const Vec& b)
+	Vec3& operator/=(const Vec3& b)
 	{
 		x /= b.x; y /= b.y; z /= b.z;
 		return *this;
 	}
 
-	Vec operator-() const
+	Vec3 operator-() const
 	{
-		return Vec(-x, -y, -z);
+		return Vec3(-x, -y, -z);
 	}
 
 	void clear() 
@@ -169,7 +169,7 @@ public:
 		return x*x + y*y + z*z;
 	}
 
-	static float length(const Vec& from, const Vec& to)
+	static float length(const Vec3& from, const Vec3& to)
 	{
 		return from.to(to).length();
 	}
@@ -188,9 +188,9 @@ public:
 		return true;
 	}
 	
-	Vec unitized() const
+	Vec3 unitized() const
 	{
-		Vec c = *this;
+		Vec3 c = *this;
 		c.unitize();
 		return c;
 	}
@@ -200,71 +200,71 @@ public:
 		*this *= length;
 	}
 
-	float dotProd(const Vec& b) const
+	float dotProd(const Vec3& b) const
 	{
 		return dotProd(*this, b);
 	}
 
-	static float dotProd(const Vec& a, const Vec& b)
+	static float dotProd(const Vec3& a, const Vec3& b)
 	{
 		return a.x * b.x + a.y * b.y + a.z * b.z;
 	}
 
-	Vec crossProd(const Vec &b) const
+	Vec3 crossProd(const Vec3 &b) const
 	{
 		return crossProd(*this, b);
 	}
-	static Vec crossProd(const Vec &a, const Vec& b)
+	static Vec3 crossProd(const Vec3 &a, const Vec3& b)
 	{
-		return Vec(a.y * b.z - a.z * b.y, 
+		return Vec3(a.y * b.z - a.z * b.y, 
 				   a.z * b.x - a.x * b.z, 
 				   a.x * b.y - a.y * b.x);
 	}
 
-	static float distance(const Vec& a, const Vec& b)
+	static float distance(const Vec3& a, const Vec3& b)
 	{
-		Vec t = b;
+		Vec3 t = b;
 		t -= a;
 		return t.length();
 	}
-	static float distSquare(const Vec& a, const Vec& b)
+	static float distSquare(const Vec3& a, const Vec3& b)
 	{
-		Vec t = b;
+		Vec3 t = b;
 		t -= a;
 		return t.lenSquare();
 	}
 
 
-	static Vec fromTo(const Vec& from, const Vec& to);
-	Vec to(const Vec& to) const;
+	static Vec3 fromTo(const Vec3& from, const Vec3& to);
+	Vec3 to(const Vec3& to) const;
 
 
-	static Vec triangleNormal(const Vec& a, const Vec& b, const Vec& c)
+	static Vec3 triangleNormal(const Vec3& a, const Vec3& b, const Vec3& c)
 	{
-		Vec ab = a.to(b);
-		Vec ac = a.to(c);
+		Vec3 ab = a.to(b);
+		Vec3 ac = a.to(c);
 		return crossProd(ab, ac);
 	}
 
-	static Vec average(const Vec& a, const Vec& b)
+	static Vec3 average(const Vec3& a, const Vec3& b)
 	{
-		return Vec((a.x + b.x)/2.0f, (a.y + b.y)/2.0f, (a.z + b.z)/2.0f);
+		return Vec3((a.x + b.x)/2.0f, (a.y + b.y)/2.0f, (a.z + b.z)/2.0f);
 	}
 
 	// returns true if the angle between v0-to-v1 and v1-to-v2 is concave from the point of view of the origin
-	static bool isConcave(const Vec& v0, const Vec& v1, const Vec& v2)
+	static bool isConcave(const Vec3& v0, const Vec3& v1, const Vec3& v2)
 	{
-		Vec v01 = v0.to(v1);
+		Vec3 v01 = v0.to(v1);
 		v01.unitize();
-		Vec v12 = v1.to(v2);
+		Vec3 v12 = v1.to(v2);
 		v12.unitize();
-		Vec dir1 = v01.crossProd(v12);	
+		Vec3 dir1 = v01.crossProd(v12);	
 		float r = dir1.dotProd(v1);
 		return (r < 0);
 	}
-	static bool isConcaveDelta(const Vec& v01, const Vec& v1, const Vec& v12)
+	static bool isConcaveDelta(const Vec3& v01, const Vec3& v1, const Vec3& v12)
 	{
-		Vec dir1 = v01.crossProd(v12);	
+		Vec3 dir1 = v01.crossProd(v12);	
 		float r = dir1.dotProd(v1);
 		return (r < 0);
 	}
@@ -281,14 +281,14 @@ public:
 	}
 	float const* ptr() const { return &v[0]; }
 
-	void pmin(const Vec &a)
+	void pmin(const Vec3 &a)
 	{
 		x = qMin(x, a.x);
 		y = qMin(y, a.y);
 		z = qMin(z, a.z);
 	}
 
-	void pmax(const Vec &a)
+	void pmax(const Vec3 &a)
 	{
 		x = qMax(x, a.x);
 		y = qMax(y, a.y);
@@ -296,9 +296,9 @@ public:
 	}
 
 	// 2d perpedicular
-	Vec perp() const
+	Vec3 perp() const
 	{
-		return Vec(y, -x, 0);
+		return Vec3(y, -x, 0);
 	}
 
 	// vector must be unitiszed
@@ -319,14 +319,14 @@ public:
 		return rad;
 	}
 
-	static Vec unitVec2D(float degAngle)
+	static Vec3 unitVec2D(float degAngle)
 	{
 		float rad = radFromDeg(degAngle);
-		return Vec(cos(rad), -sin(rad), 0.0);
+		return Vec3(cos(rad), -sin(rad), 0.0);
 	}
 
 	// geodesic distance. a,b should be unitized
-	static float geoDist(const Vec& a, const Vec& b)
+	static float geoDist(const Vec3& a, const Vec3& b)
 	{
 		return acos(qBound(-1.0f, dotProd(a, b), 1.0f)); 
 	}
@@ -334,7 +334,7 @@ public:
 	// calculate the angle around point a in which point b is at
 	// from point a to point b
 	// answer is in degrees
-	float angleTo(const Vec& bp) const;
+	float angleTo(const Vec3& bp) const;
 
 	QString toString() const
 	{
@@ -354,39 +354,39 @@ public:
 		QTextStream in(const_cast<QString*>(&str), QIODevice::ReadOnly);
 		in >> c >> x >> c >> y >> c >> z;
 	}
-	static Vec fromString(const QString& str)
+	static Vec3 fromString(const QString& str)
 	{
-		Vec v;
+		Vec3 v;
 		v.fromStringF(str);
 		return v;
 	}
 
-	static bool isVeryNear(const Vec& a, const Vec& b)
+	static bool isVeryNear(const Vec3& a, const Vec3& b)
 	{
-		return Vec::distance(a,b) < 0.0001;
+		return Vec3::distance(a,b) < 0.0001;
 	}
-	bool isCloseTo(const Vec& b, float epsilon) const
+	bool isCloseTo(const Vec3& b, float epsilon) const
 	{
 		return qAbs(x - b.x) + qAbs(y - b.y) + qAbs(z - b.z) < epsilon;
 	}
-	static bool isCloseTo(const Vec& a, const Vec& b, float epsilon)
+	static bool isCloseTo(const Vec3& a, const Vec3& b, float epsilon)
 	{
 		return qAbs(a.x - b.x) + qAbs(a.y - b.y) + qAbs(a.z - b.z) < epsilon;
 	}
-	static float manhattenDist(const Vec& a, const Vec& b)
+	static float manhattenDist(const Vec3& a, const Vec3& b)
 	{
 		return qAbs(a.x - b.x) + qAbs(a.y - b.y) + qAbs(a.z - b.z);
 	}
 	// axis parallel distance (to bounding box...)
-	static float paraDist(const Vec& a, const Vec& b)
+	static float paraDist(const Vec3& a, const Vec3& b)
 	{
 		return qMin(qAbs(a.x - b.x), qMin(qAbs(a.y - b.y), qAbs(a.z - b.z)));
 	}
-	static bool exactEqual(const Vec& a, const Vec& b)
+	static bool exactEqual(const Vec3& a, const Vec3& b)
 	{
 		return (a.x == b.x) && (a.y == b.y) && (a.z == b.z);
 	}
-	static bool maskEqual(const Vec& a, const Vec& b)
+	static bool maskEqual(const Vec3& a, const Vec3& b)
 	{
 		return ((*(uint*)&a.x) & FLOAT_COMPARE_BITMASK) == ((*(uint*)&b.x) & FLOAT_COMPARE_BITMASK) &&
 			((*(uint*)&a.y) & FLOAT_COMPARE_BITMASK) == ((*(uint*)&b.y) & FLOAT_COMPARE_BITMASK) &&
@@ -394,7 +394,7 @@ public:
 	}
 
 	// if f==0 we get a, if f==1 we get b
-	static Vec linearMix(const Vec& a, const Vec& b, float f);
+	static Vec3 linearMix(const Vec3& a, const Vec3& b, float f);
 
 	int size() const { return 3; }
 	const char* charPtr() const { return (const char*)ptr(); };
@@ -428,9 +428,9 @@ public:
 
 };
 
-extern const Vec MAX_VEC, MIN_VEC, INVALID_COLOR;
+extern const Vec3 MAX_VEC, MIN_VEC, INVALID_COLOR;
 
-inline void Vec::initFromColor(const QColor& c)
+inline void Vec3::initFromColor(const QColor& c)
 {
 	if (!c.isValid())
 	{
@@ -440,95 +440,97 @@ inline void Vec::initFromColor(const QColor& c)
 	r = c.red() / 255.0f; g = c.green() / 255.0f; b = c.blue() / 255.0f;
 }
 
-inline Vec operator+(const Vec& a, const Vec& b)
+inline Vec3 operator+(const Vec3& a, const Vec3& b)
 {
-	Vec res(a);
+	Vec3 res(a);
 	res +=b;
 	return res;
 }
-inline Vec operator-(const Vec& a, const Vec& b)
+inline Vec3 operator-(const Vec3& a, const Vec3& b)
 {
-	Vec res(a);
+	Vec3 res(a);
 	res -=b;
 	return res;
 }
-inline Vec operator/(const Vec& a, float v)
+inline Vec3 operator/(const Vec3& a, float v)
 {
-	Vec res(a);
+	Vec3 res(a);
 	res /= v;
 	return res;
 }
-inline Vec operator*(const Vec& a, float v)
+inline Vec3 operator*(const Vec3& a, float v)
 {
-	Vec res(a);
+	Vec3 res(a);
 	res *= v;
 	return res;
 }
-inline Vec operator*(float v, const Vec& a)
+inline Vec3 operator*(float v, const Vec3& a)
 {
-	Vec res(a);
+	Vec3 res(a);
 	res *= v;
 	return res;
 }
-inline Vec operator*(const Vec& a, const Vec& b) // member-wise multiplication
+inline Vec3 operator*(const Vec3& a, const Vec3& b) // member-wise multiplication
 {
-	Vec res(a);
+	Vec3 res(a);
 	res *= b;
 	return res;
 }
-inline Vec operator/(const Vec& a, const Vec& b) // member-wise multiplication
+inline Vec3 operator/(const Vec3& a, const Vec3& b) // member-wise multiplication
 {
-	Vec res(a);
+	Vec3 res(a);
 	res /= b;
 	return res;
 }
 
 // this doesn't work quite right near 0
-// inline bool operator==(const Vec& a, const Vec& b)
+// inline bool operator==(const Vec3& a, const Vec3& b)
 // {
 // 	return ((*(uint*)&a.x) & FLOAT_COMPARE_BITMASK) == ((*(uint*)&b.x) & FLOAT_COMPARE_BITMASK) &&
 // 		((*(uint*)&a.y) & FLOAT_COMPARE_BITMASK) == ((*(uint*)&b.y) & FLOAT_COMPARE_BITMASK) &&
 // 		((*(uint*)&a.z) & FLOAT_COMPARE_BITMASK) == ((*(uint*)&b.z) & FLOAT_COMPARE_BITMASK);
 // 	//return ((a.x == b.x) && (a.y == b.y) && (a.z == b.z));
 // }
-// inline bool operator!=(const Vec& a, const Vec& b)
+// inline bool operator!=(const Vec3& a, const Vec3& b)
 // {
 // 	return !(a == b);
 // 	//return ((a.x != b.x) || (a.y != b.y) || (a.z != b.z));
 // }
 
-inline bool operator>(const Vec& a, const Vec& b)
+/* not really correct
+inline bool operator>(const Vec3& a, const Vec3& b)
 {
 	return (a.x > b.x) && (a.y > b.y) && (a.z > b.z);
 }
-inline bool operator>=(const Vec& a, const Vec& b)
+inline bool operator>=(const Vec3& a, const Vec3& b)
 {
 	return (a.x >= b.x) && (a.y >= b.y) && (a.z >= b.z);
 }
-inline bool operator<(const Vec& a, const Vec& b)
+inline bool operator<(const Vec3& a, const Vec3& b)
 {
 	return (a.x < b.x) && (a.y < b.y) && (a.z < b.z);
 }
-inline bool operator<=(const Vec& a, const Vec& b)
+inline bool operator<=(const Vec3& a, const Vec3& b)
 {
 	return (a.x <= b.x) && (a.y <= b.y) && (a.z <= b.z);
-}
+}*/
 
 
-inline float Vec::angleTo(const Vec& bp) const
+
+inline float Vec3::angleTo(const Vec3& bp) const
 {
-	Vec t = bp - *this;
+	Vec3 t = bp - *this;
 	return t.angle();
 }
 
 
 // this is outside because we need to have operator- defined.
-inline Vec Vec::fromTo(const Vec& from, const Vec& to)
+inline Vec3 Vec3::fromTo(const Vec3& from, const Vec3& to)
 {
 	return to - from;
 }
 
-inline Vec Vec::to(const Vec& to) const
+inline Vec3 Vec3::to(const Vec3& to) const
 {
 	return to - *this;
 }
@@ -539,14 +541,14 @@ inline T linearMix(const T& a, const T& b, float f)
 	return (f*b + (1-f)*a);
 }
 
-inline Vec Vec::linearMix(const Vec& a, const Vec& b, float f) 
+inline Vec3 Vec3::linearMix(const Vec3& a, const Vec3& b, float f) 
 {
 	return (f*b + (1-f)*a);
 }
 
 
 
-typedef QVector<Vec> TVecList;
+typedef QVector<Vec3> TVecList;
 typedef QVector<int> TIndexList;
 typedef QList<uint> TUIndexList;
 
@@ -555,8 +557,8 @@ class Vec4
 public:
 	Vec4() : x(0.0f), y(0.0f), z(0.0f), w(0.0f) {}
 	Vec4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
-	explicit Vec4(const Vec& a) : x(a.x), y(a.y), z(a.z), w(1.0f) {}
-	Vec4(const Vec& a, float w) : x(a.x), y(a.y), z(a.z), w(w) {}
+	explicit Vec4(const Vec3& a) : x(a.x), y(a.y), z(a.z), w(1.0f) {}
+	Vec4(const Vec3& a, float w) : x(a.x), y(a.y), z(a.z), w(w) {}
 	explicit Vec4(const QColor& c) 
 	{
 		initFromColor(c);
@@ -594,9 +596,9 @@ public:
 		float v[4];
 	};
 
-	Vec toVec() const 
+	Vec3 toVec() const 
 	{ 
-		return Vec(x/w, y/w, z/w);
+		return Vec3(x/w, y/w, z/w);
 	}
 
 	QColor toColor() const 
@@ -629,7 +631,7 @@ class Vec2
 public:
 	Vec2() : x(0.0f), y(0.0f) {}
 	Vec2(float _x, float _y) : x(_x), y(_y) {}
-	explicit Vec2(const Vec& a) : x(a.x), y(a.y) {}
+	explicit Vec2(const Vec3& a) : x(a.x), y(a.y) {}
 	union
 	{
 		struct
@@ -639,9 +641,9 @@ public:
 		float v[2];
 	};
 
-	Vec toVec(float z) 
+	Vec3 toVec(float z) 
 	{ 
-		return Vec(x, y, z);
+		return Vec3(x, y, z);
 	}
 
 	QString toStringNoParen() const
@@ -730,25 +732,25 @@ class Plane
 {
 public:
 	// construct a plane from 3 points in space
-	Plane(const Vec& p0, const Vec& p1, const Vec& p2) :point(p0)
+	Plane(const Vec3& p0, const Vec3& p1, const Vec3& p2) :point(p0)
 	{
-		normal = Vec::crossProd(p0.to(p1), p0.to(p2));
+		normal = Vec3::crossProd(p0.to(p1), p0.to(p2));
 		normal.unitize();
-		d = -Vec::dotProd(normal, point);
+		d = -Vec3::dotProd(normal, point);
 	}
-	Plane(const Vec& _normal, const Vec& _point) : normal(_normal), point(_point)
+	Plane(const Vec3& _normal, const Vec3& _point) : normal(_normal), point(_point)
 	{
 		normal.unitize();
-		d = -Vec::dotProd(normal, point);
+		d = -Vec3::dotProd(normal, point);
 	}
 
 	static bool isEqual(const Plane& a, const Plane& b)
 	{
-		return Vec::isCloseTo(a.normal, b.normal, 0.0001f) && (qAbs(a.d - b.d) < 0.0001);
+		return Vec3::isCloseTo(a.normal, b.normal, 0.0001f) && (qAbs(a.d - b.d) < 0.0001);
 	}
 
-	Vec normal;
-	Vec point;
+	Vec3 normal;
+	Vec3 point;
 	float d;
 	// the equation of the plane has (a,b,c)=normal, d in ax+by+cz+d=0
 };
@@ -776,7 +778,7 @@ public:
 	{
 		initFromColor(col);
 	}
-	VecUB(const Vec& v)
+	VecUB(const Vec3& v)
 	{
 		r = qBound(0.0f, v.r * 255.0f, 255.0f);
 		g = qBound(0.0f, v.g * 255.0f, 255.0f);
@@ -821,7 +823,7 @@ public:
 	{
 		initFromColor(c);
 	}
-	Vec4UB(const Vec& v) : r(v.r*255.0f), g(v.g*255.0f), b(v.b*255.0f), a(255)
+	Vec4UB(const Vec3& v) : r(v.r*255.0f), g(v.g*255.0f), b(v.b*255.0f), a(255)
 	{
 	}
 
@@ -857,7 +859,7 @@ class VecT
 public:
 	VecT() : p0(0), p1(0), p2(0) {}
 	VecT(T _p0, T _p1, T _p2) : p0(_p0), p1(_p1), p2(_p2) {}
-	VecT(const Vec& v) : p0(v.x), p1(v.y), p2(v.z) {}
+	VecT(const Vec3& v) : p0(v.x), p1(v.y), p2(v.z) {}
 
 	union
 	{
@@ -891,7 +893,7 @@ class VecI : public VecT<int>
 public:
 	VecI() : VecT<int>(-1, -1, -1) {}
 	VecI(int _p0, int _p1, int _p2) : VecT<int>(qRound(_p0), qRound(_p1), qRound(_p2)) {}
-	VecI(const Vec& v) : VecT<int>(v) {}
+	VecI(const Vec3& v) : VecT<int>(v) {}
 };
 
 
@@ -899,7 +901,7 @@ class VecS2 // a point in a modified spherical surface (Noah Space)
 {
 public:
 	VecS2() : phi(0.0f), phi2(0.0f) {}
-	explicit VecS2(const Vec& p)
+	explicit VecS2(const Vec3& p)
 	{
 		phi = atan2(p.y, p.x); // phi y,x
 		phi2 = atan2(p.z, p.x); // other phi z,x
@@ -918,13 +920,12 @@ public:
 
 
 
-
 enum EEAxis { Xaxis, Yaxis, Zaxis, XYaxis, XZaxis, YZaxis };
 
 class FuncFloatVec
 {
 public:
-	virtual float operator()(const Vec& v) const = 0;
+	virtual float operator()(const Vec3& v) const = 0;
 	virtual bool init() { return true; } // do any initializations. returns false if failed or can't.
 	virtual bool isSlow() const { return false; }
 };
@@ -942,14 +943,14 @@ public:
 class FuncBoolVec
 {
 public:
-	virtual bool operator()(const Vec& v) const = 0;
+	virtual bool operator()(const Vec3& v) const = 0;
 	virtual bool init() { return true; } // do any initializations. returns false if failed or can't.
 };
 
 class FuncVecToRgb : public FuncFloatVec
 {
 public:
-	float operator()(const Vec& v) const
+	float operator()(const Vec3& v) const
 	{
 		uint c = v.toRgb();
 		return *(float*)&c;
@@ -961,7 +962,7 @@ class FuncConst : public FuncFloatVec
 {
 public:
 	FuncConst(float c) : m_c(c) {}
-	float operator()(const Vec& v) const
+	float operator()(const Vec3& v) const
 	{
 		return m_c;
 	}
@@ -984,18 +985,18 @@ public:
 
 extern const FuncVecToRgb funcVecToRgb;
 
-class VecFuncs : public Vec
+class VecFuncs : public Vec3
 {
 public:
 	VecFuncs() {}
-	VecFuncs(float _x, float _y, float _z) : Vec(_x, _y, _z) {}
-	VecFuncs(const Vec& v) : Vec(v) {}
-	operator Vec&() { return *(Vec*)this; }
+	VecFuncs(float _x, float _y, float _z) : Vec3(_x, _y, _z) {}
+	VecFuncs(const Vec3& v) : Vec3(v) {}
+	operator Vec3&() { return *(Vec3*)this; }
 
 
-	float x() const { return Vec::x; }
-	float y() const { return Vec::y; }
-	float z() const { return Vec::z; }
+	float x() const { return Vec3::x; }
+	float y() const { return Vec3::y; }
+	float z() const { return Vec3::z; }
 
 };
 

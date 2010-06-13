@@ -197,7 +197,7 @@ void ColorPui::colorParamChanged() // Prop changed
 	QColor c = *cprop;
 	if (!withAlpha)
 	{
-		Vec vc(c);
+		Vec3 vc(c);
 		pui->value->setText("{" + vc.toStringNoParen() + "}"); // doesn't cause the variable to be sent
 		if (!pui->m_doc->isProgEnabled())
 			return;
@@ -269,7 +269,7 @@ void ParamUi::initMoreWidget(const ParamInput* pi)
 	if (m_dtype == EPVec3Color)
 	{
 		if (pi != NULL)
-			moreCont = new ColorPui(this, Vec::fromString(pi->value).toColor() , false);
+			moreCont = new ColorPui(this, Vec3::fromString(pi->value).toColor() , false);
 		else
 			moreCont = new ColorPui(this, QColor(0,0,0) , false);
 	}

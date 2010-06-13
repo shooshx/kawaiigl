@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'KawaiiGL.ui'
+** Form generated from reading UI file 'KawaiiGL.ui'
 **
-** Created: Mon Oct 12 16:34:01 2009
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Sun Jun 6 22:54:43 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_KAWAIIGL_H
@@ -53,7 +53,6 @@ public:
     void retranslateUi(QMainWindow *KawaiiGLClass)
     {
         KawaiiGLClass->setWindowTitle(QApplication::translate("KawaiiGLClass", "KawaiiGL", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(KawaiiGLClass);
     } // retranslateUi
 
 };

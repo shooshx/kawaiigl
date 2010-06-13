@@ -47,7 +47,7 @@ void flushAllEvents()
 }
 
 
-QDebug &operator<<(QDebug &ostr, const Vec& a)
+QDebug &operator<<(QDebug &ostr, const Vec3& a)
 {
 	ostr << "{" << a.v[0] << "," << a.v[1] << "," << a.v[2] << "}";
 	return ostr;

@@ -70,9 +70,9 @@ bool MyPolygon::calcNorm() //use the regular point and not the temp one
 // not the general case. just the simple case of a square
 bool MyPolygon::calcTangents()
 {
-	const Vec& v1 = vtx[0]->p;
-	const Vec& v2 = vtx[1]->p;
-	const Vec& v3 = vtx[2]->p;
+	const Vec3& v1 = vtx[0]->p;
+	const Vec3& v2 = vtx[1]->p;
+	const Vec3& v3 = vtx[2]->p;
 
 	const Vec2& w1 = texAncs[0];
 	const Vec2& w2 = texAncs[1];
@@ -91,9 +91,9 @@ bool MyPolygon::calcTangents()
 	float t2 = w3.y - w1.y;
 
 	float r = 1.0F / (s1 * t2 - s2 * t1);
-	Vec sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+	Vec3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
 		(t2 * z1 - t1 * z2) * r);
-	Vec tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+	Vec3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
 		(s1 * z2 - s2 * z1) * r);
 
 	tangent = sdir;
@@ -106,7 +106,7 @@ bool MyPolygon::calcTangents()
 
 #if 0
 {
-	Vec base, tos, tot;
+	Vec3 base, tos, tot;
 	Vec2 baseTex(100.0, 100.0);
 	for(int i = 0; i < 4; ++i)
 	{

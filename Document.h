@@ -7,7 +7,7 @@
 
 #include "KwParser.h"
 #include "ProgInput.h"
-#include "MyLib/RMesh.h"
+#include "MyLib/Mesh.h"
 
 #include "OpenGL/Shaders.h"
 #include "Renderable.h"
@@ -87,8 +87,10 @@ public:
 	void clearPasses();
 	RenderPassPtr passForModel(); // find the pass where the model should go.
 
+	KwSettings& sett();
+
 public slots:
-	void calc(DocSrc* qstr, bool doParse = true, QString saveAs = QString());
+	void calc(DocSrc* qstr, bool doParse = true);
 	void calcNoParse();
 	void calcSave();
 
@@ -101,8 +103,8 @@ public slots:
 
 	bool parseAttrib(const ParamInput &pi);
 	void setAttribs(MyPolygon* poly, int vi); // set values to attributes
-	void setAttribs(RMesh::Vertex_const_handle vh);
-	void initAttribMesh(const RMesh* rmesh);
+	void setAttribs(Mesh::Vertex_const_handle vh);
+	void initAttribMesh(const Mesh* rmesh);
 
 private slots:
 	void setAddTrack();
@@ -133,7 +135,7 @@ private:
 public:
 	ErrorActor *m_errAct;
 	MyObject *m_frameObj, *m_obj;
-	QVector<boost::shared_ptr<RMesh> > m_meshs;
+	QVector<boost::shared_ptr<Mesh> > m_meshs;
 	QVector<boost::shared_ptr<Renderable> > m_rends;
 
 	AddTracker m_addTrack;
@@ -185,14 +187,14 @@ public:
 		GenericShader *m_prog;
 
 		virtual void setAttribVal(const MyPolygon* poly, int vindex) = 0;
-		virtual bool initWithMesh(const RMesh *rmesh) = 0;
-		virtual void setAttribVal(RMesh::Vertex_const_handle vh) = 0;
+		virtual bool initWithMesh(const Mesh *rmesh) = 0;
+		virtual void setAttribVal(Mesh::Vertex_const_handle vh) = 0;
 	};
 
 
 	QVector<boost::shared_ptr<AttribEval> > m_attribEval;
 
-	typedef QMap<QString, boost::shared_ptr<RMesh> > TMeshIndex;
+	typedef QMap<QString, boost::shared_ptr<Mesh> > TMeshIndex;
 	TMeshIndex m_meshIndex;
 
 	//QString m_curtext; // of model

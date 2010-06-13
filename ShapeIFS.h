@@ -49,21 +49,23 @@ public:
 	float nakedLinesColor; // color of the lines when the object is on its own (not in grpdef)
 	bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
 
-	MyPolygon* AddPoly(Vec *inplst, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
+	MyPolygon* AddPoly(Vec3 *inplst, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
 	MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
 					   TexAnchor *ancs = NULL, Texture *tex = NULL);
 
-	void AddLine(Vec *inp1, Vec *inp2, double inR, double inG, double inB, MyLine::ELineType type);
+	void AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double inB, MyLine::ELineType type);
 	void setNakedLineColor(float color) { nakedLinesColor = color; }
 	void vectorify();
 	bool clacNormals(bool vtxNormals);
 	bool subdivide(bool smooth);
-	void saveAs(const QString& filename);
+
+	enum ESaveWhat { SaveFaces, SaveEdges };
+	void saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat = SaveFaces);
 	void detachPoints();
 	
 private:
 	///////////////////// structures for startup
-	MyPoint* CopyCheckPoint(const Vec *p, const string* name = NULL);
+	MyPoint* CopyCheckPoint(const Vec3 *p, const string* name = NULL);
 
 	typedef QList<MyPolygon*> TPolyList;
 	typedef QLinkedList<MyLine> TLineList;

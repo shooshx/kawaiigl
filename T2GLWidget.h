@@ -11,7 +11,7 @@
 
 class T2GLWidget;
 class Document;
-class RMesh;
+class Mesh;
 
 
 typedef QSet<IPoint*> TIPoints; // indexed by the pointer of course
@@ -77,8 +77,8 @@ signals:
 private:
 	void drawObject(const MyObject& obj, bool colorize);
 	void drawObjectPoints(const MyObject& obj);
-	void drawMesh(const RMesh* rmesh, bool colorize);
-	void drawMeshPoints(const RMesh* rmesh);
+	void drawMesh(const Mesh* rmesh, bool colorize);
+	void drawMeshPoints(const Mesh* rmesh);
 	void drawPointDots();
 	void drawSolids(bool colorize);
 	void drawAddTracker(AddTracker& at);

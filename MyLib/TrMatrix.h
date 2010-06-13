@@ -13,7 +13,7 @@ public:
 	void multRight(const TrMatrix &b);
 	void multLeft(const TrMatrix &a);
 	Vec4 multVec(const Vec4& v) const;
-	Vec multVec(const Vec& v) const;
+	Vec3 multVec(const Vec3& v) const;
 	void fill(float f)
 	{
 		for(int i = 0; i < 16; ++i)

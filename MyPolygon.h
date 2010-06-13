@@ -76,13 +76,13 @@ public:
 	MyPoint *vtx[4]; // a vector list of it's points in their order
 	int pnum; // number of points
 	
-	Vec center; // normal of polygon
+	Vec3 center; // normal of polygon
 
 	TexAnchor texAncs[4]; // texture ancors by the order of 0,0 - 1,0 - 1,1 - 0,1
 	Texture *tex; 
 	// relevant only to half-textured pieces per-polygon texture, use sort for this to be efficient
 	// NULL to disable texturing
-	Vec tangent, bitangent;
+	Vec3 tangent, bitangent;
 
 	// TBD- move away from here.
 	HalfEdge *he;	

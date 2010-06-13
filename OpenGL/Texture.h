@@ -39,7 +39,7 @@ public:
 	// means we're not going to delete this texture. better take care of it yourself.
 	void detach() { m_obj = -1; }
 
-	const Vec& size() const { return m_size; }
+	const Vec3& size() const { return m_size; }
 	bool isValid() const { return m_obj != -1; }
 	GLenum target() const { return m_target; }
 
@@ -49,7 +49,7 @@ public:
 private:
 	Q_DISABLE_COPY(GlTexture)
 	uint m_obj;
-	Vec m_size;
+	Vec3 m_size;
 	uint m_target;
 	QGLContext *m_fromContext; // if it came from Qt, need to delete via Qt
 };

@@ -12,19 +12,17 @@
 //#include "KDTreeWrap.h"
 
 
-typedef float number_type;
-
 class TrMatrix;
 
-class RMesh
+class Mesh
 {
 public:
-	RMesh(const QString& name) 
+	Mesh(const QString& name) 
 		: m_totalSurface(0.0f), m_diagLength(0.0f),
 		  m_minFaceVolume(FLT_MAX), m_maxFaceVolume(-FLT_MAX), m_cachedMinMaxFaceVolume(false), m_name(name)
 		  ,m_externalVtxNormals(false), m_externalFaceNormals(false)
 	{}
-	RMesh(const RMesh* vtxFrom, const QString& name) 
+	Mesh(const Mesh* vtxFrom, const QString& name) 
 		: m_totalSurface(0.0f), m_diagLength(0.0f),
 		m_minFaceVolume(FLT_MAX), m_maxFaceVolume(-FLT_MAX), m_cachedMinMaxFaceVolume(false), m_name(name)
 		,m_externalVtxNormals(false), m_externalFaceNormals(false)
@@ -33,15 +31,15 @@ public:
 		foreach(const Vertex& v, vtxFrom->m_vtx)
 			addVertex(v.point());
 	}
-	~RMesh() {}
+	~Mesh() {}
 
 	class Face;
 	class Vertex;
 	class Edge;
 	class ClosenessEdge;
 
-	typedef const Face* Facet_const_handle;
-	typedef Face* Facet_handle;
+	typedef const Face* Face_const_handle;
+	typedef Face* Face_handle;
 	typedef const Face* Face_const_handle;
 	typedef Face* Face_handle;
 	typedef const Vertex* Vertex_const_handle;
@@ -60,8 +58,8 @@ public:
 
 	typedef TVtxList::const_iterator Vertex_const_iterator;
 	typedef TVtxList::iterator Vertex_iterator;
-	typedef TFaceList::const_iterator Facet_const_iterator;
-	typedef TFaceList::iterator Facet_iterator;
+	typedef TFaceList::const_iterator Face_const_iterator;
+	typedef TFaceList::iterator Face_iterator;
 	typedef TEdgeList::const_iterator Edge_const_iterator;
 	typedef TEdgeList::iterator Edge_iterator;
 
@@ -107,19 +105,19 @@ public:
 		Vertex() 
 			: m_mymesh(NULL), m_index(-1), m_tran(-1)
 		{}
-		Vertex(RMesh *mesh, const Vec& p, int index) 
+		Vertex(Mesh *mesh, const Vec3& p, int index) 
 			: m_mymesh(mesh), m_p(p), m_index(index), m_tran(-1)
 //			  m_nvolume(FLT_MAX), m_volume(FLT_MAX),
 //			  m_centricity(FLT_MAX), m_distance(FLT_MAX)
 		{}
 
 		int& index() { return m_index; }
-		Vec& point() { return m_p; }
-		Vec& normal() { return m_normal; }
+		Vec3& point() { return m_p; }
+		Vec3& normal() { return m_normal; }
 
 		int index() const { return m_index; }
-		const Vec& point() const { return m_p; }
-		const Vec& normal() const { return m_normal; }
+		const Vec3& point() const { return m_p; }
+		const Vec3& normal() const { return m_normal; }
 
 		// property of vertex
 		template<typename T>
@@ -142,12 +140,12 @@ public:
 		int numFaces() const { return m_faces.size(); }
 		//int numEdges() const { return m_edges.size(); }
 
-		Facet_handle face(int i)
+		Face_handle face(int i)
 		{
 			Q_ASSERT(i < m_faces.size());
 			return m_mymesh->find_facet(m_faces[i]);
 		}
-		Facet_const_handle face(int i) const 
+		Face_const_handle face(int i) const 
 		{ return const_cast<Vertex*>(this)->face(i); }
 		int faceIndex(int i) const
 		{
@@ -172,10 +170,10 @@ public:
 
 
 	private:
-		Vec m_p; // oh palllese.
+		Vec3 m_p; // oh palllese.
 
-		RMesh *m_mymesh;
-		Vec m_normal;
+		Mesh *m_mymesh;
+		Vec3 m_normal;
 		int m_index;
 
 	//	float m_nvolume, m_volume, m_centricity;
@@ -186,13 +184,13 @@ public:
 
 		int m_tran; // transfer to.. while removing
 
-		friend class RMesh;
+		friend class Mesh;
 	};
 
 	class Face
 	{
 	public:
-		Face(RMesh *rmesh = NULL, int p0 = -1, int p1 = -1, int p2 = -1, int index = -1) 
+		Face(Mesh *rmesh = NULL, int p0 = -1, int p1 = -1, int p2 = -1, int index = -1) 
 			: m_index(index), m_mymesh(rmesh),
   			  m_surface(0.0f), m_tran(-1)
 //			  m_nvolume(FLT_MAX), m_volume(FLT_MAX), m_dispnvolume(FLT_MAX),
@@ -217,13 +215,13 @@ public:
 		Vertex_const_handle vertex(int i) const
 		{ return const_cast<Face*>(this)->vertex(i); }
 
-		Vec& point(int i)
+		Vec3& point(int i)
 		{
 			Q_ASSERT(i < size());
 			Q_ASSERT(m_pi[i] != -1);
 			return m_mymesh->find_vertex(m_pi[i])->point(); 
 		}
-		const Vec& point(int i) const
+		const Vec3& point(int i) const
 		{ return const_cast<Face*>(this)->vertex(i)->point(); }
 
 		int vertexIndex(int i) const
@@ -239,8 +237,8 @@ public:
 			return m_mymesh->find_edge(m_edges[i]);
 		}
 
-		Vec& normal() { return m_normal; }
-		const Vec& normal() const { return m_normal; }
+		Vec3& normal() { return m_normal; }
+		const Vec3& normal() const { return m_normal; }
 
 /*
 		template<typename T>
@@ -283,7 +281,7 @@ public:
 		}
 
 
-		const Vec& center() const { return m_center; }
+		const Vec3& center() const { return m_center; }
 
 		// return face indexes of adjucent faces
 		TIndexList neiFaces() const; 
@@ -302,22 +300,22 @@ public:
 		// zero based index to the vertex list
 		int m_pi[3];
 		int m_index;
-		RMesh *m_mymesh;
+		Mesh *m_mymesh;
 		int m_edges[3]; // indexes of the edges
 
-		Vec m_normal;
+		Vec3 m_normal;
 
 
 
 		float m_surface;
-		Vec m_center;
+		Vec3 m_center;
 
 		int m_tran; // transfer to.. white removing
 
 		//TIndexList m_closeFaces;
 		//TCellList m_gridCells;
 
-		friend class RMesh;
+		friend class Mesh;
 		//friend class RayIntersect;
 	};
 
@@ -325,14 +323,14 @@ public:
 	class Edge
 	{
 	public:
-		Edge(int a = -1, int b = -1, int index = -1, RMesh *rmesh = NULL) 
+		Edge(int a = -1, int b = -1, int index = -1, Mesh *rmesh = NULL) 
 			: m_a(a), m_b(b), m_index(index), m_length(0.0f),
 			  m_mymesh(rmesh)
 		{}
 
 		int index() const { return m_index; }
 		float length() const { return m_length; }
-		const Vec& center() const { return m_center; }
+		const Vec3& center() const { return m_center; }
 		int a() const { return m_a; }
 		int b() const { return m_b; }
 		int smalli() const { return m_a; }
@@ -343,12 +341,12 @@ public:
 		Vertex_const_handle vertexB() const { return m_mymesh->find_vertex(m_b); }
 
 		int numFaces() const{ return m_faces.size(); }
-		Facet_handle face(int i)
+		Face_handle face(int i)
 		{
 			Q_ASSERT(i < m_faces.size());
 			return m_mymesh->find_facet(m_faces[i]);
 		}
-		Facet_const_handle face(int i) const 
+		Face_const_handle face(int i) const 
 		{ return const_cast<Edge*>(this)->face(i); }
 
 		int faceIndex(int i) const
@@ -363,13 +361,13 @@ public:
 		int m_b; // higher index in vertex array
 
 		float m_length;
-		Vec m_center;
-		RMesh *m_mymesh;
+		Vec3 m_center;
+		Mesh *m_mymesh;
 
 		// faces that are has this edge
 		TIndexList m_faces;
 
-		friend class RMesh;
+		friend class Mesh;
 	};
 
 	class ClosenessEdge
@@ -386,7 +384,7 @@ public:
 	TVtxList& vertices() { return m_vtx; }
 	TFaceList& faces() { return m_face; }
 
-	Vertex& addVertex(const Vec& p)
+	Vertex& addVertex(const Vec3& p)
 	{
 		m_vtx.push_back(Vertex(this, p, numVtx()));
 		return m_vtx.back();
@@ -409,7 +407,7 @@ public:
 		m_face.push_back(Face(this, p1, p2, p3, m_face.size()));
 		return m_face.back();
 	}
-	int addFaceTriangulate(RMesh::TIndexList& f);
+	int addFaceTriangulate(Mesh::TIndexList& f);
 
 	int numVtx() const { return m_vtx.size(); }
 	int numFaces() const { return m_face.size(); }
@@ -425,10 +423,10 @@ public:
 	Vertex_iterator vertices_begin() { return m_vtx.begin(); }
 	Vertex_iterator vertices_end() { return m_vtx.end(); }
 
-	Facet_const_iterator facets_begin() const { return m_face.constBegin(); }
-	Facet_const_iterator facets_end() const { return m_face.constEnd(); }
-	Facet_iterator facets_begin() { return m_face.begin(); }
-	Facet_iterator facets_end() { return m_face.end(); }
+	Face_const_iterator faces_begin() const { return m_face.constBegin(); }
+	Face_const_iterator faces_end() const { return m_face.constEnd(); }
+	Face_iterator faces_begin() { return m_face.begin(); }
+	Face_iterator faces_end() { return m_face.end(); }
 
 	Edge_const_iterator edges_begin() const { return m_edge.constBegin(); }
 	Edge_const_iterator edges_end() const { return m_edge.constEnd(); }
@@ -436,12 +434,12 @@ public:
 	Edge_iterator edges_end() { return m_edge.end(); }
 
 	
-	Facet_handle find_facet(int index) 
+	Face_handle find_facet(int index) 
 	{ 
 		Q_ASSERT(index < m_face.size());
 		return &m_face[index]; 
 	}
-	Facet_const_handle find_facet(int index) const 
+	Face_const_handle find_facet(int index) const 
 	{ 
 		Q_ASSERT(index < m_face.size());
 		return &m_face[index]; 
@@ -474,16 +472,16 @@ public:
 	}
 
 
-	const Vec& getFacetCenter(Facet_const_handle f) const
+	const Vec3& getFacetCenter(Face_const_handle f) const
 	{ return f->center(); }
 
-	Vec centerOfMass();
-	Vec computedCenterOfMass() {  return m_computedCenterOfMass; } 
+	Vec3 centerOfMass();
+	Vec3 computedCenterOfMass() {  return m_computedCenterOfMass; } 
 	float diagonalLength() const { return m_diagLength; }
-	const Vec& minMaxCenter() const { return m_minMaxCenter; }
+	const Vec3& minMaxCenter() const { return m_minMaxCenter; }
 
-	const Vec& minp() const { return m_min; } 
-	const Vec& maxp() const { return m_max; } 
+	const Vec3& minp() const { return m_min; } 
+	const Vec3& maxp() const { return m_max; } 
 
 	// for each face according to its vertices orientation
 	void compute_normals_per_facet();
@@ -493,7 +491,7 @@ public:
 	void average_normals_per_facet();
 
 	void buildVerticesInFaces();
-	number_type compute_triangle_surfaces();
+	float compute_triangle_surfaces();
 	void compute_bounding_box();
 
 	void finalize(bool needEdges);
@@ -511,7 +509,7 @@ public:
 
 
 /*
-	void compute_volume_range_on_facets(number_type& minVal, number_type& maxVal)
+	void compute_volume_range_on_facets(float& minVal, float& maxVal)
 	{
 		if (m_cachedMinMaxFaceVolume)
 		{
@@ -519,7 +517,7 @@ public:
 			maxVal = m_maxFaceVolume;
 			return;
 		}
-		compute_feature_range_on_facets(minVal, maxVal, &RMesh::Face::volume);
+		compute_feature_range_on_facets(minVal, maxVal, &Mesh::Face::volume);
 
 		m_minFaceVolume = minFaceFeature;
 		m_maxFaceVolume = maxFaceFeature;
@@ -527,15 +525,15 @@ public:
 
 	}
 */
-	void compute_feature_range_on_facets(number_type& minVal, number_type& maxVal, float (RMesh::Face::*datgetter)() const);
+	void compute_feature_range_on_facets(float& minVal, float& maxVal, float (Mesh::Face::*datgetter)() const);
 
-	Vec polyCenterOfMass() const;
-	const Vec& diagLength() const { return m_axisLength; }
+	Vec3 polyCenterOfMass() const;
+	const Vec3& diagLength() const { return m_axisLength; }
 
 	void buildEdges();
 
 	template<class T>
-	void setForAll(T& (RMesh::Face::*method)(), T value)
+	void setForAll(T& (Mesh::Face::*method)(), T value)
 	{
 		for(int i = 0; i < numFaces(); ++i)
 		{
@@ -545,7 +543,7 @@ public:
 	}
 
 	template<class T>
-	void setForAll(T& (RMesh::Vertex::*method)(), T value)
+	void setForAll(T& (Mesh::Vertex::*method)(), T value)
 	{
 		for(int i = 0; i < numVtx(); ++i)
 		{
@@ -560,19 +558,19 @@ public:
 	void saveSubMesh(const QString& filename, const TIndexList& facetsList) const;
 
 	// save in a text file the `srcgetter` values of the faces defined by the faces indexex
-	void saveSubMeshFaceValuesTxt(const QString& filename, const TIndexList& facesList, float (RMesh::Face::*srcgetter)() const) const;
+	void saveSubMeshFaceValuesTxt(const QString& filename, const TIndexList& facesList, float (Mesh::Face::*srcgetter)() const) const;
 
 	void computeCentricity(QWidget *guiParent);
-	void dijkstra(RMesh::Vertex_handle v);
+	void dijkstra(Mesh::Vertex_handle v);
 
 	//bool hasCentricity() const { return false; }
 
 	void translateCenter()
 	{
-		Vec c = (m_min + m_max) / 2.0;
+		Vec3 c = (m_min + m_max) / 2.0;
 		translateCenter(c);
 	}
-	void translateCenter(const Vec& c);
+	void translateCenter(const Vec3& c);
 	void rescaleAndCenter(float destdialen);
 
 	void transformVertices(const TrMatrix& tr);
@@ -595,7 +593,7 @@ public:
 
 	void buildKdTree();
 	// this is only approximate because its the distance to the points, not the faces.
-	float distFromMesh(const Vec& v);
+	float distFromMesh(const Vec3& v);
 	const QString& name() const { return m_name; }
 
 	template<typename T>
@@ -641,8 +639,8 @@ public:
 	//ANNKDTreeWrap m_kdtree;
 
 private:
-	RMesh(const RMesh&);
-	RMesh& operator=(const RMesh&);
+	Mesh(const Mesh&);
+	Mesh& operator=(const Mesh&);
 
 	typedef QMap<int, int> TLargeEdgeI;
 	typedef QMap<int, TLargeEdgeI> TSmallLargeEdgeI;
@@ -650,9 +648,9 @@ private:
 	int addEdge(int a, int b);
 	int addCloseEdge(int a, int b);
 
-	int addEdgeOnceUsing(int s, int l, TSmallLargeEdgeI &bld, int (RMesh::*addMethod)(int a, int b));
+	int addEdgeOnceUsing(int s, int l, TSmallLargeEdgeI &bld, int (Mesh::*addMethod)(int a, int b));
 
-	bool areFacesClose(Facet_handle a, Facet_handle b, float thresh);
+	bool areFacesClose(Face_handle a, Face_handle b, float thresh);
 	
 	QString m_name;
 	TVtxList m_vtx;
@@ -660,10 +658,10 @@ private:
 	TEdgeList m_edge;
 	TClosenessEdgeList m_closeEdge;
 
-	Vec m_computedCenterOfMass;
-	Vec m_minMaxCenter;
-	Vec m_min, m_max;
-	Vec m_axisLength;
+	Vec3 m_computedCenterOfMass;
+	Vec3 m_minMaxCenter;
+	Vec3 m_min, m_max;
+	Vec3 m_axisLength;
 	float m_diagLength;
 	float m_totalSurface;
 
@@ -684,8 +682,8 @@ private:
 class MeshDist : public FuncFloatVec
 {
 public:
-	MeshDist(RMesh* mesh) : m_rmesh(mesh) {}
-	virtual float operator()(const Vec& v) const
+	MeshDist(Mesh* mesh) : m_rmesh(mesh) {}
+	virtual float operator()(const Vec3& v) const
 	{
 		return m_rmesh->distFromMesh(v);
 	}
@@ -696,7 +694,7 @@ public:
 	}
 
 private:
-	RMesh* m_rmesh;
+	Mesh* m_rmesh;
 
 };
 

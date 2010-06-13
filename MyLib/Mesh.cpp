@@ -6,12 +6,12 @@
 #include <QProgressDialog>
 #include <QCoreApplication>
 
-#include "RMesh.h"
+#include "Mesh.h"
 #include "TrMatrix.h"
 //#include "curvature_estimator.h"
 
 // going to eat that vector
-int RMesh::addFaceTriangulate(RMesh::TIndexList& f)
+int Mesh::addFaceTriangulate(Mesh::TIndexList& f)
 {
 	if (f.size() < 3)
 		return 0;
@@ -30,7 +30,7 @@ int RMesh::addFaceTriangulate(RMesh::TIndexList& f)
 		for(int tt = 0; tt < f.size(); ++tt)
 		{
 			int other = (tt + 2) % f.size();
-			float d = Vec::distance(find_vertex(f[tt])->point(), find_vertex(f[other])->point());
+			float d = Vec3::distance(find_vertex(f[tt])->point(), find_vertex(f[other])->point());
 			if (d < mind)
 			{
 				mind = d;
@@ -49,7 +49,7 @@ int RMesh::addFaceTriangulate(RMesh::TIndexList& f)
 
 }
 
-Vec RMesh::centerOfMass()
+Vec3 Mesh::centerOfMass()
 {
 	// compute for every face
 	for(int i = 0; i < numFaces(); ++i)
@@ -62,20 +62,20 @@ Vec RMesh::centerOfMass()
 	}
 
 	// now for all of the mess seperatly.
-	Vec centerOfMass(0,0,0);
-	for (RMesh::Vertex_iterator v = this->vertices_begin(); v != this->vertices_end(); v++)
+	Vec3 centerOfMass(0,0,0);
+	for (Mesh::Vertex_iterator v = this->vertices_begin(); v != this->vertices_end(); v++)
 	{
 		centerOfMass = centerOfMass + (v->point()); // - CGAL::ORIGIN);
 	}
 
 	unsigned int size = this->size_of_vertices();
-	m_computedCenterOfMass = Vec(centerOfMass.x/size, centerOfMass.y/size, centerOfMass.z/size);
+	m_computedCenterOfMass = Vec3(centerOfMass.x/size, centerOfMass.y/size, centerOfMass.z/size);
 
 	return m_computedCenterOfMass;
 }
 
 
-void RMesh::compute_bounding_box()
+void Mesh::compute_bounding_box()
 {
 	if (size_of_vertices()	== 0)
 		return;
@@ -88,7 +88,7 @@ void RMesh::compute_bounding_box()
 	zmin = zmax = pVertex->point().z;
 	for(;pVertex !=	vertices_end();pVertex++)
 	{
-		const Vec& p = pVertex->point();
+		const Vec3& p = pVertex->point();
 		xmin	=	qMin(xmin,p.x);
 		ymin	=	qMin(ymin,p.y);
 		zmin	=	qMin(zmin,p.z);
@@ -97,30 +97,30 @@ void RMesh::compute_bounding_box()
 		zmax	=	qMax(zmax,p.z);
 	}
 
-	m_min = Vec(xmin, ymin, zmin);
-	m_max = Vec(xmax, ymax, zmax);
-	m_diagLength = Vec::distance(m_min, m_max);
-	m_axisLength = Vec(m_min, m_max);
+	m_min = Vec3(xmin, ymin, zmin);
+	m_max = Vec3(xmax, ymax, zmax);
+	m_diagLength = Vec3::distance(m_min, m_max);
+	m_axisLength = Vec3(m_min, m_max);
 	m_minMaxCenter = (m_min + m_max) / 2.0f;
 }
 
 
 
-void RMesh::Face::computeNormal()
+void Mesh::Face::computeNormal()
 {
-	Vec v1(vertex(1)->point(), vertex(0)->point());
-	Vec v2(vertex(2)->point(), vertex(0)->point());
-	m_normal = Vec::crossProd(v1, v2);
+	Vec3 v1(vertex(1)->point(), vertex(0)->point());
+	Vec3 v2(vertex(2)->point(), vertex(0)->point());
+	m_normal = Vec3::crossProd(v1, v2);
 	m_normal.unitize();
 	
 }
 
 
-void RMesh::Vertex::computeNormal()
+void Mesh::Vertex::computeNormal()
 {
 	for(int i = 0; i < numFaces(); ++i)
 	{
-		Facet_handle v = face(i);
+		Face_handle v = face(i);
 		m_normal += v->normal();
 	}
 	m_normal.unitize();
@@ -128,7 +128,7 @@ void RMesh::Vertex::computeNormal()
 
 
 
-void RMesh::buildVerticesInFaces()
+void Mesh::buildVerticesInFaces()
 {
 	for(int i = 0; i < numVtx(); ++i)
 	{
@@ -146,19 +146,19 @@ void RMesh::buildVerticesInFaces()
 }
 
 
-int RMesh::addEdge(int a, int b)
+int Mesh::addEdge(int a, int b)
 {
 	m_edge.push_back(Edge(a, b, m_edge.size(), this));
 	Edge *e = &m_edge.back();
-	const Vec& av = find_vertex(e->a())->point();
-	const Vec& bv = find_vertex(e->b())->point();
-	e->m_length = Vec::distance(av, bv);
+	const Vec3& av = find_vertex(e->a())->point();
+	const Vec3& bv = find_vertex(e->b())->point();
+	e->m_length = Vec3::distance(av, bv);
 	e->m_center = (av + bv) / 2.0f;
 	return e->index();
 }
 
 // returns the edge added or found
-int RMesh::addEdgeOnceUsing(int s, int l, TSmallLargeEdgeI &bld, int (RMesh::*addMethod)(int a, int b))
+int Mesh::addEdgeOnceUsing(int s, int l, TSmallLargeEdgeI &bld, int (Mesh::*addMethod)(int a, int b))
 {
 	if (l < s)
 		qSwap(s, l);
@@ -179,7 +179,7 @@ int RMesh::addEdgeOnceUsing(int s, int l, TSmallLargeEdgeI &bld, int (RMesh::*ad
 	return *lit;
 }
 
-void RMesh::buildEdges()
+void Mesh::buildEdges()
 {
 	TSmallLargeEdgeI edgeMap; 
 
@@ -194,9 +194,9 @@ void RMesh::buildEdges()
 		int v1i = face.vertexIndex(1);
 		int v2i = face.vertexIndex(2);
 
-		int e0i = addEdgeOnceUsing(v0i, v1i, edgeMap, &RMesh::addEdge);
-		int e1i = addEdgeOnceUsing(v1i, v2i, edgeMap, &RMesh::addEdge);
-		int e2i = addEdgeOnceUsing(v2i, v0i, edgeMap, &RMesh::addEdge);
+		int e0i = addEdgeOnceUsing(v0i, v1i, edgeMap, &Mesh::addEdge);
+		int e1i = addEdgeOnceUsing(v1i, v2i, edgeMap, &Mesh::addEdge);
+		int e2i = addEdgeOnceUsing(v2i, v0i, edgeMap, &Mesh::addEdge);
 
 		face.m_edges[0] = e0i;
 		face.m_edges[1] = e1i;
@@ -235,7 +235,7 @@ void RMesh::buildEdges()
 
 
 // for each face according to its vertices orientation
-void RMesh::compute_normals_per_facet()
+void Mesh::compute_normals_per_facet()
 {
 	for(int i = 0; i < numFaces(); ++i)
 	{
@@ -244,13 +244,13 @@ void RMesh::compute_normals_per_facet()
 	}
 }
 
-void RMesh::average_normals_per_facet()
+void Mesh::average_normals_per_facet()
 {
 	compute_normals_per_facet(); //TBD PATCH
 }
 
 // for each vertex according to each faces normals
-void RMesh::compute_normals_per_vertex()
+void Mesh::compute_normals_per_vertex()
 {
 	for(int i = 0; i < numVtx(); ++i)
 	{
@@ -260,7 +260,7 @@ void RMesh::compute_normals_per_vertex()
 }
 
 // only triangles
-RMesh::TIndexList RMesh::Vertex::neiVertices() const
+Mesh::TIndexList Mesh::Vertex::neiVertices() const
 {
 	TIndexList ret;
 
@@ -278,7 +278,7 @@ RMesh::TIndexList RMesh::Vertex::neiVertices() const
 	return ret;
 }
 
-RMesh::TVtxHList RMesh::Vertex::neiVerticesH() const
+Mesh::TVtxHList Mesh::Vertex::neiVerticesH() const
 {
 	TIndexList il = neiVertices();
 	TVtxHList ret;
@@ -288,7 +288,7 @@ RMesh::TVtxHList RMesh::Vertex::neiVerticesH() const
 }
 
 // return a list of the faces which have a common edge with this face
-RMesh::TIndexList RMesh::Face::neiFaces() const
+Mesh::TIndexList Mesh::Face::neiFaces() const
 {
 	TIndexList ret;
 	for(int i = 0; i < size(); ++i)
@@ -304,7 +304,7 @@ RMesh::TIndexList RMesh::Face::neiFaces() const
 	return ret;
 }
 
-bool RMesh::Face::isNeiFace(int findex) const
+bool Mesh::Face::isNeiFace(int findex) const
 {
 	for(int i = 0; i < size(); ++i)
 	{
@@ -321,7 +321,7 @@ bool RMesh::Face::isNeiFace(int findex) const
 
 
 
-bool RMesh::find_faces_with(int vi1, int vi2, TIndexList& res) const
+bool Mesh::find_faces_with(int vi1, int vi2, TIndexList& res) const
 {
 	Vertex_const_handle v1 = find_vertex(vi1);
 	TIndexList resa, resb;
@@ -344,7 +344,7 @@ bool RMesh::find_faces_with(int vi1, int vi2, TIndexList& res) const
 }
 
 
-void RMesh::finalize(bool needEdges)
+void Mesh::finalize(bool needEdges)
 {
 	buildVerticesInFaces();
 
@@ -370,16 +370,16 @@ void RMesh::finalize(bool needEdges)
 
 
 
-number_type RMesh::compute_triangle_surfaces()
+float Mesh::compute_triangle_surfaces()
 {
 	m_totalSurface = 0.0;
 	for(int i = 0; i < numFaces(); ++i)
 	{
 		Face &face = m_face[i];
 
-		Vec v1(face.vertex(1)->point(), face.vertex(0)->point());
-		Vec v2(face.vertex(2)->point(), face.vertex(0)->point());
-		Vec cross = Vec::crossProd(v1, v2);
+		Vec3 v1(face.vertex(1)->point(), face.vertex(0)->point());
+		Vec3 v2(face.vertex(2)->point(), face.vertex(0)->point());
+		Vec3 cross = Vec3::crossProd(v1, v2);
 	
 		face.surface() = cross.length() / 2.0f;
 		m_totalSurface += face.surface();
@@ -390,45 +390,45 @@ number_type RMesh::compute_triangle_surfaces()
 
 
 
-void RMesh::reverseNormals()
+void Mesh::reverseNormals()
 {
-	RMesh::Vertex_iterator vit = vertices_begin();
-	RMesh::Vertex_iterator vit_end = vertices_end();
+	Mesh::Vertex_iterator vit = vertices_begin();
+	Mesh::Vertex_iterator vit_end = vertices_end();
 
 	for (;vit != vit_end; vit++) {
 		vit->normal() *= -1.0f;
 	}
 
-	RMesh::Facet_iterator fit = facets_begin();
-	RMesh::Facet_iterator fit_end = facets_end();
+	Mesh::Face_iterator fit = faces_begin();
+	Mesh::Face_iterator fit_end = faces_end();
 
 	for (;fit != fit_end; fit++) {
 		fit->normal() *= -1.0f;
 	}
 }
 
-void RMesh::reverseFaces()
+void Mesh::reverseFaces()
 {
 
-	RMesh::Facet_iterator fit = facets_begin();
-	RMesh::Facet_iterator fit_end = facets_end();
+	Mesh::Face_iterator fit = faces_begin();
+	Mesh::Face_iterator fit_end = faces_end();
 
 	for (;fit != fit_end; fit++) {
 		fit->reverseOrder();
 	}
 }
 
-Vec RMesh::polyCenterOfMass() const
+Vec3 Mesh::polyCenterOfMass() const
 {
-	number_type c[3] = { 0.0, 0.0, 0.0 };
-	number_type centerWeight = 0.0;
+	float c[3] = { 0.0, 0.0, 0.0 };
+	float centerWeight = 0.0;
 
-	for (RMesh::Facet_const_iterator f = facets_begin(); f != facets_end(); ++f)
+	for (Mesh::Face_const_iterator f = faces_begin(); f != faces_end(); ++f)
 	{
-		//Mesh::Facet_handle f = mesh->find_facet(m_facets[i]);
-		Vec fcenter = f->center();
+		//Mesh::Face_handle f = mesh->find_facet(m_facets[i]);
+		Vec3 fcenter = f->center();
 
-		number_type facetSurface = f->surface();
+		float facetSurface = f->surface();
 		c[0] += fcenter.x * facetSurface;
 		c[1] += fcenter.y * facetSurface;
 		c[2] += fcenter.z * facetSurface;
@@ -439,13 +439,13 @@ Vec RMesh::polyCenterOfMass() const
 	c[0] /= centerWeight;
 	c[1] /= centerWeight;
 	c[2] /= centerWeight;
-	return Vec(c[0], c[1], c[2]);
+	return Vec3(c[0], c[1], c[2]);
 
 }
 
 
 
-void RMesh::saveSubMeshFaceValuesTxt(const QString& filename, const TIndexList& facesList, float (RMesh::Face::*srcgetter)() const) const
+void Mesh::saveSubMeshFaceValuesTxt(const QString& filename, const TIndexList& facesList, float (Mesh::Face::*srcgetter)() const) const
 {
 	QFile file(filename);
 	file.open(QFile::WriteOnly | QFile::Truncate);
@@ -459,7 +459,7 @@ void RMesh::saveSubMeshFaceValuesTxt(const QString& filename, const TIndexList& 
 	}
 }
 
-void RMesh::saveSubMesh(const QString& filename, const TIndexList& facesList) const
+void Mesh::saveSubMesh(const QString& filename, const TIndexList& facesList) const
 {
 	QFile file(filename);
 	file.open(QFile::WriteOnly | QFile::Truncate);
@@ -506,7 +506,7 @@ void RMesh::saveSubMesh(const QString& filename, const TIndexList& facesList) co
 			v = find_vertex(newToOld[i]);
 		else
 			v = find_vertex(i);
-		const Vec &p = v->point();
+		const Vec3 &p = v->point();
 		out << p.x << " " << p.y << " " << p.z << "\n";
 	}
 
@@ -527,7 +527,7 @@ void RMesh::saveSubMesh(const QString& filename, const TIndexList& facesList) co
 }
 
 
-void RMesh::translateCenter(const Vec& c)
+void Mesh::translateCenter(const Vec3& c)
 {
 	for(int i = 0; i < numVtx(); ++i)
 	{
@@ -539,10 +539,10 @@ void RMesh::translateCenter(const Vec& c)
 }
 
 
-void RMesh::rescaleAndCenter(float destdialen)
+void Mesh::rescaleAndCenter(float destdialen)
 {
-	Vec dia = m_max - m_min;
-	Vec center = (m_max + m_min) / 2.0;
+	Vec3 dia = m_max - m_min;
+	Vec3 center = (m_max + m_min) / 2.0;
 
 	float dialen = qMax(dia.x, dia.y);
 	float scale = destdialen/dialen;
@@ -550,7 +550,7 @@ void RMesh::rescaleAndCenter(float destdialen)
 	for(int i = 0; i < numVtx(); ++i)
 	{
 		Vertex_handle v = find_vertex(i);
-		Vec &p = v->point();
+		Vec3 &p = v->point();
 		p -= center;
 		p *= scale;
 	}
@@ -560,11 +560,11 @@ void RMesh::rescaleAndCenter(float destdialen)
 }
 
 
-void RMesh::transformVertices(const TrMatrix& tr)
+void Mesh::transformVertices(const TrMatrix& tr)
 {
 	for(Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
 	{
-		Vec& p = it->m_p;
+		Vec3& p = it->m_p;
 		p = tr.multVec(Vec4(p)).toVec();
 	}
 
@@ -577,11 +577,11 @@ void RMesh::transformVertices(const TrMatrix& tr)
 }
 
 
-void RMesh::removeVertex(int index)
+void Mesh::removeVertex(int index)
 {
 	find_vertex(index)->m_tran = 0;
 }
-void RMesh::commitRemove()
+void Mesh::commitRemove()
 {
 	// first go over all the points and tell them where they go
 	int count = 0;
@@ -622,8 +622,8 @@ void RMesh::commitRemove()
 	}
 
 	// remove faces
-	Facet_iterator fit = facets_begin();
-	while(fit != facets_end())
+	Face_iterator fit = faces_begin();
+	while(fit != faces_end())
 	{
 		if (fit->m_index == -1)
 			fit = m_face.erase(fit);
@@ -634,15 +634,15 @@ void RMesh::commitRemove()
 
 
 // compute average edge length around a vertex
-float RMesh::min_edge_length_around(Vertex_handle pVertex)
+float Mesh::min_edge_length_around(Vertex_handle pVertex)
 {
 	float min_edge_length = FLT_MAX;
 
-	RMesh::TIndexList circVtx = pVertex->neiVertices();
+	Mesh::TIndexList circVtx = pVertex->neiVertices();
 	for(int i = 0; i < circVtx.size(); ++i)
 	{
-		RMesh::Vertex_handle cVertex = find_vertex(circVtx[i]);
-		Vec vec = pVertex->point() - cVertex->point();
+		Mesh::Vertex_handle cVertex = find_vertex(circVtx[i]);
+		Vec3 vec = pVertex->point() - cVertex->point();
 		float len = vec.length();
 		if (len < min_edge_length)
 			min_edge_length = len;
@@ -653,7 +653,7 @@ float RMesh::min_edge_length_around(Vertex_handle pVertex)
 #if 0
 
 
-void RMesh::calcCurvature(int ringSize)
+void Mesh::calcCurvature(int ringSize)
 {
 	m_vtxCurvature.resize(numVtx());
 
@@ -663,7 +663,7 @@ void RMesh::calcCurvature(int ringSize)
 }
 
 
-Curvature RMesh::calcCurvatureFor(int vtxIndex)
+Curvature Mesh::calcCurvatureFor(int vtxIndex)
 {
 	m_vtxCurvature.resize(numVtx());
 
@@ -674,7 +674,7 @@ Curvature RMesh::calcCurvatureFor(int vtxIndex)
 }
 
 
-void RMesh::calcDotCurve()
+void Mesh::calcDotCurve()
 {
 	m_vtxDotCurve.resize(numVtx());
 	for(Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
@@ -686,11 +686,11 @@ void RMesh::calcDotCurve()
 		for(int i = 0; i < nei.size(); ++i)
 		{
 			Vertex_handle vc = find_vertex(nei[i]);
-			Vec vv = vc->point() - vh->point();
+			Vec3 vv = vc->point() - vh->point();
 			vv.unitize();
-		//	if (Vec::dotProd(vv, vh->normal()) < 0.0f)
+		//	if (Vec3::dotProd(vv, vh->normal()) < 0.0f)
 		//		++negdot;
-			dotsum += Vec::dotProd(vv, vh->normal());
+			dotsum += Vec3::dotProd(vv, vh->normal());
 		}
 		//vh->dotCurve() = (((float)nei.size() / 2.0) - negdot) / (float)nei.size();
 		vh->dotCurve() = dotsum;
@@ -700,34 +700,34 @@ void RMesh::calcDotCurve()
 }
 
 
-void RMesh::buildKdTree()
+void Mesh::buildKdTree()
 {
-	m_kdtree.createKdTree(m_vtx, &RMesh::Vertex::point);
+	m_kdtree.createKdTree(m_vtx, &Mesh::Vertex::point);
 }
 
 
-float RMesh::distFromMesh(const Vec& v)
+float Mesh::distFromMesh(const Vec3& v)
 {
 	int i = m_kdtree.findNearest(v);
-	RMesh::Vertex_handle vh = find_vertex(i);
-	const Vec &cvtx = vh->point();
-	float d = Vec::distance(v, cvtx);
-	Vec tov = cvtx - v;
-	if (Vec::dotProd(tov, vh->normal()) < 0)
+	Mesh::Vertex_handle vh = find_vertex(i);
+	const Vec3 &cvtx = vh->point();
+	float d = Vec3::distance(v, cvtx);
+	Vec3 tov = cvtx - v;
+	if (Vec3::dotProd(tov, vh->normal()) < 0)
 		d = -d;
 	return d;
 }
 
 
 
-int RMesh::addCloseEdge(int a, int b)
+int Mesh::addCloseEdge(int a, int b)
 {
 	m_closeEdge.push_back(ClosenessEdge(a, b));
 	return m_closeEdge.size() - 1;
 }
 
 
-void RMesh::makeClosenessEdges()
+void Mesh::makeClosenessEdges()
 {
 	int hasCount = 0;
 	TSmallLargeEdgeI makec;
@@ -741,7 +741,7 @@ void RMesh::makeClosenessEdges()
 		++hasCount;
 		for(int cfi = 0; cfi < clsf.size(); ++cfi)
 		{
-			addEdgeOnceUsing(fi, clsf[cfi], makec, &RMesh::addCloseEdge);
+			addEdgeOnceUsing(fi, clsf[cfi], makec, &Mesh::addCloseEdge);
 		}
 	}
 
@@ -757,10 +757,10 @@ void RMesh::makeClosenessEdges()
 //******************************************************************************************//
 
 // 
-// Ray_3 get_normal_opposite(const RMesh::Vertex_handle& v)
+// Ray_3 get_normal_opposite(const Mesh::Vertex_handle& v)
 // {
 // 	//direction opposite the normal
-// 	Vec direction = v->normal().toCgal() * -1;	
+// 	Vec3 direction = v->normal().toCgal() * -1;	
 // 
 // 	//construct segment from vertex pointing towards direction
 // 	Ray_3 ray(
@@ -770,10 +770,10 @@ void RMesh::makeClosenessEdges()
 // 	return ray;
 // }
 // 
-// Ray_3 get_normal_opposite(const Vec& p, const Vec& n)
+// Ray_3 get_normal_opposite(const Vec3& p, const Vec3& n)
 // {
 // 	//direction opposite the normal
-// 	Vec direction = n * -1;	
+// 	Vec3 direction = n * -1;	
 // 
 // 	//construct segment from vertex pointing towards direction
 // 	Ray_3 ray(
@@ -786,13 +786,13 @@ void RMesh::makeClosenessEdges()
 
 
 
-void RMesh::compute_feature_range_on_facets(number_type& minVal, number_type& maxVal, float (RMesh::Face::*datgetter)() const)
+void Mesh::compute_feature_range_on_facets(float& minVal, float& maxVal, float (Mesh::Face::*datgetter)() const)
 {
 	float minFaceFeature = FLT_MAX;
 	float maxFaceFeature = -FLT_MAX;
 
-	RMesh::Facet_const_iterator it = facets_begin();
-	RMesh::Facet_const_iterator it_end = facets_end();
+	Mesh::Face_const_iterator it = faces_begin();
+	Mesh::Face_const_iterator it_end = faces_end();
 	for (;it != it_end; it++) 
 	{
 		if (((*it).*datgetter)() < minFaceFeature) 
@@ -809,25 +809,25 @@ void RMesh::compute_feature_range_on_facets(number_type& minVal, number_type& ma
 
 struct RVertexCompare 
 {
-	bool operator()(const RMesh::Vertex_handle& a, const RMesh::Vertex_handle& b) const
+	bool operator()(const Mesh::Vertex_handle& a, const Mesh::Vertex_handle& b) const
 	{	// apply operator< to operands
 		return (*a < *b);
 	}
 };
 struct RVertexDistanceLess 
 {
-	bool operator() (const RMesh::Vertex_handle& v1, const RMesh::Vertex_handle& v2) {
+	bool operator() (const Mesh::Vertex_handle& v1, const Mesh::Vertex_handle& v2) {
 		return v1->distance() > v2->distance();
 	}
 };
 
 
-typedef std::priority_queue<RMesh::Vertex_handle, std::vector<RMesh::Vertex_handle>, RVertexDistanceLess> TVertexDistanceHeap; // vertexDistanceHeap_t
+typedef std::priority_queue<Mesh::Vertex_handle, std::vector<Mesh::Vertex_handle>, RVertexDistanceLess> TVertexDistanceHeap; // vertexDistanceHeap_t
 
 
-void RMesh::dijkstra(RMesh::Vertex_handle v)
+void Mesh::dijkstra(Mesh::Vertex_handle v)
 {
-	for (RMesh::Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
+	for (Mesh::Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
 	{
 		it->distance(FLT_MAX);
 		//it->m_visited = false;
@@ -840,7 +840,7 @@ void RMesh::dijkstra(RMesh::Vertex_handle v)
 	v->distance(0.0);	
 	vdh.push(v);
 	do {
-		RMesh::Vertex_handle t = vdh.top();
+		Mesh::Vertex_handle t = vdh.top();
 		vdh.pop();
 		//t->visited = true;
 
@@ -848,8 +848,8 @@ void RMesh::dijkstra(RMesh::Vertex_handle v)
 
 		for (int vii = 0; vii < vnei.size(); ++vii)
 		{
-			RMesh::Vertex_handle n = find_vertex(vnei[vii]);
-			float alt = t->distance() + Vec::distance(t->point(), n->point());
+			Mesh::Vertex_handle n = find_vertex(vnei[vii]);
+			float alt = t->distance() + Vec3::distance(t->point(), n->point());
 			if (alt < n->distance()) 
 			{
 				n->distance() = alt;
@@ -872,10 +872,10 @@ void RMesh::dijkstra(RMesh::Vertex_handle v)
 
 
 
-void RMesh::computeCentricity(QWidget* guiParent)
+void Mesh::computeCentricity(QWidget* guiParent)
 {
-	//	number_type maxCentricity = -FLT_MAX;
-	//	number_type minCentricity = FLT_MAX;
+	//	float maxCentricity = -FLT_MAX;
+	//	float minCentricity = FLT_MAX;
 
 	QProgressDialog *prog = NULL;
 	if (guiParent)
@@ -883,7 +883,7 @@ void RMesh::computeCentricity(QWidget* guiParent)
 		
 	int counter = 0;
 	int total = size_of_vertices();
-	for (RMesh::Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
+	for (Mesh::Vertex_iterator it = vertices_begin(); it != vertices_end(); ++it)
 	{
 		if (guiParent)
 		{
@@ -901,7 +901,7 @@ void RMesh::computeCentricity(QWidget* guiParent)
 
 		dijkstra(&*it);
 
-		for (RMesh::Vertex_iterator n = vertices_begin(); n != vertices_end(); ++n)
+		for (Mesh::Vertex_iterator n = vertices_begin(); n != vertices_end(); ++n)
 		{
 			if (n->distance() != FLT_MAX) 
 			{
@@ -937,9 +937,9 @@ void RMesh::computeCentricity(QWidget* guiParent)
 	float featureMin = FLT_MAX;
 	float featureMax = -FLT_MAX;
 
-	for (RMesh::Facet_iterator fit = facets_begin(); fit != facets_end(); ++fit)
+	for (Mesh::Face_iterator fit = faces_begin(); fit != faces_end(); ++fit)
 	{
-		Facet_handle fh = &*fit;
+		Face_handle fh = &*fit;
 		float val = 0.0;
 		for(int fii = 0; fii < fh->size(); ++fii)
 		{
@@ -957,9 +957,9 @@ void RMesh::computeCentricity(QWidget* guiParent)
 	}
 
 	float divwith = 1.0 / (featureMax - featureMin);
-	for (RMesh::Facet_iterator fit = facets_begin(); fit != facets_end(); ++fit)
+	for (Mesh::Face_iterator fit = faces_begin(); fit != faces_end(); ++fit)
 	{
-		Facet_handle fh = &*fit;
+		Face_handle fh = &*fit;
 		fh->centricity() = (fh->centricity() - featureMin) * divwith;
 	}
 
@@ -967,11 +967,11 @@ void RMesh::computeCentricity(QWidget* guiParent)
 }
 
 
-void RMesh::normalizeByComponents()
+void Mesh::normalizeByComponents()
 {
 	vertexSet_t allVertices;	
 
-	for (RMesh::Vertex_iterator vit = vertices_begin(); vit != vertices_end(); vit++) {
+	for (Mesh::Vertex_iterator vit = vertices_begin(); vit != vertices_end(); vit++) {
 		vit->tag(0);
 		allVertices.insert(vit);
 	}	

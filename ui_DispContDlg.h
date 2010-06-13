@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'DispContDlg.ui'
+** Form generated from reading UI file 'DispContDlg.ui'
 **
-** Created: Thu Nov 26 00:37:58 2009
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Sun Jun 6 22:54:43 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_DISPCONTDLG_H
@@ -117,7 +117,7 @@ public:
         DispContDlg->setMinimumSize(QSize(208, 0));
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
-        verticalLayout->setMargin(4);
+        verticalLayout->setContentsMargins(4, 4, 4, 4);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         widget = new QWidget(DispContDlg);
         widget->setObjectName(QString::fromUtf8("widget"));
@@ -327,7 +327,7 @@ public:
         tex0cont->setObjectName(QString::fromUtf8("tex0cont"));
         horizontalLayout_7 = new QHBoxLayout(tex0cont);
         horizontalLayout_7->setSpacing(3);
-        horizontalLayout_7->setMargin(0);
+        horizontalLayout_7->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_7->setObjectName(QString::fromUtf8("horizontalLayout_7"));
         label_3 = new QLabel(tex0cont);
         label_3->setObjectName(QString::fromUtf8("label_3"));
@@ -360,7 +360,7 @@ public:
         tex1cont->setObjectName(QString::fromUtf8("tex1cont"));
         horizontalLayout_4 = new QHBoxLayout(tex1cont);
         horizontalLayout_4->setSpacing(3);
-        horizontalLayout_4->setMargin(0);
+        horizontalLayout_4->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_4->setObjectName(QString::fromUtf8("horizontalLayout_4"));
         label_4 = new QLabel(tex1cont);
         label_4->setObjectName(QString::fromUtf8("label_4"));
@@ -491,7 +491,6 @@ public:
         tex3FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
         label_8->setText(QApplication::translate("DispContDlg", "3.", 0, QApplication::UnicodeUTF8));
         tex4FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(DispContDlg);
     } // retranslateUi
 
 };

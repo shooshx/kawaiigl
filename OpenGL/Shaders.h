@@ -159,7 +159,7 @@ class Vec3Uniform : public UniformParam
 {
 public:
 	Vec3Uniform(const char* name) : UniformParam(name) {}
-	void set(const Vec& p) const
+	void set(const Vec3& p) const
 	{
 		if (m_uid != -1)
 			glUniform3fv(m_uid, 1, p.v);
@@ -246,13 +246,13 @@ public:
 	{
 		m_psize.set(size);
 	}
-	void setExternalPoint(const Vec& p) const
+	void setExternalPoint(const Vec3& p) const
 	{
 		m_externP.set(p);
 		VecS2 s(p);
 		m_externS.set(s);
 	}
-	void setConeOrigin(const Vec& p) const
+	void setConeOrigin(const Vec3& p) const
 	{
 		m_coneOrig.set(p);
 	}

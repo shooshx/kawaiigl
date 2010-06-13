@@ -37,7 +37,7 @@ struct treeData
   std::list<standardString *> childs;
 };
 
-class RMeshBuilder;
+class MeshBuilder;
 
 class CGSDParser
 {
@@ -45,7 +45,7 @@ public:
   CGSDParser(const char *fileName);
   ~CGSDParser();    
   const char *CGetGSDFileVersion() {return m_version;};
-  bool CCreateCompositeObjectFromGSD(RMeshBuilder* bld);
+  bool CCreateCompositeObjectFromGSD(MeshBuilder* bld);
 
 private:
   //void CBuildObjectMaterial(Material *objMaterial,const char *objectName,Material *matTemplate);

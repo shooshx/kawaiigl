@@ -45,7 +45,7 @@ Vec4 TrMatrix::multVec(const Vec4& v) const
 	return r;
 }
 
-Vec TrMatrix::multVec(const Vec& v) const
+Vec3 TrMatrix::multVec(const Vec3& v) const
 {
 	Vec4 v4(v);
 	Vec4 r;

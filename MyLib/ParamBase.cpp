@@ -6,8 +6,8 @@
 
 #include "Vec.h"
 // no where else to put it
-const Vec MAX_VEC(FLT_MAX, FLT_MAX, FLT_MAX), MIN_VEC(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-const Vec INVALID_COLOR = MAX_VEC;
+const Vec3 MAX_VEC(FLT_MAX, FLT_MAX, FLT_MAX), MIN_VEC(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+const Vec3 INVALID_COLOR = MAX_VEC;
 
 
 void ParamBase::reset()

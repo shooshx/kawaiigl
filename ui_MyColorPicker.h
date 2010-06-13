@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'MyColorPicker.ui'
+** Form generated from reading UI file 'MyColorPicker.ui'
 **
-** Created: Mon Oct 12 16:34:01 2009
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Sun Jun 6 22:54:44 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_MYCOLORPICKER_H
@@ -61,7 +61,7 @@ public:
         MyColorPickerClass->resize(339, 415);
         verticalLayout = new QVBoxLayout(MyColorPickerClass);
         verticalLayout->setSpacing(6);
-        verticalLayout->setMargin(11);
+        verticalLayout->setContentsMargins(11, 11, 11, 11);
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         colortriangle = new QtColorTriangle(MyColorPickerClass);
         colortriangle->setObjectName(QString::fromUtf8("colortriangle"));
@@ -199,7 +199,6 @@ public:
         proofCheck->setText(QApplication::translate("MyColorPickerClass", "Proof", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("MyColorPickerClass", "Alpha:", 0, QApplication::UnicodeUTF8));
         invalidBot->setText(QApplication::translate("MyColorPickerClass", "Set Invalid", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(MyColorPickerClass);
     } // retranslateUi
 
 };

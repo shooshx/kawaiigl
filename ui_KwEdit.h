@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'KwEdit.ui'
+** Form generated from reading UI file 'KwEdit.ui'
 **
-** Created: Fri Dec 11 14:50:28 2009
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Sun Jun 6 22:54:43 2010
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_KWEDIT_H
@@ -74,7 +74,7 @@ public:
         modelControl = new QWidget(KwEdit);
         modelControl->setObjectName(QString::fromUtf8("modelControl"));
         horizontalLayout_3 = new QHBoxLayout(modelControl);
-        horizontalLayout_3->setMargin(0);
+        horizontalLayout_3->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_3->setObjectName(QString::fromUtf8("horizontalLayout_3"));
         horizontalSpacer_2 = new QSpacerItem(23, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
 
@@ -97,7 +97,7 @@ public:
         saveBot1->setObjectName(QString::fromUtf8("saveBot1"));
         saveBot1->setMaximumSize(QSize(28, 23));
         QIcon icon;
-        icon.addPixmap(QPixmap(QString::fromUtf8("://images/save.png")), QIcon::Normal, QIcon::Off);
+        icon.addFile(QString::fromUtf8("://images/save.png"), QSize(), QIcon::Normal, QIcon::Off);
         saveBot1->setIcon(icon);
 
         horizontalLayout_3->addWidget(saveBot1);
@@ -108,7 +108,7 @@ public:
         shaderControl = new QWidget(KwEdit);
         shaderControl->setObjectName(QString::fromUtf8("shaderControl"));
         verticalLayout_6 = new QVBoxLayout(shaderControl);
-        verticalLayout_6->setMargin(0);
+        verticalLayout_6->setContentsMargins(0, 0, 0, 0);
         verticalLayout_6->setObjectName(QString::fromUtf8("verticalLayout_6"));
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName(QString::fromUtf8("horizontalLayout_2"));
@@ -177,7 +177,6 @@ public:
         saveBot2->setStatusTip(QApplication::translate("KwEdit", "Save", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_STATUSTIP
         shaderEnable->setText(QApplication::translate("KwEdit", "Enable Shaders", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(KwEdit);
     } // retranslateUi
 
 };
