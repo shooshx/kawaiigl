@@ -7,8 +7,6 @@
 #include "KwParser.h"
 #include "Pass.h"
 
-#include <boost/weak_ptr.hpp>
-
 class T2GLWidget;
 class Document;
 class Mesh;
@@ -86,7 +84,7 @@ private:
 	void paintFlat();
 	void drawPointCoords();
 	void updateTrack(IPoint* sel);
-	boost::shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd);
+	shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd);
 	void doSwapPass(int sa, int sb);
 
 	bool shouldUseProg() const;
@@ -120,7 +118,7 @@ private:
 
 	QString currentDecompile;
 
-	typedef QMap<QString, boost::shared_ptr<GlTexture> > TNoiseCache;
+	typedef QMap<QString, shared_ptr<GlTexture> > TNoiseCache;
 	TNoiseCache m_noisesCache;
 
 	friend class PointDrawer;
@@ -131,7 +129,7 @@ public:
 
 	struct TexUnit
 	{
-		boost::weak_ptr<Pass> outputOf;
+		weak_ptr<Pass> outputOf;
 	};
 	QVector<TexUnit> m_texUnits;
 };

@@ -594,37 +594,34 @@ void MyObject::saveAs(const QString& filename, const QString& format, ESaveWhat 
 		}
 		out << "],\n";
 
-		if (saveWhat == SaveFaces)
+		if (saveWhat == SaveQuads)
 		{
-			if (false)
+			out << " \"quads\" : [";
+			MyPolygon *pl = poly[0];
+			out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+			for(int i = 1; i < nPolys; ++i)
 			{
-				out << " \"quads\" : [";
-				MyPolygon *pl = poly[0];
+				pl = poly[i];
+				out << ",";
 				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
-				for(int i = 1; i < nPolys; ++i)
-				{
-					pl = poly[i];
-					out << ",";
-					out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
-				}
-				out << "]\n";
 			}
-			else
+			out << "]\n";
+		}
+		else if (saveWhat == SaveTriangles)
+		{
+			out << " \"triangles\" : [";
+			MyPolygon *pl = poly[0];
+			out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
+			out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+			for(int i = 1; i < nPolys; ++i)
 			{
-				out << " \"triangles\" : [";
-				MyPolygon *pl = poly[0];
+				pl = poly[i];
+				out << ",";
 				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
 				out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
-				for(int i = 1; i < nPolys; ++i)
-				{
-					pl = poly[i];
-					out << ",";
-					out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
-					out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
-				}
-				out << "]\n";
 			}
-		}		
+			out << "]\n";
+		}	
 		else if (saveWhat == SaveEdges)
 		{
 			// find unique pairs

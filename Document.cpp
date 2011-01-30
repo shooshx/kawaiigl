@@ -10,8 +10,6 @@
 
 #include <QFileDialog>
 
-using namespace boost; // shared_ptr
-
 // ADDTYPE
 template<> bool isEType(EParamType t, const float&) { return (t == EPFloatRange || t == EPFloat || t == EPFloatTime); }
 template<> bool isEType(EParamType t, const int& v) { return (t == EPInt || t == EPTexture); }
@@ -416,14 +414,15 @@ void Document::calcNoParse()
 
 
 #define FILTER_OBJ "object files (*.obj)"
-#define FILTER_JSON_FACES "JSON faces (*.json)"
+#define FILTER_JSON_TRI "JSON triangles (*.json)"
+#define FILTER_JSON_QUADS "JSON quads (*.json)"
 #define FILTER_JSON_LINES "JSON lines (*.json)"
 
 void Document::calcSave()
 {
 	QString selectedFilter;
 	QString filename = QFileDialog::getSaveFileName(m_main, "Save Object", sett().gui.saveDir, 
-		FILTER_OBJ ";;" FILTER_JSON_FACES ";;" FILTER_JSON_LINES, &selectedFilter);
+		FILTER_OBJ ";;" FILTER_JSON_TRI ";;" FILTER_JSON_QUADS ";;" FILTER_JSON_LINES, &selectedFilter);
 	if (filename.isEmpty())
 		return;
 
@@ -436,9 +435,13 @@ void Document::calcSave()
 	{
 		m_obj->saveAs(filename, "obj");
 	}
-	else if (selectedFilter == FILTER_JSON_FACES)
+	else if (selectedFilter == FILTER_JSON_TRI)
 	{
-		m_obj->saveAs(filename, "json");	
+		m_obj->saveAs(filename, "json", MyObject::SaveTriangles);	
+	}
+	else if (selectedFilter == FILTER_JSON_QUADS)
+	{
+		m_obj->saveAs(filename, "json", MyObject::SaveQuads);	
 	}
 	else if (selectedFilter == FILTER_JSON_LINES)
 	{

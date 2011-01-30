@@ -3,7 +3,6 @@
 #define DOCUMENT_H_INCLUDED
 
 #include <QObject>
-#include <boost/shared_ptr.hpp>
 
 #include "KwParser.h"
 #include "ProgInput.h"
@@ -135,8 +134,8 @@ private:
 public:
 	ErrorActor *m_errAct;
 	MyObject *m_frameObj, *m_obj;
-	QVector<boost::shared_ptr<Mesh> > m_meshs;
-	QVector<boost::shared_ptr<Renderable> > m_rends;
+	QVector<shared_ptr<Mesh> > m_meshs;
+	QVector<shared_ptr<Renderable> > m_rends;
 
 	AddTracker m_addTrack;
 
@@ -170,7 +169,7 @@ public:
 	// this maps passName + paramNumbae (string) to the adapter.
 	// the mapping is done to avoid multiple adapters for the same parameter
 	// TBD: need to get rid of them when they change type?
-	typedef QMap<QString, boost::shared_ptr<ParamAdapter> >  TAdaptersList;
+	typedef QMap<QString, shared_ptr<ParamAdapter> >  TAdaptersList;
 	TAdaptersList m_onCalcEvals; // things that are re-evaluated when there's a calc() call
 	TAdaptersList m_onFrameEvals; // things that are reeveluated every frame
 
@@ -192,9 +191,9 @@ public:
 	};
 
 
-	QVector<boost::shared_ptr<AttribEval> > m_attribEval;
+	QVector<shared_ptr<AttribEval> > m_attribEval;
 
-	typedef QMap<QString, boost::shared_ptr<Mesh> > TMeshIndex;
+	typedef QMap<QString, shared_ptr<Mesh> > TMeshIndex;
 	TMeshIndex m_meshIndex;
 
 	//QString m_curtext; // of model

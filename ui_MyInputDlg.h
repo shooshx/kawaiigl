@@ -1,10 +1,10 @@
 /********************************************************************************
-** Form generated from reading ui file 'MyInputDlg.ui'
+** Form generated from reading UI file 'MyInputDlg.ui'
 **
-** Created: Mon Oct 12 16:34:00 2009
-**      by: Qt User Interface Compiler version 4.5.0
+** Created: Wed Jan 26 16:57:28 2011
+**      by: Qt User Interface Compiler version 4.6.2
 **
-** WARNING! All changes made in this file will be lost when recompiling ui file!
+** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
 #ifndef UI_MYINPUTDLG_H
@@ -45,7 +45,7 @@ public:
         MyCheckDlgClass->setModal(true);
         verticalLayout_2 = new QVBoxLayout(MyCheckDlgClass);
         verticalLayout_2->setSpacing(6);
-        verticalLayout_2->setMargin(11);
+        verticalLayout_2->setContentsMargins(11, 11, 11, 11);
         verticalLayout_2->setObjectName(QString::fromUtf8("verticalLayout_2"));
         optLayout = new QVBoxLayout();
         optLayout->setSpacing(6);
@@ -102,7 +102,6 @@ public:
         okBot->setText(QApplication::translate("MyCheckDlgClass", "OK", 0, QApplication::UnicodeUTF8));
         applyBot->setText(QApplication::translate("MyCheckDlgClass", "Apply", 0, QApplication::UnicodeUTF8));
         cancelBot->setText(QApplication::translate("MyCheckDlgClass", "Cancel", 0, QApplication::UnicodeUTF8));
-        Q_UNUSED(MyCheckDlgClass);
     } // retranslateUi
 
 };

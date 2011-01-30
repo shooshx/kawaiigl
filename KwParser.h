@@ -2,7 +2,7 @@
 #ifndef KWPARSET_H_INCLUDED
 #define KWPARSET_H_INCLUDED
 
-#include <memory> // auto_ptr
+//#include <memory> // auto_ptr
 #include <vector>
 #include <string>
 

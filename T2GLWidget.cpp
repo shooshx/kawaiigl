@@ -17,8 +17,6 @@
 
 #include <GL/wglew.h>
 
-using namespace boost;
-
 // TBD 
 // halfedge sanity check, 
 // error messages on compile

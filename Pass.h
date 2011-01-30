@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QString>
 #include <QList>
-#include <boost/shared_ptr.hpp>
+#include <general.h>
 
 #include "MyLib/ParamBase.h"
 #include "DisplayConf.h"
@@ -98,7 +98,7 @@ private:
 	bool changedSinceLoad;
 };
 
-typedef boost::shared_ptr<DocSrc> DocSrcPtr;
+typedef shared_ptr<DocSrc> DocSrcPtr;
 
 class PassConf : public ParamBase
 {
@@ -222,9 +222,9 @@ public:
 };
 
 
-typedef boost::shared_ptr<Pass> PassPtr;
-typedef boost::shared_ptr<RenderPass> RenderPassPtr;
-typedef boost::shared_ptr<SwapOpPass> SwapOpPassPtr;
+typedef shared_ptr<Pass> PassPtr;
+typedef shared_ptr<RenderPass> RenderPassPtr;
+typedef shared_ptr<SwapOpPass> SwapOpPassPtr;
 
 
 class ProgKeep

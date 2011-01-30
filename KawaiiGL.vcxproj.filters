@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Main">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;moc;h;def;odl;idl;res;</Extensions>
+    </Filter>
+    <Filter Include="MyLib">
+      <UniqueIdentifier>{d80934fc-0cde-4305-ae91-2e28ee7d508e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLib\QtAdd">
+      <UniqueIdentifier>{fe4551df-5aec-4bd3-bd58-a1e1869a9ed0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyLib\GSDFile">
+      <UniqueIdentifier>{43caf026-4cc8-4e1b-98da-e4adac52f56a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine">
+      <UniqueIdentifier>{22e449e7-2bed-4989-af73-fd4137f60502}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Engine\Textures">
+      <UniqueIdentifier>{1599c202-1afa-479d-823d-b01e0f9a4710}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GUI">
+      <UniqueIdentifier>{be981b24-15b5-4de6-81ab-6822e1c9f90b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{e1e2713b-6c33-49ea-a94e-24b5b6424ccb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MyObject">
+      <UniqueIdentifier>{43fcf88f-0614-442e-84de-c9d30f7e7ceb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="general.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_CloseButton.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_CloseButton.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ConfXmls.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ConfXmls.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ControlPanel.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ControlPanel.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_DisplayConf.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_DisplayConf.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_Document.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_Document.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_GLWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_GLWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_KawaiiGL.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_KawaiiGL.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_KwEdit.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_KwEdit.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_MyColorPicker.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_MyColorPicker.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_MyDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_MyDialog.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_MyInputDlg.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_MyInputDlg.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_ParamBase.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_ParamBase.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ParamUI.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ParamUI.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_Pass.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_Pass.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_PParamsWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_PParamsWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ProgTextEdit.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ProgTextEdit.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ProjBrowser.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ProjBrowser.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_qtcolortriangle.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_qtcolortriangle.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug\moc_ShaderConfigDlg.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Release\moc_ShaderConfigDlg.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="debug\moc_T2GLWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="release\moc_T2GLWidget.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_KawaiiGL.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\ExGroupBox.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\Mesh.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\MeshIO.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\MyColorPicker.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\MyInputDlg.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\ParamBase.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\TrMatrix.cpp">
+      <Filter>MyLib</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\QtAdd\CloseButton.cpp">
+      <Filter>MyLib\QtAdd</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\QtAdd\qtcolortriangle.cpp">
+      <Filter>MyLib\QtAdd</Filter>
+    </ClCompile>
+    <ClCompile Include="MyLib\GSDFile\GSDParser.cpp">
+      <Filter>MyLib\GSDFile</Filter>
+    </ClCompile>
+    <ClCompile Include="Document.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="KwParser.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="PresetModels.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderable.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="T2GLWidget.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="GaussianGenerator.cpp">
+      <Filter>Engine\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="NoiseGenerator.cpp">
+      <Filter>Engine\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfXmls.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ControlPanel.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="KawaiiGL.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="KwEdit.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ParamUI.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="PParamsWidget.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjBrowser.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ShaderConfigDlg.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GLWidget.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\MyFrameBufferObject.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\ShaderProgram.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\Shaders.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\Texture.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="MyPolygon.cpp">
+      <Filter>MyObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ShapeIFS.cpp">
+      <Filter>MyObject</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="general.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_DispContDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_KawaiiGL.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_KwEdit.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_MyColorPicker.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_MyInputDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_PParamsWidget.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_ProjBrowser.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui_ShaderConfigDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\CtxTreeWidget.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\Mesh.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\MeshIO.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\paramSpecialization.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\TrMatrix.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\Vec.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\WidgetMenuer.h">
+      <Filter>MyLib</Filter>
+    </ClInclude>
+    <ClInclude Include="MyLib\GSDFile\GSDParser.h">
+      <Filter>MyLib\GSDFile</Filter>
+    </ClInclude>
+    <ClInclude Include="KwParser.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="PresetModels.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="ProgInput.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderable.h">
+      <Filter>Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="GaussianGenerator.h">
+      <Filter>Engine\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="NoiseGenerator.h">
+      <Filter>Engine\Textures</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\MyFrameBufferObject.h">
+      <Filter>OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="MyPoint.h">
+      <Filter>MyObject</Filter>
+    </ClInclude>
+    <ClInclude Include="MyPolygon.h">
+      <Filter>MyObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Pool.h">
+      <Filter>MyObject</Filter>
+    </ClInclude>
+    <ClInclude Include="ShapeIFS.h">
+      <Filter>MyObject</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>MyObject</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MyLib\QtAdd\QtColorTriangle">
+      <Filter>MyLib\QtAdd</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuildStep Include="OpenGL\glGlob.h">
+      <Filter>OpenGL</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="OpenGL\ShaderProgram.h">
+      <Filter>OpenGL</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="OpenGL\Shaders.h">
+      <Filter>OpenGL</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="OpenGL\Texture.h">
+      <Filter>OpenGL</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\arrow-circle-045-left.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\arrow-circle.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\arrow-down.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\arrow-switch-270.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\arrow-up.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\cross.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\doc_frag.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\doc_geom.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\doc_model.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\doc_vtx.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\gear.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\save.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\save_model.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+    <CustomBuildStep Include="images\save_shaders.png">
+      <Filter>Resource Files</Filter>
+    </CustomBuildStep>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="MyLib\ExGroupBox.h">
+      <Filter>MyLib</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\MyColorPicker.h">
+      <Filter>MyLib</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\MyDialog.h">
+      <Filter>MyLib</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\MyInputDlg.h">
+      <Filter>MyLib</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\ParamBase.h">
+      <Filter>MyLib</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\QtAdd\CloseButton.h">
+      <Filter>MyLib\QtAdd</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\QtAdd\qtcolortriangle.h">
+      <Filter>MyLib\QtAdd</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DisplayConf.h">
+      <Filter>Engine</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Document.h">
+      <Filter>Engine</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Pass.h">
+      <Filter>Engine</Filter>
+    </CustomBuild>
+    <CustomBuild Include="T2GLWidget.h">
+      <Filter>Engine</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ConfXmls.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ControlPanel.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="KawaiiGL.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="KwEdit.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ParamUI.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PParamsWidget.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProgTextEdit.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProjBrowser.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ShaderConfigDlg.h">
+      <Filter>GUI</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GLWidget.h">
+      <Filter>OpenGL</Filter>
+    </CustomBuild>
+    <CustomBuild Include="DispContDlg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="KawaiiGL.qrc">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="KawaiiGL.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="KwEdit.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\MyColorPicker.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="MyLib\MyInputDlg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="PParamsWidget.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ProjBrowser.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ShaderConfigDlg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

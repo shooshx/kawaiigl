@@ -5,10 +5,8 @@
 #include <QDialog>
 #include <QTextEdit>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-
 #include "ui_KwEdit.h"
+#include "general.h"
 #include "MyLib/MyDialog.h"
 #include "ProgInput.h"
 
@@ -64,9 +62,9 @@ struct DlgPage : public KPage
 	ShaderConfigDlg* dlg;
 };
 
-typedef boost::shared_ptr<KPage> KPagePtr;
-typedef boost::shared_ptr<EditPage> EditPagePtr;
-typedef boost::shared_ptr<DlgPage> DlgPagePtr;
+typedef shared_ptr<KPage> KPagePtr;
+typedef shared_ptr<EditPage> EditPagePtr;
+typedef shared_ptr<DlgPage> DlgPagePtr;
 
 
 class KwEdit : public MyDialog
@@ -141,7 +139,7 @@ private:
 	typedef QMap<DocElement*, KPagePtr> TPages;
 	TPages m_pages;
 
-	boost::weak_ptr<KPage> m_curEd;
+	weak_ptr<KPage> m_curEd;
 	QString m_lastLoadedProg;
 
 	Document *m_doc;

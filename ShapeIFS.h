@@ -59,8 +59,8 @@ public:
 	bool clacNormals(bool vtxNormals);
 	bool subdivide(bool smooth);
 
-	enum ESaveWhat { SaveFaces, SaveEdges };
-	void saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat = SaveFaces);
+	enum ESaveWhat { SaveTriangles, SaveQuads, SaveEdges };
+	void saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat = SaveTriangles);
 	void detachPoints();
 	
 private:

@@ -2,9 +2,6 @@
 #include "KawaiiGL.h"
 #include "Document.h"
 
-#include <boost/shared_ptr.hpp>
-using namespace boost;
-
 #define ITEM_PASS (QTreeWidgetItem::UserType + 1)
 #define ITEM_DOC (QTreeWidgetItem::UserType + 2)
 #define ITEM_OP (QTreeWidgetItem::UserType + 3)

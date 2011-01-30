@@ -3,7 +3,6 @@
 
 #include <gl/glew.h>
 #include <QGLWidget>
-#include <boost/shared_ptr.hpp>
 #include "OpenGL/Texture.h"
 
 #include "MyPoint.h"
@@ -14,7 +13,7 @@
 #define GL_END_TEXT() {	glEnable(GL_DEPTH_TEST); glPopMatrix(); glMatrixMode(GL_PROJECTION); \
 						glPopMatrix(); glMatrixMode(GL_MODELVIEW); }
 
-#define ZOOM_MIN (10)
+#define ZOOM_MIN (10) 
 #define ZOOM_MAX (700)
 
 
@@ -50,7 +49,7 @@ public slots:
 
 	virtual void updateView(int hint) { Q_UNUSED(hint); }; // updates the opengl view according to the hints
 	void doBindTexture(int index, QImage* img);
-	void doTakeTexture(int index, boost::shared_ptr<GlTexture> tex); // same thing as do bind but take an external texture
+	void doTakeTexture(int index, shared_ptr<GlTexture> tex); // same thing as do bind but take an external texture
 	void doUpdateTexture(int index, QImage* img);
 
 	void rotate(EAxis axis, int x, int y);
@@ -131,7 +130,7 @@ protected:
 
 public: //PATCH
 
-	QList<boost::shared_ptr<GlTexture> > m_textures; 
+	QList<shared_ptr<GlTexture> > m_textures; 
 	bool isTextureValid(int index)
 	{
 		return (m_textures.size() > index && m_textures[index].get() != NULL &&

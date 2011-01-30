@@ -29,7 +29,8 @@ using namespace boost::spirit::ascii;
 
 using namespace boost::spirit::arg_names;
 using namespace boost::phoenix;
-using namespace std;
+using std::string;
+using std::vector;
 
 namespace fusion = boost::fusion;
 namespace phoenix = boost::phoenix;
@@ -61,7 +62,7 @@ struct writer
 	}
 };
 
-ostream& operator<<(ostream& out, const Vec3& v)
+std::ostream& operator<<(std::ostream& out, const Vec3& v)
 {
 	out << v.toString().toStdString();
 	return out;
@@ -148,7 +149,7 @@ struct symbol_ast : public vec_ast, public IPoint
 	symbol_ast() : color(INVALID_COLOR) {}
 	symbol_ast(const vec_ast& v) : vec_ast(v), color(INVALID_COLOR)
 	{}
-	symbol_ast(const vec_ast& v, const string& name) : vec_ast(v), color(INVALID_COLOR), myname(name)
+	symbol_ast(const vec_ast& v, const std::string& name) : vec_ast(v), color(INVALID_COLOR), myname(name)
 	{}
 
 	virtual void setCoord(const Vec3& v);
@@ -166,12 +167,12 @@ struct symbol_ast : public vec_ast, public IPoint
 	{
 		return color;
 	}
-	virtual const string& getName() const
+	virtual const std::string& getName() const
 	{
 		return myname;
 	}
 
-	string myname;
+	std::string myname;
 	Vec3 color;
 };
 
@@ -304,7 +305,7 @@ boost::phoenix::function<negate_expr> neg;
 
 
 
-ostream& operator<<(ostream& out, vec_ast& v)
+std::ostream& operator<<(std::ostream& out, vec_ast& v)
 {
 	out << (*v.expr)->eval();
 	//out << v.cache;
@@ -313,7 +314,7 @@ ostream& operator<<(ostream& out, vec_ast& v)
 
 
 template<typename ValT>
-void add_sym(symbols<char, ValT>& table, const string& name, const ValT& value);
+void add_sym(symbols<char, ValT>& table, const std::string& name, const ValT& value);
 /*
 {
 	//cout << name << " : " << value << endl;
@@ -322,20 +323,20 @@ void add_sym(symbols<char, ValT>& table, const string& name, const ValT& value);
 */
 
 template<>
-void add_sym(symbols<char, symbol_ast>& table, const string& name, const symbol_ast& value)
+void add_sym(symbols<char, symbol_ast>& table, const std::string& name, const symbol_ast& value)
 {
 	//cout << "ADDV " << name << " : " << "..." << endl;
-	string::const_iterator it = name.begin();
+	std::string::const_iterator it = name.begin();
 	const symbol_ast* v = table.lookup()->find(it, name.end());
 	if (v != NULL && it == name.end()) 
 		table.remove(name.c_str());
 	table.add(name.c_str(), symbol_ast(value, name));
 }
 template<>
-void add_sym(symbols<char, float>& table, const string& name, const float& value)
+void add_sym(symbols<char, float>& table, const std::string& name, const float& value)
 {
 	//cout << "ADDN " << name << " : " << value << endl;
-	string::const_iterator it = name.begin();
+	std::string::const_iterator it = name.begin();
 	const float* v = table.lookup()->find(it, name.end());
 	if (v != NULL && it == name.end()) 
 		table.remove(name.c_str()); 
@@ -352,9 +353,9 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 		program = *statement;
 			
 		statement = (assignvec | assignnum  // vector assignment takes precedence
-			| addpoly[bind(&kwprog::report_poly, this, _1)] 
-			| loadmesh[push_back(ref(meshs), _1)]
-			| miscfunc[push_back(ref(invoked), _1)]
+			| addpoly[phoenix::bind(&kwprog::report_poly, this, _1)] 
+			| loadmesh[push_back(phoenix::ref(meshs), _1)]
+			| miscfunc[push_back(phoenix::ref(invoked), _1)]
 			)
 			>> *comment
 			; 
@@ -362,8 +363,8 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 		comment = lexeme[ (lit('#') | lit("//")) >> *(char_ - eol) >> eol];
 
 		//assignnum = (variable >> '=' >> expression)[bind(numsym.add, _1, _2)] ;
-		assignnum = (variable >> '=' >> expression)[bind(&add_sym<float>, ref(numsym), _1, _2)] ;
-		assignvec = (variable >> '=' >> vecExpression)[bind(&add_sym<symbol_ast>, ref(vecsym), _1, _2)] ;
+		assignnum = (variable >> '=' >> expression)[phoenix::bind(&add_sym<float>, ref(numsym), _1, _2)] ;
+		assignvec = (variable >> '=' >> vecExpression)[phoenix::bind(&add_sym<symbol_ast>, ref(vecsym), _1, _2)] ;
 
 		addpoly = 
 			(lit("add") >> '(' >> get_name[push_back(_val, _1)] 
@@ -443,17 +444,17 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 
 	}
 
-	void report_poly(const vector<string>& v)
+	void report_poly(const std::vector<std::string>& v)
 	{
 		if (m_verbose)
 		{
-			std::for_each(v.begin(), v.end(), cout << boost::lambda::_1 << ", ");
-			cout << "\n";
+			std::for_each(v.begin(), v.end(), std::cout << boost::lambda::_1 << ", ");
+			std::cout << "\n";
 		}
 		polygons.push_back(v);
 	}
 
-// 	void report_mesh(const string& v)
+// 	void report_mesh(const std::string& v)
 // 	{
 // 		meshs.push_back(v);
 // 	}

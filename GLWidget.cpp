@@ -5,8 +5,6 @@
 #include <QtOpenGL>
 #include <QActionGroup>
 
-using namespace boost;
-
 QGLFormat g_format;
 
 // used to promote stuff to public

@@ -21,6 +21,7 @@
 #include <QtGlobal>
 #include <QVector>
 #include <string>
+#include <memory>
 using namespace std;
 
 #include "MyLib/Vec.h"

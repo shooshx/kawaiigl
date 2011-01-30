@@ -22,10 +22,6 @@
 
 #include "MyLib/QtAdd/CloseButton.h"
 
-#include <boost/shared_ptr.hpp>
-
-using namespace boost;
-
 
 class OffsetData : public QTextBlockUserData
 {
