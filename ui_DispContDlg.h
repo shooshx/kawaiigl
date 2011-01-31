@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DispContDlg.ui'
 **
-** Created: Wed Jan 26 16:57:28 2011
+** Created: Mon Jan 31 12:37:16 2011
 **      by: Qt User Interface Compiler version 4.6.2
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!

@@ -51,6 +51,7 @@ Document::Document(KawaiiGL* mainc)
 	//,m_inputUnit(-1), m_outputUnit(-1),
 	,m_confxmls(mainc)
 	,m_shaderEnabled(false)
+	,m_inCalc(false)
 {
 	connect(&m_conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
 	connect(&m_conf.materialCol, SIGNAL(changed()), this, SLOT(calcNoParse())); 
@@ -431,21 +432,37 @@ void Document::calcSave()
 	if (!m_obj)
 		calc(NULL, false); // can this happen?
 
+	
+	QFile file(filename);
+	if (!file.open(QFile::WriteOnly))
+	{
+		printf("unable to open file %s\n", filename.toAscii().data());
+		return;
+	}
+
+	file.setTextModeEnabled(true);
+	QTextStream out(&file);
+
 	if (selectedFilter == FILTER_OBJ)
 	{
-		m_obj->saveAs(filename, "obj");
+		m_obj->saveAs(out, "obj");
 	}
 	else if (selectedFilter == FILTER_JSON_TRI)
 	{
-		m_obj->saveAs(filename, "json", MyObject::SaveTriangles);	
+		m_obj->saveAs(out, "json", MyObject::SaveTriangles);
+		foreach(const shared_ptr<Mesh>& mesh, m_meshs)
+		{
+			JsonWriter writer(mesh.get());
+			writer.write(out);
+		}
 	}
 	else if (selectedFilter == FILTER_JSON_QUADS)
 	{
-		m_obj->saveAs(filename, "json", MyObject::SaveQuads);	
+		m_obj->saveAs(out, "json", MyObject::SaveQuads);
 	}
 	else if (selectedFilter == FILTER_JSON_LINES)
 	{
-		m_obj->saveAs(filename, "json", MyObject::SaveEdges);	
+		m_obj->saveAs(out, "json", MyObject::SaveEdges);	
 	}
 	else
 	{
@@ -490,7 +507,7 @@ struct MeshAdder : public StringAdder
 	MeshAdder(Document* doc) : m_doc(doc) {}
 	virtual void operator()(const string& s)
 	{
-		QString filename = QString::fromStdString(s).toLower();
+		QString filename = QString(s.c_str()).toLower();
 		Document::TMeshIndex::iterator it = m_doc->m_meshIndex.find(filename);
 		shared_ptr<Mesh> mesh;
 		if (it != m_doc->m_meshIndex.end())
@@ -527,6 +544,11 @@ struct FuncAdder : public StringAdder
 
 void Document::calc(DocSrc* src, bool doParse)
 {
+	// prevent recursive calls which occur due to syntax highlighing
+	if (m_inCalc)
+		return;
+	m_inCalc = true; 
+
 	if (doParse)
 	{
 		m_meshs.clear();
@@ -594,6 +616,7 @@ void Document::calc(DocSrc* src, bool doParse)
 	g_alloc.checkMaxAlloc(); // pool maintainance
 
 	emit modelChanged();
+	m_inCalc = false;
 }
 
 
@@ -908,14 +931,14 @@ struct TangentAttribEval : public Document::AttribEval
 	}
 	virtual bool initWithMesh(const Mesh *rmesh)
 	{
-		m_enabled = rmesh->hasVtxProp(MPROP_TANGENT);
+		m_enabled = rmesh->hasVtxProp(Prop_Tangent);
 		return m_enabled;
 	}
 	virtual void setAttribVal(Mesh::Vertex_const_handle vh)
 	{
 		if (!m_enabled)
 			return;
-		m_prog->setAttrib(vh->prop<Vec3>(MPROP_TANGENT), index);
+		m_prog->setAttrib(vh->prop<Vec3>(Prop_Tangent), index);
 	}
 	bool m_enabled;
 };
@@ -928,14 +951,14 @@ struct BiTangentAttribEval : public Document::AttribEval
 	}
 	virtual bool initWithMesh(const Mesh *rmesh)
 	{
-		m_enabled = rmesh->hasVtxProp(MPROP_BITANGENT);
+		m_enabled = rmesh->hasVtxProp(Prop_BiTangent);
 		return m_enabled;
 	}
 	virtual void setAttribVal(Mesh::Vertex_const_handle vh)
 	{
 		if (!m_enabled)
 			return;
-		m_prog->setAttrib(vh->prop<Vec3>(MPROP_BITANGENT), index);
+		m_prog->setAttrib(vh->prop<Vec3>(Prop_BiTangent), index);
 	}
 
 	bool m_enabled;

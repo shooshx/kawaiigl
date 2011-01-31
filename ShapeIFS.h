@@ -60,8 +60,9 @@ public:
 	bool subdivide(bool smooth);
 
 	enum ESaveWhat { SaveTriangles, SaveQuads, SaveEdges };
-	void saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat = SaveTriangles);
+	void saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat = SaveTriangles);
 	void detachPoints();
+	void makePointNei();
 	
 private:
 	///////////////////// structures for startup

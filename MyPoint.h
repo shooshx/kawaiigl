@@ -54,13 +54,17 @@ class MyPoint
 {
 public:
 	MyPoint(float inX = 0.0, float inY = 0.0, float inZ = 0.0)
-		:p(inX, inY, inZ), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
+		:p(inX, inY, inZ), he(NULL), touched(false), col(INVALID_COLOR), name(NULL), nei(NULL) { ++g_ctorCount; }
 	MyPoint(const MyPoint& a)
-		:p(a.p), he(NULL), touched(false), col(INVALID_COLOR), name(a.name) { ++g_ctorCount; }
+		:p(a.p), he(NULL), touched(false), col(INVALID_COLOR), name(a.name), nei(NULL) { ++g_ctorCount; }
 	explicit MyPoint(const Vec3& c) 
-		:p(c), he(NULL), touched(false), col(INVALID_COLOR), name(NULL) { ++g_ctorCount; }
+		:p(c), he(NULL), touched(false), col(INVALID_COLOR), name(NULL), nei(NULL) { ++g_ctorCount; }
 
-	~MyPoint() { ++g_dtorCount; }
+	~MyPoint() 
+	{ 
+		if (nei) delete nei;
+		++g_dtorCount; 
+	}
 
 	void copyTo(MyPoint& to) const
 	{
@@ -92,6 +96,7 @@ public:
 	int index;
 	Vec3 col;
 	const std::string* name; // a non owning pointer to the ast parsed tree
+	QList<MyPoint> *nei; // neighbors of this point
 
 	// managment
 	static int g_ctorCount, g_dtorCount;

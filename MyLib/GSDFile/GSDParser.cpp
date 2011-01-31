@@ -136,18 +136,18 @@ bool CGSDParser::CCreateCompositeObjectFromGSD(MeshBuilder *bld)
 	bld->startSurface(o->vC, o->iC / 3, 3); // no initial guess
 	bld->setVtxStart(0);
 	bld->setHas(true, false);
-	bld->createVtxProp<Vec2>(0); // tex-coord
-	bld->createVtxProp<Vec3>(1); // tangent
-	bld->createVtxProp<Vec3>(2); // bitangent
+	bld->createVtxProp<Vec2>(Prop_TexCoord); // tex-coord
+	bld->createVtxProp<Vec3>(Prop_Tangent); // tangent
+	bld->createVtxProp<Vec3>(Prop_BiTangent); // bitangent
 
 	for(uint i = 0; i < o->vC; ++i)
 	{
 		int ti = 3 * i;
 		int index = bld->addVtx(o->Geometry[ti], o->Geometry[ti + 1], o->Geometry[ti + 2]);
 		bld->setNormal(index, o->Normals[ti], o->Normals[ti + 1], o->Normals[ti + 2]);
-		bld->setVtxProp(0, index, o->TexCoord[i * 2], o->TexCoord[i * 2 + 1]);
-		bld->setVtxProp(1, index, o->Tangent[i * 3], o->Tangent[i * 3 + 1], o->Tangent[i * 3 + 2]);
-		bld->setVtxProp(2, index, o->Binormal[i * 3], o->Binormal[i * 3 + 1], o->Binormal[i * 3 + 2]);
+		bld->setVtxProp(Prop_TexCoord, index, o->TexCoord[i * 2], o->TexCoord[i * 2 + 1]);
+		bld->setVtxProp(Prop_Tangent, index, o->Tangent[i * 3], o->Tangent[i * 3 + 1], o->Tangent[i * 3 + 2]);
+		bld->setVtxProp(Prop_BiTangent, index, o->Binormal[i * 3], o->Binormal[i * 3 + 1], o->Binormal[i * 3 + 2]);
 	}
 
 	for(uint i = 0; i < o->iC; i += 3)

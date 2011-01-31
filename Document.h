@@ -132,7 +132,7 @@ private:
 	KawaiiGL *m_main;
 
 public:
-	ErrorActor *m_errAct;
+	ErrorActor *m_errAct; // for syntax error highlighting
 	MyObject *m_frameObj, *m_obj;
 	QVector<shared_ptr<Mesh> > m_meshs;
 	QVector<shared_ptr<Renderable> > m_rends;
@@ -198,6 +198,7 @@ public:
 
 	//QString m_curtext; // of model
 	KwParser m_kparser;
+	bool m_inCalc; // prevent recursive calls to calc()
 
 	//GenericShader m_prog;
 

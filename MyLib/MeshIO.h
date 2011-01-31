@@ -79,19 +79,19 @@ public:
 		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
 		v->normal() = Vec3(x, y, z);
 	}
-	virtual void setVtxProp(int p, int iv, float x, float y, float z)
+	virtual void setVtxProp(EPropName p, int iv, float x, float y, float z)
 	{
 		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
 		v->prop<Vec3>(p) = Vec3(x, y, z);
 	}
-	virtual void setVtxProp(int p, int iv, float x, float y)
+	virtual void setVtxProp(EPropName p, int iv, float x, float y)
 	{
 		Mesh::Vertex_handle v = m_rmesh->find_vertex(iv);
 		v->prop<Vec2>(p) = Vec2(x, y);
 	}
 
 	template<typename T>
-	void addEachData(int id, const T& val)
+	void addEachData(EPropName id, const T& val)
 	{
 		m_rmesh->addEachData(id, val);
 	}
@@ -102,22 +102,17 @@ public:
 	//	m_rmesh->setHasExternal(hasVtxNormals, hasFaceNormals);
 	}
 	template<typename T>
-	void createVtxProp(int id)
+	void createVtxProp(EPropName id)
 	{
 		m_rmesh->createVtxProperty<T>(id, m_vtxSz);
 	}
 	template<typename T>
-	void createFaceEach(int id)
+	void createFaceEach(EPropName id)
 	{
 		m_rmesh->createFaceEachProperty<T>(id, 0);
 	}
 
-
 	virtual void addFace(Face& f);
-	void setNeedEachTex(bool need) 
-	{
-		m_needEachTex = need;
-	}
 
 	virtual void endSurface() 
 	{
@@ -126,6 +121,8 @@ public:
 			printf("MeshBuilder: %d of %d faces contained invalid vertices\n", m_countOutFaces, m_countOutFaces + m_rmesh->numFaces());
 		}
 	}
+
+	Mesh *mesh() { return m_rmesh; }
 
 protected:
 	Mesh *m_rmesh;
@@ -207,6 +204,13 @@ private:
 	Mesh *m_rmesh;
 };
 
-
+class JsonWriter
+{
+public:
+	JsonWriter(Mesh* rmesh) : m_mesh(rmesh) {}
+	void write(QTextStream& out);
+private:
+	Mesh *m_mesh;
+};
 
 #endif // MESHIO_H_INCLUDED

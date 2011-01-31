@@ -880,6 +880,7 @@ void T2GLWidget::drawObjectPoints(const MyObject& obj)
 	glEnd();
 }
 
+// colorize - do any color at all (false for lines drawing)
 void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 {
 	if (rmesh->numFaces() == 0)
@@ -888,8 +889,11 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 	bool vtxNormals = conf.bVtxNormals;
 	bool revNormals = false;
 
-	bool vtxTexCoord = colorize && rmesh->hasVtxProp(MPROP_TEXCOORD);
-	//bool eachTexCoord = colorize && rmesh->hasEachProp(MPROP_TEXCOORD);
+	bool vtxTexCoord = colorize && rmesh->hasVtxProp(Prop_TexCoord);
+	bool doMtl = colorize && !rmesh->mtl().isEmpty();
+	int curMtl = -1, nextMtl = -1;
+
+	//bool eachTexCoord = colorize && rmesh->hasEachProp(Prop_TexCoord);
 	m_doc->initAttribMesh(rmesh);
 
 	int texUnit = (int)(conf.texAct.val());
@@ -903,6 +907,11 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 	{
 		Mesh::Face_const_handle fh = &(*it);
 
+		if (doMtl && curMtl != (nextMtl = fh->prop<int>(Prop_Group)))
+		{
+			glColor3fv(rmesh->mtl()[nextMtl].diffuseCol.v);
+			curMtl = nextMtl;
+		}
 		if (!vtxNormals)
 			glNormal3fv((revNormals?-fh->normal():fh->normal()).v);
 		for(int i = 0; i < 3; ++i)
@@ -912,9 +921,9 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 			if (vtxNormals)
 				glNormal3fv((revNormals?-vh->normal():vh->normal()).v);
 			//if (eachTexCoord)
-			//	glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(MPROP_TEXCOORD, i).v);
+			//	glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(Prop_TexCoord, i).v);
 			else if (vtxTexCoord)
-				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, vh->prop<Vec2>(MPROP_TEXCOORD).v);
+				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, vh->prop<Vec2>(Prop_TexCoord).v);
 			
 			if (shouldUseProg())
 			{

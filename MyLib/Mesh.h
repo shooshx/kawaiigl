@@ -11,6 +11,13 @@
 #include "Vec.h"
 //#include "KDTreeWrap.h"
 
+enum EPropName
+{
+	Prop_TexCoord = 0,
+	Prop_Tangent = 1,
+	Prop_BiTangent = 2,
+	Prop_Group = 3
+};
 
 class TrMatrix;
 
@@ -121,12 +128,12 @@ public:
 
 		// property of vertex
 		template<typename T>
-		const T& prop(int id) const 
+		const T& prop(EPropName id) const 
 		{ 
 			return ((PropListT<T>*)m_mymesh->vtxProps[id])->list[m_index];
 		}
 		template<typename T>
-		T& prop(int id)
+		T& prop(EPropName id)
 		{ 
 			return ((PropListT<T>*)m_mymesh->vtxProps[id])->list[m_index];
 		}
@@ -252,7 +259,7 @@ public:
 
 
 		template<typename T>
-		void setEachProp(int id, int i0, int i1, int i2)
+		void setEachProp(EPropName id, int i0, int i1, int i2)
 		{
 			PropEachListT<T>* idcs = ((PropEachListT<T>*)m_mymesh->faceEachProps[id]);
 			idcs->faceEach[m_index * 3] = i0;
@@ -261,13 +268,25 @@ public:
 		}
 
 		template<typename T>
-		Vec2 propEach(int id, int i) const
+		T propEach(EPropName id, int i) const
 		{
 			PropEachListT<T>* idcs = ((PropEachListT<T>*)m_mymesh->faceEachProps[id]);
 			int datai = idcs->faceEach[m_index * 3 + i];
 			if (datai == -1)
-				return Vec2();
+				return T();
 			return idcs->values[datai];
+		}
+
+		// property of face
+		template<typename T>
+		const T& prop(EPropName id) const 
+		{ 
+			return ((PropListT<T>*)m_mymesh->faceProps[id])->list[m_index];
+		}
+		template<typename T>
+		T& prop(int Prop_Group)
+		{ 
+			return ((PropListT<T>*)m_mymesh->faceProps[id])->list[m_index];
 		}
 
 		float& surface() { return m_surface; }
@@ -597,7 +616,7 @@ public:
 	const QString& name() const { return m_name; }
 
 	template<typename T>
-	void createVtxProperty(int id, int size = -1)
+	void createVtxProperty(EPropName id, int size = -1)
 	{
 		while (id >= vtxProps.size())
 			vtxProps.append(NULL);
@@ -605,9 +624,18 @@ public:
 			size = m_vtx.size();
 		vtxProps[id] = new PropListT<T>(size);
 	}
+	template<typename T>
+	void createFaceProperty(EPropName id, int size = -1)
+	{
+		while (id >= faceProps.size())
+			faceProps.append(NULL);
+		if (size == -1 || size == 0)
+			size = m_face.size();
+		faceProps[id] = new PropListT<T>(size);
+	}
 
 	template<typename T>
-	void createFaceEachProperty(int id, int numValues)
+	void createFaceEachProperty(EPropName id, int numValues)
 	{
 		while (id >= faceEachProps.size())
 			faceEachProps.append(NULL);
@@ -615,17 +643,25 @@ public:
 	}
 
 	template<typename T>
-	void addEachData(int id, const T& val)
+	void addEachData(EPropName id, const T& val)
 	{
 		((PropEachListT<T>*)faceEachProps[id])->values.append(val);
 	}
+	template<typename T>
+	void addFaceData(EPropName id, const T& val)
+	{
+		((PropListT<T>*)faceProps[id])->list.append(val);
+	}
 
-
-	bool hasVtxProp(int id) const
+	bool hasVtxProp(EPropName id) const
 	{
 		return (vtxProps.size() > id && vtxProps[id] != NULL);
 	}
-	bool hasEachProp(int id) const
+	bool hasFaceProp(EPropName id) const
+	{
+		return (vtxProps.size() > id && vtxProps[id] != NULL);
+	}
+	bool hasEachProp(EPropName id) const
 	{
 		return (faceEachProps.size() > id && faceEachProps[id] != NULL);
 	}
@@ -637,6 +673,16 @@ public:
 	}
 
 	//ANNKDTreeWrap m_kdtree;
+
+	class Material
+	{
+	public:
+		Material(const QString& nm = "") : name(nm) {}
+		QString name;
+		Vec3 diffuseCol;
+	};
+	QVector<Material>& mtl() { return m_mtl; }
+	const QVector<Material>& mtl() const { return m_mtl; }
 
 private:
 	Mesh(const Mesh&);
@@ -672,11 +718,12 @@ private:
 
 
 	QVector<PropList*> vtxProps;
-	QVector<PropList*> faceEachProps;
+	QVector<PropList*> faceProps;
+	QVector<PropList*> faceEachProps; // a property for every vertex in a polygon
 	// not paying for something I don't want
 	// vertex properties
 
-
+	QVector<Material> m_mtl;
 };
 
 class MeshDist : public FuncFloatVec

@@ -67,10 +67,10 @@ void MeshBuilder::addFace(Face& f)
 	if (f.size() == 3)
 	{
 		Mesh::Face& addf = m_rmesh->addTriangle(f.v[0], f.v[1], f.v[2]);
-		if (m_rmesh->hasEachProp(0))
+		if (m_rmesh->hasEachProp(Prop_TexCoord))
 		{
-			if (f.vt.size() == 3 && m_rmesh->hasEachProp(0))
-				addf.setEachProp<Vec2>(0, f.vt[0], f.vt[1], f.vt[2]);
+			if (f.vt.size() == 3 && m_rmesh->hasEachProp(Prop_TexCoord))
+				addf.setEachProp<Vec2>(Prop_TexCoord, f.vt[0], f.vt[1], f.vt[2]);
 		}
 	}
 	else
@@ -200,6 +200,10 @@ bool ObjReader::read(const QString& filename)
 	m_build->startSurface(1, 1, 3); // no initial guess
 	m_build->setVtxStart(0);
 
+	QMap<QString, int> materials;
+	int mtlCount = 0, curMtl = -1;
+	QString mtlfileName;
+
 	int addedV = 0, addedVt = 0;
 	QString line;
 	do {
@@ -207,22 +211,22 @@ bool ObjReader::read(const QString& filename)
 		if (line.length() == 0)
 			continue;
 		QStringList flds = line.split(' ', QString::SkipEmptyParts);
-		if (flds[0] == "v")
+		if (flds[0] == "v" && flds.size() >= 4)
 		{
 			m_build->addVtx(flds[1].toFloat(), flds[2].toFloat(), flds[3].toFloat());
 			++addedV;
 		}
-		else if (flds[0] == "vt")
+		else if (flds[0] == "vt" && flds.size() >= 3)
 		{
 			if (!seenTex)
 			{
-				m_build->createFaceEach<Vec2>(0);
+				m_build->createFaceEach<Vec2>(Prop_TexCoord);
 				seenTex = true;
 			}
-			m_build->addEachData<Vec2>(0, Vec2(flds[1].toFloat(), flds[2].toFloat()));
+			m_build->addEachData<Vec2>(Prop_TexCoord, Vec2(flds[1].toFloat(), flds[2].toFloat()));
 			++addedVt;
 		}
-		else if (flds[0] == "f")
+		else if (flds[0] == "f" && flds.size() >= 4)
 		{
 			//int numpnts = flds.size() - 1;
 
@@ -249,11 +253,80 @@ bool ObjReader::read(const QString& filename)
 			}
 
 			m_build->addFace(f);
+			if (curMtl != -1)
+				m_build->mesh()->addFaceData(Prop_Group, curMtl);
+		}
+		else if (flds[0] == "mtllib" && flds.size() >= 2)
+		{ // going to have materials
+			m_build->mesh()->createFaceProperty<int>(Prop_Group);
+			mtlfileName = flds[1];
+			curMtl = 0;
+		}
+		else if (flds[0] == "usemtl" && flds.size() >= 2)
+		{
+			QString mtl = flds[1];
+			if (!materials.contains(mtl))
+			{
+				materials[mtl] = mtlCount;
+				curMtl = mtlCount;
+				mtlCount++;
+			}
+			else
+			{
+				curMtl = materials[mtl];
+			}
 		}
 
 	} while (!line.isNull()); 
 
 	m_build->endSurface();
+	printf("Loaded mesh %d vertices, %d faces, %d materials\n", m_build->mesh()->numVtx(), m_build->mesh()->numFaces(), mtlCount);
+
+	if (mtlCount > 0)
+	{
+		QVector<Mesh::Material> &mmtl = m_build->mesh()->mtl();
+		mmtl.resize(materials.size());
+		foreach(const QString& name, materials.keys())
+		{
+			mmtl[materials[name]] = Mesh::Material(name);
+		}
+
+		// parse the material file
+		mtlfileName = QFileInfo(filename).absolutePath()+ "/" + mtlfileName;
+		QFile mtlfile(mtlfileName);
+		if (mtlfile.open(QIODevice::ReadOnly))
+		{
+			QTextStream tin(&mtlfile);
+			int curmtl = -1;
+			do {
+				line = tin.readLine();
+				if (line.length() == 0)
+					continue;
+				QStringList flds = line.split(' ', QString::SkipEmptyParts);
+				if (flds[0] == "newmtl" && flds.size() >= 2)
+				{
+					curmtl = -1;
+					if (materials.contains(flds[1]))
+					{
+						curmtl = materials[flds[1]];
+					}
+				}
+				else if (curmtl != -1)
+				{
+					if (flds[0] == "Kd" && flds.size() >= 4) 
+					{
+						mmtl[curmtl].diffuseCol = Vec3(flds[1].toFloat(), flds[2].toFloat(), flds[3].toFloat());
+					}
+				}
+			} while (!tin.atEnd()); 
+		}
+		else
+		{
+			printf("unable to open materials file %s\n", mtlfileName.toAscii().data());
+		}
+
+
+	}
 
 	return true;
 
@@ -346,6 +419,63 @@ void ObjWriter::writeFaces(QTextStream& out)
 		}
 		out << "\n";
 	}
+}
+
+void JsonWriter::write(QTextStream& out)
+{
+	if (m_mesh->numVtx() == 0 || m_mesh->numFaces() == 0)
+		return;
+
+	Mesh::Vertex_const_handle v = m_mesh->find_vertex(0);
+	out << "{\n \"vertexPositions\":[" << v->point().x << "," << v->point().y << "," << v->point().z;
+	for(int i = 1; i < m_mesh->numVtx(); ++i)
+	{
+		Mesh::Vertex_const_handle v = m_mesh->find_vertex(i);
+		out << "," << v->point().x << "," << v->point().y << "," << v->point().z;
+	}
+	out << "],\n \"vertexNormals\":[" << v->normal().x << "," << v->normal().y << "," << v->normal().z;
+	for(int i = 1; i < m_mesh->numVtx(); ++i)
+	{
+		Mesh::Vertex_const_handle v = m_mesh->find_vertex(i);
+		out << "," << v->normal().x << "," << v->normal().y << "," << v->normal().z;
+	}
+	out << "],\n";
+
+	int numGrp = 1;
+	QString indent;
+	if (!m_mesh->mtl().isEmpty())
+	{
+		indent = " ";
+		numGrp = m_mesh->mtl().size();
+		out << " \"groups\":{\n";
+	}
+
+	for(int gi = 0; gi < numGrp; ++gi)
+	{
+		out << indent << " \"g" << gi << "\":{\n";
+		out << indent << "  \"triangles\":[";
+		bool first = true;
+		for(int fi = 0; fi < m_mesh->numFaces(); ++fi)
+		{
+			Mesh::Face_const_handle f = m_mesh->find_facet(fi);
+			if (f->prop<int>(Prop_Group) != gi)
+				continue;
+			if (!first)
+				out << ",";
+			first = false;
+			out << f->vertexIndex(0) << "," << f->vertexIndex(1) << "," << f->vertexIndex(2);
+		}
+		out << "],\n";
+		const Mesh::Material& mtl = m_mesh->mtl()[gi];
+		out << indent << "  \"diffuseColor\":[" << mtl.diffuseCol.r << "," << mtl.diffuseCol.g << "," << mtl.diffuseCol.b << "]\n";
+		out << indent << " }"; // closing the "g"
+		if (gi < numGrp-1)
+			out << ",";
+		out << "\n";
+	}
+	out << " }\n"; // closing "groups"
+	out << "}\n"; // closing the json
+
 }
 
 

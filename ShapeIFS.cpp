@@ -541,17 +541,26 @@ public:
 	int a, b; // a<b
 };
 
-
-
-void MyObject::saveAs(const QString& filename, const QString& format, ESaveWhat saveWhat)
+/*void MyObject::makePointNei()
 {
+	for(int i = 0; i < nPolys; ++i)
+	{
+		MyPolygon *pl = poly[i];
+		for (int vi = 0; vi < pl->pnum; ++vi)
+		{
+			MyPoint *pn = pl->vtx[vi];
+			if (!pn->nei)
+				pn->nei = new QList<MyPoint>;
+			pn->nei->append(
+		}
+	} 
+}*/
 
-	QFile file(filename);
-	file.open(QFile::WriteOnly);
-	file.setTextModeEnabled(true);
-	QTextStream out(&file);
-
+void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat)
+{
 	QString fmt = format.toLower();
+	if (nPoints == 0 || nPolys == 0)
+		return;
 
 	if (fmt == "obj")
 	{

@@ -34,9 +34,14 @@
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Qt4VSPropertySheet.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Qt4VSPropertySheet.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Import Project="Qt4VSPropertySheet.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -90,7 +95,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" "/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;gdi32.lib;user32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtCored4.lib;QtXmld4.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;user32.lib;qtmaind.lib;QtOpenGLd4.lib;QtGuid4.lib;QtCored4.lib;QtXmld4.lib;glew32.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>debug\KawaiiGL.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(LIBSROOT)\glew\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -139,7 +144,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" "/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>opengl32.lib;glu32.lib;gdi32.lib;user32.lib;qtmain.lib;QtOpenGL4.lib;QtGui4.lib;QtCore4.lib;QtXml4.lib;glew32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;user32.lib;qtmain.lib;QtOpenGL4.lib;QtGui4.lib;QtCore4.lib;QtXml4.lib;glew32.lib;libgles_cm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>release\KawaiiGL.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(LIBSROOT)\glew\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -152,6 +157,14 @@
       <DataExecutionPrevention>
       </DataExecutionPrevention>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Link>
+      <AdditionalDependencies>libgles_cm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ClCompile>
+      <PreprocessorDefinitions>QT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="general.cpp" />
@@ -182,9 +195,11 @@
     </ClCompile>
     <ClCompile Include="Debug\moc_Document.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Release\moc_Document.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="release\moc_GLWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -272,9 +287,11 @@
     </ClCompile>
     <ClCompile Include="debug\moc_T2GLWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="release\moc_T2GLWidget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\qrc_KawaiiGL.cpp" />
     <ClCompile Include="MyLib\ExGroupBox.cpp" />
@@ -339,13 +356,11 @@
     <ClInclude Include="MyLib\MeshIO.h" />
     <CustomBuild Include="MyLib\MyColorPicker.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing MyColorPicker.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\MyColorPicker.h" -o "$(Configuration)\moc_MyColorPicker.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "MyLib\MyColorPicker.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\MyColorPicker.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_MyColorPicker.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing MyColorPicker.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\MyColorPicker.h" -o "$(Configuration)\moc_MyColorPicker.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "MyLib\MyColorPicker.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\MyColorPicker.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_MyColorPicker.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -363,26 +378,22 @@
     </CustomBuild>
     <CustomBuild Include="MyLib\MyInputDlg.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC MyLib\MyInputDlg.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "MyLib\MyInputDlg.h" -o "debug\moc_MyInputDlg.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;MyLib\MyInputDlg.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "MyLib\MyInputDlg.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;MyLib\MyInputDlg.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">debug\moc_MyInputDlg.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC MyLib\MyInputDlg.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "MyLib\MyInputDlg.h" -o "release\moc_MyInputDlg.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;MyLib\MyInputDlg.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "MyLib\MyInputDlg.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;MyLib\MyInputDlg.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">release\moc_MyInputDlg.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="MyLib\ParamBase.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC MyLib\ParamBase.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "MyLib\ParamBase.h" -o "debug\moc_ParamBase.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;MyLib\ParamBase.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "MyLib\ParamBase.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;MyLib\ParamBase.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">debug\moc_ParamBase.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC MyLib\ParamBase.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "MyLib\ParamBase.h" -o "release\moc_ParamBase.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;MyLib\ParamBase.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "MyLib\ParamBase.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;MyLib\ParamBase.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">release\moc_ParamBase.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="MyLib\paramSpecialization.h" />
@@ -391,25 +402,21 @@
     <ClInclude Include="MyLib\WidgetMenuer.h" />
     <CustomBuild Include="MyLib\QtAdd\CloseButton.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing CloseButton.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\QtAdd\CloseButton.h" -o "$(Configuration)\moc_CloseButton.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "MyLib\QtAdd\CloseButton.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\QtAdd\CloseButton.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_CloseButton.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing CloseButton.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\QtAdd\CloseButton.h" -o "$(Configuration)\moc_CloseButton.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "MyLib\QtAdd\CloseButton.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\QtAdd\CloseButton.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_CloseButton.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="MyLib\QtAdd\qtcolortriangle.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing qtcolortriangle.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\QtAdd\qtcolortriangle.h" -o "$(Configuration)\moc_qtcolortriangle.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "MyLib\QtAdd\qtcolortriangle.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\QtAdd\qtcolortriangle.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_qtcolortriangle.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing qtcolortriangle.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\MyLib\QtAdd\qtcolortriangle.h" -o "$(Configuration)\moc_qtcolortriangle.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "MyLib\QtAdd\qtcolortriangle.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\MyLib\QtAdd\qtcolortriangle.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_qtcolortriangle.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -428,13 +435,11 @@
     </CustomBuild>
     <CustomBuild Include="Document.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing Document.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\Document.h" -o "$(Configuration)\moc_Document.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "Document.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\Document.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_Document.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing Document.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\Document.h" -o "$(Configuration)\moc_Document.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "Document.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\Document.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_Document.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -456,87 +461,73 @@
     <ClInclude Include="Renderable.h" />
     <CustomBuild Include="T2GLWidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC T2GLWidget.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "T2GLWidget.h" -o "debug\moc_T2GLWidget.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;T2GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "T2GLWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;T2GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">debug\moc_T2GLWidget.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC T2GLWidget.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "T2GLWidget.h" -o "release\moc_T2GLWidget.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;T2GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "T2GLWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;T2GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">release\moc_T2GLWidget.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="GaussianGenerator.h" />
     <ClInclude Include="NoiseGenerator.h" />
     <CustomBuild Include="ConfXmls.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ConfXmls.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ConfXmls.h" -o "$(Configuration)\moc_ConfXmls.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "ConfXmls.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ConfXmls.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_ConfXmls.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ConfXmls.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ConfXmls.h" -o "$(Configuration)\moc_ConfXmls.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "ConfXmls.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ConfXmls.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_ConfXmls.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="ControlPanel.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ControlPanel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ControlPanel.h" -o "$(Configuration)\moc_ControlPanel.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "ControlPanel.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ControlPanel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_ControlPanel.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ControlPanel.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ControlPanel.h" -o "$(Configuration)\moc_ControlPanel.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "ControlPanel.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ControlPanel.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_ControlPanel.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="KawaiiGL.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing KawaiiGL.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\KawaiiGL.h" -o "$(Configuration)\moc_KawaiiGL.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "KawaiiGL.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\KawaiiGL.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_KawaiiGL.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing KawaiiGL.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\KawaiiGL.h" -o "$(Configuration)\moc_KawaiiGL.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "KawaiiGL.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\KawaiiGL.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_KawaiiGL.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="KwEdit.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing KwEdit.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\KwEdit.h" -o "$(Configuration)\moc_KwEdit.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "KwEdit.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\KwEdit.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_KwEdit.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing KwEdit.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\KwEdit.h" -o "$(Configuration)\moc_KwEdit.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "KwEdit.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\KwEdit.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_KwEdit.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="ParamUI.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ParamUI.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ParamUI.h" -o "$(Configuration)\moc_ParamUI.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "ParamUI.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ParamUI.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_ParamUI.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ParamUI.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ParamUI.h" -o "$(Configuration)\moc_ParamUI.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "ParamUI.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ParamUI.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_ParamUI.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="PParamsWidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing PParamsWidget.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\PParamsWidget.h" -o "$(Configuration)\moc_PParamsWidget.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "PParamsWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\PParamsWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_PParamsWidget.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing PParamsWidget.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\PParamsWidget.h" -o "$(Configuration)\moc_PParamsWidget.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "PParamsWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\PParamsWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_PParamsWidget.cpp;%(Outputs)</Outputs>
     </CustomBuild>
@@ -554,39 +545,33 @@
     </CustomBuild>
     <CustomBuild Include="ProjBrowser.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ProjBrowser.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ProjBrowser.h" -o "$(Configuration)\moc_ProjBrowser.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "ProjBrowser.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ProjBrowser.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_ProjBrowser.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ProjBrowser.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ProjBrowser.h" -o "$(Configuration)\moc_ProjBrowser.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "ProjBrowser.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ProjBrowser.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_ProjBrowser.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuild Include="ShaderConfigDlg.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Moc%27ing ShaderConfigDlg.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"  -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ShaderConfigDlg.h" -o "$(Configuration)\moc_ShaderConfigDlg.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "ShaderConfigDlg.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;.\ShaderConfigDlg.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\moc_ShaderConfigDlg.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Moc%27ing ShaderConfigDlg.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." ".\ShaderConfigDlg.h" -o "$(Configuration)\moc_ShaderConfigDlg.cpp"
-</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "ShaderConfigDlg.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;.\ShaderConfigDlg.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\moc_ShaderConfigDlg.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <CustomBuildStep Include="OpenGL\glGlob.h" />
     <CustomBuild Include="GLWidget.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MOC GLWidget.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\debug\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "GLWidget.h" -o "debug\moc_GLWidget.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\moc.exe"   -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\debug" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "GLWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">debug\moc_GLWidget.cpp;%(Outputs)</Outputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MOC GLWidget.h</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_NO_DEBUG -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT -DNDEBUG  -I"$(QTDIR)\include\QtCore\." -I"$(QTDIR)\include\QtGui\." -I"$(QTDIR)\include\QtOpenGL\." -I"$(QTDIR)\include\QtXml\." -I"$(QTDIR)\include\." -I".\." -I"$(QTDIR)\include\ActiveQt\." -I".\release\." -I"$(QTDIR)\mkspecs\win32-msvc2008\." -I"$(LIBSROOT)\boost_1_38\." -I"$(LIBSROOT)\glew\glew\include\." -I".\MyLib\." -I".\MyLib\QtAdd\." "GLWidget.h" -o "release\moc_GLWidget.cpp"
-</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\lib\Qt_4.5.0\bin\moc.exe;GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DQT_NO_DEBUG -DNDEBUG -D_WINDOWS -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_DLL -DQT_OPENGL_LIB -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT  "-I." "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I$(QTDIR)\include\QtOpenGL" "-I$(QTDIR)\include\QtXml" "-I$(QTDIR)\include" "-I$(QTDIR)\include\ActiveQt" "-I.\release" "-I$(QTDIR)\mkspecs\win32-msvc2008" "-I$(LIBSROOT)\boost_1_38" "-I$(LIBSROOT)\glew\glew\include" "-I.\MyLib" "-I.\MyLib\QtAdd" "-I." "-I." "-I." "-I." "-I." "GLWidget.h" -o "$(Configuration)\moc_%(Filename).cpp"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(QTDIR)\bin\moc.exe;GLWidget.h;%(AdditionalInputs)</AdditionalInputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">release\moc_GLWidget.cpp;%(Outputs)</Outputs>
     </CustomBuild>
     <ClInclude Include="OpenGL\MyFrameBufferObject.h" />
@@ -785,7 +770,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties QtVersion="4.5.0" />
+      <UserProperties QtVersion="4.5.0" QtVersion_x0020_Win32="$(DefaultQtVersion)" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

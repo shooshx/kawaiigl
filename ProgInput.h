@@ -6,11 +6,6 @@
 
 #include "DisplayConf.h"
 
-// properties in rmesh we're using
-#define MPROP_TEXCOORD (0)
-#define MPROP_TANGENT (1)
-#define MPROP_BITANGENT (2)
-
 
 enum EParamType
 {
