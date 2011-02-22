@@ -447,6 +447,7 @@ void KwEdit::addModelLine(const QString& line)
 	page->ed->setPlainText(merge);
 	page->ed->document()->blockSignals(false);
 
+	curEd->commit(); // set the edit change to the page
 	emit changedModel(src);
 }
 

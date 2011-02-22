@@ -893,7 +893,7 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 	bool doMtl = colorize && !rmesh->mtl().isEmpty();
 	int curMtl = -1, nextMtl = -1;
 
-	//bool eachTexCoord = colorize && rmesh->hasEachProp(Prop_TexCoord);
+	bool eachTexCoord = colorize && rmesh->hasEachProp(Prop_TexCoord);
 	m_doc->initAttribMesh(rmesh);
 
 	int texUnit = (int)(conf.texAct.val());
@@ -920,8 +920,8 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 
 			if (vtxNormals)
 				glNormal3fv((revNormals?-vh->normal():vh->normal()).v);
-			//if (eachTexCoord)
-			//	glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(Prop_TexCoord, i).v);
+			if (eachTexCoord)
+				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, fh->propEach<Vec2>(Prop_TexCoord, i).v);
 			else if (vtxTexCoord)
 				glMultiTexCoord2fv(GL_TEXTURE0 + texUnit, vh->prop<Vec2>(Prop_TexCoord).v);
 			

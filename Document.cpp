@@ -325,46 +325,70 @@ QString Document::generateFromFile()
 		return "";
 	m_conf.lastDir = QFileInfo(filename).absolutePath();
 
+	bool useMeshIO = false;
+	if (!MyInputDlg::getValue("use MeshIO (triagulate)", useMeshIO, "bla", m_main))
+		return "";
 
 	QString prog;
-
-
-	QFile file(filename);
-	file.open(QFile::ReadOnly);
-	file.setTextModeEnabled(true);
-	QTextStream in(&file);
-
-	int vi = 1;
-	while (!in.atEnd())
+	if (useMeshIO)
 	{
-		QString line = in.readLine();
-		QStringList sl = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-		if (sl.isEmpty())
-			continue;
+		Mesh mesh(filename);
+		if (!MeshIO::read_Obj(filename, &mesh))
+			return "// Error in file";
+		mesh.finalize(false);
 
-		if (sl[0] == "v")
+		mesh.rescaleAndCenter(1.0f);
+		for(int i = 0; i < mesh.numVtx(); ++i)
 		{
-			float x = sl[1].toFloat();
-			float y = sl[2].toFloat();
-			float z = sl[3].toFloat();
+			Mesh::Vertex_const_handle vh = mesh.find_vertex(i);
+			Vec3 p = vh->point();
 
-			prog += QString().sprintf("p%d={%1.2f, %1.2f, %1.2f}\n", vi++, x, y, z);
+			prog += QString().sprintf("p%d={%1.2f, %1.2f, %1.2f}\n", i, p.x, p.y, p.z);
 		}
-		else if (sl[0] == "f")
+		for(int i = 0; i < mesh.numFaces(); ++i)
 		{
-			QVector<int> ii;
-			for (int i = 1; i < sl.size(); ++i)
+			Mesh::Face_const_handle fh = mesh.find_facet(i);
+
+			prog += QString().sprintf("add(p%d,p%d,p%d)\n", fh->vertexIndex(0), fh->vertexIndex(1), fh->vertexIndex(2));
+		}
+	}
+	else
+	{
+		QFile file(filename);
+		file.open(QFile::ReadOnly);
+		file.setTextModeEnabled(true);
+		QTextStream in(&file);
+
+		int vi = 1;
+		while (!in.atEnd())
+		{
+			QString line = in.readLine();
+			QStringList sl = line.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+			if (sl.isEmpty())
+				continue;
+
+			if (sl[0] == "v")
 			{
-				QStringList sls = sl[i].split('/');
-				ii.append(sls[0].toInt());
+				float x = sl[1].toFloat();
+				float y = sl[2].toFloat();
+				float z = sl[3].toFloat();
+
+				prog += QString().sprintf("p%d={%1.2f, %1.2f, %1.2f}\n", vi++, x, y, z);
 			}
-			if (ii.size() == 4)
-				prog += QString().sprintf("add(p%d,p%d,p%d,p%d)\n", ii[0], ii[1], ii[2], ii[3]);
-			else if (ii.size() == 3)
-				prog += QString().sprintf("add(p%d,p%d,p%d)\n", ii[0], ii[1], ii[2]);
+			else if (sl[0] == "f")
+			{
+				QVector<int> ii;
+				for (int i = 1; i < sl.size(); ++i)
+				{
+					QStringList sls = sl[i].split('/');
+					ii.append(sls[0].toInt());
+				}
+				if (ii.size() == 4)
+					prog += QString().sprintf("add(p%d,p%d,p%d,p%d)\n", ii[0], ii[1], ii[2], ii[3]);
+				else if (ii.size() == 3)
+					prog += QString().sprintf("add(p%d,p%d,p%d)\n", ii[0], ii[1], ii[2]);
+			}
 		}
-
-
 	}
 
 	return prog;
@@ -520,8 +544,11 @@ struct MeshAdder : public StringAdder
 			if (MeshIO::read_Ext(filename, mesh.get()))
 			{
 				mesh->finalize(false);
+				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toAscii().data(), mesh->diagLength().toStringF().toAscii().data());
+
 				//mesh->translateCenter();
 				mesh->rescaleAndCenter(6.0f);
+				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toAscii().data(), mesh->diagLength().toStringF().toAscii().data());
 			}
 			m_doc->m_meshIndex[filename] = mesh;
 		}
@@ -553,6 +580,7 @@ void Document::calc(DocSrc* src, bool doParse)
 	{
 		m_meshs.clear();
 		m_rends.clear();
+		m_addTrack.reset(); // don't want to continue to point to smething that's going to disappear
 
 		QByteArray ba;
 		if (src != NULL)

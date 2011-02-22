@@ -102,7 +102,7 @@ public:
 		}
 
 		QVector<int> faceEach; // groups of 3 indexes into the value.
-		QVector<T> values;
+		QVector<T> values; // values repository, above indexes are to this vector.
 	};
 
 
@@ -199,7 +199,7 @@ public:
 	public:
 		Face(Mesh *rmesh = NULL, int p0 = -1, int p1 = -1, int p2 = -1, int index = -1) 
 			: m_index(index), m_mymesh(rmesh),
-  			  m_surface(0.0f), m_tran(-1)
+			  m_surface(0.0f), m_tran(-1)
 //			  m_nvolume(FLT_MAX), m_volume(FLT_MAX), m_dispnvolume(FLT_MAX),
 //			  m_cluster(0), m_part(0), m_centricity(0.0f)
 		{ 

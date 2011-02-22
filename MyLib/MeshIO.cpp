@@ -216,6 +216,7 @@ bool ObjReader::read(const QString& filename)
 			m_build->addVtx(flds[1].toFloat(), flds[2].toFloat(), flds[3].toFloat());
 			++addedV;
 		}
+
 		else if (flds[0] == "vt" && flds.size() >= 3)
 		{
 			if (!seenTex)
@@ -258,29 +259,36 @@ bool ObjReader::read(const QString& filename)
 		}
 		else if (flds[0] == "mtllib" && flds.size() >= 2)
 		{ // going to have materials
-			m_build->mesh()->createFaceProperty<int>(Prop_Group);
-			mtlfileName = flds[1];
-			curMtl = 0;
+			if (false) // disable materials for now , problem with AA_6_Star.obj
+			{
+				m_build->mesh()->createFaceProperty<int>(Prop_Group);
+				mtlfileName = flds[1];
+				curMtl = 0;
+			}
 		}
 		else if (flds[0] == "usemtl" && flds.size() >= 2)
 		{
-			QString mtl = flds[1];
-			if (!materials.contains(mtl))
+			if (!mtlfileName.isEmpty())
 			{
-				materials[mtl] = mtlCount;
-				curMtl = mtlCount;
-				mtlCount++;
-			}
-			else
-			{
-				curMtl = materials[mtl];
+				QString mtl = flds[1];
+				if (!materials.contains(mtl))
+				{
+					materials[mtl] = mtlCount;
+					curMtl = mtlCount;
+					mtlCount++;
+				}
+				else
+				{
+					curMtl = materials[mtl];
+				}
 			}
 		}
 
 	} while (!line.isNull()); 
 
 	m_build->endSurface();
-	printf("Loaded mesh %d vertices, %d faces, %d materials\n", m_build->mesh()->numVtx(), m_build->mesh()->numFaces(), mtlCount);
+	Mesh& mesh = *m_build->mesh();
+	printf("Loaded mesh %d vertices, %d faces, %d materials\n", mesh.numVtx(), mesh.numFaces(), mtlCount);
 
 	if (mtlCount > 0)
 	{
@@ -440,43 +448,61 @@ void JsonWriter::write(QTextStream& out)
 		out << "," << v->normal().x << "," << v->normal().y << "," << v->normal().z;
 	}
 	out << "],\n";
-
-	int numGrp = 1;
-	QString indent;
-	if (!m_mesh->mtl().isEmpty())
+	
+	if (m_mesh->hasEachProp(Prop_Group))
 	{
-		indent = " ";
-		numGrp = m_mesh->mtl().size();
-		out << " \"groups\":{\n";
+		int numGrp = 1;
+		QString indent;
+		if (!m_mesh->mtl().isEmpty())
+		{
+			indent = " ";
+			numGrp = m_mesh->mtl().size();
+			out << " \"groups\":{\n";
+		}
+		for(int gi = 0; gi < numGrp; ++gi)
+		{
+			out << indent << " \"g" << gi << "\":{\n";
+			out << indent << "  \"triangles\":[";
+			bool first = true;
+			for(int fi = 0; fi < m_mesh->numFaces(); ++fi)
+			{
+				Mesh::Face_const_handle f = m_mesh->find_facet(fi);
+				if (f->prop<int>(Prop_Group) != gi)
+					continue;
+				if (!first)
+					out << ",";
+				first = false;
+				out << f->vertexIndex(0) << "," << f->vertexIndex(1) << "," << f->vertexIndex(2);
+			}
+			out << "],\n";
+			const Mesh::Material& mtl = m_mesh->mtl()[gi];
+			out << indent << "  \"diffuseColor\":[" << mtl.diffuseCol.r << "," << mtl.diffuseCol.g << "," << mtl.diffuseCol.b << "]\n";
+			out << indent << " }"; // closing the "g"
+			if (gi < numGrp-1)
+				out << ",";
+			out << "\n";
+		}
+		out << " }\n"; // closing "groups"
+		out << "}\n"; // closing the json
 	}
-
-	for(int gi = 0; gi < numGrp; ++gi)
+	else
 	{
-		out << indent << " \"g" << gi << "\":{\n";
-		out << indent << "  \"triangles\":[";
+		out << "  \"triangles\":[";
 		bool first = true;
 		for(int fi = 0; fi < m_mesh->numFaces(); ++fi)
 		{
 			Mesh::Face_const_handle f = m_mesh->find_facet(fi);
-			if (f->prop<int>(Prop_Group) != gi)
-				continue;
 			if (!first)
 				out << ",";
 			first = false;
 			out << f->vertexIndex(0) << "," << f->vertexIndex(1) << "," << f->vertexIndex(2);
 		}
-		out << "],\n";
-		const Mesh::Material& mtl = m_mesh->mtl()[gi];
-		out << indent << "  \"diffuseColor\":[" << mtl.diffuseCol.r << "," << mtl.diffuseCol.g << "," << mtl.diffuseCol.b << "]\n";
-		out << indent << " }"; // closing the "g"
-		if (gi < numGrp-1)
-			out << ",";
-		out << "\n";
+		out << "]\n";
+		out << "}\n";
 	}
-	out << " }\n"; // closing "groups"
-	out << "}\n"; // closing the json
 
 }
+
 
 
 

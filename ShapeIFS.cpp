@@ -1,6 +1,7 @@
 
 #include "ShapeIFS.h"
 #include "KwParser.h"
+#include "MyLib/MyInputDlg.h"
 
 int MyPoint::g_ctorCount = 0, MyPoint::g_dtorCount = 0;
 int MyPolygon::g_ctorCount = 0, MyPolygon::g_dtorCount = 0;
@@ -556,8 +557,48 @@ public:
 	} 
 }*/
 
+Vec3 MyObject::findVtxCenter()
+{
+	Vec3 c;
+	for(int i = 1; i < nPoints; ++i)
+	{
+		MyPoint *p = points[i];
+		c += p->p;
+	}
+	c /= nPoints;
+	return c;
+}
+
+Vec3 MyObject::findBoxCenter()
+{
+	Vec3 minp, maxp;
+	for(int i = 1; i < nPoints; ++i)
+	{
+		MyPoint *p = points[i];
+		minp.pmin(p->p);
+		maxp.pmax(p->p);
+	}
+	return (minp+maxp)/2.0f;
+}
+
 void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat)
 {
+	bool moveToVtxCenter = false, moveToBoxCente = true;
+	if (!MyInputDlg::getValues("Move to Vertices center", "Move to Bounding box center", moveToVtxCenter, moveToBoxCente, "Save options", qApp->activeWindow()))
+		return;
+	Vec3 c;
+	if (moveToVtxCenter) // center object before save
+	{
+		c = findVtxCenter();
+		printf("center=%s\n", c.toStringF().toAscii().data());
+	}
+	else if (moveToBoxCente)
+	{
+		c = findBoxCenter();
+		printf("center=%s\n", c.toStringF().toAscii().data());
+	}
+
+
 	QString fmt = format.toLower();
 	if (nPoints == 0 || nPolys == 0)
 		return;
@@ -585,12 +626,26 @@ void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWha
 	{
 		out << "{\n";
 		out << " \"vertexPositions\" : [";
-		MyPoint *p = points[0];
-		out << p->p[0] << "," << p->p[1] << "," << p->p[2];
-		for(int i = 1; i < nPoints; ++i)
+		MyPoint *p = NULL;
+		if (moveToVtxCenter || moveToBoxCente)
 		{
-			p = points[i];
-			out << "," << p->p[0] << "," << p->p[1] << "," << p->p[2];
+			p = points[0];
+			out << p->p[0] - c[0] << "," << p->p[1] - c[1] << "," << p->p[2] - c[2];
+			for(int i = 1; i < nPoints; ++i)
+			{
+				p = points[i];
+				out << "," << p->p[0] - c[0] << "," << p->p[1] - c[1] << "," << p->p[2] - c[2];
+			}
+		}
+		else
+		{
+			p = points[0];
+			out << p->p[0] << "," << p->p[1] << "," << p->p[2];
+			for(int i = 1; i < nPoints; ++i)
+			{
+				p = points[i];
+				out << "," << p->p[0] << "," << p->p[1] << "," << p->p[2];
+			}
 		}
 		out << "],\n";
 		out << " \"vertexNormals\" : [";

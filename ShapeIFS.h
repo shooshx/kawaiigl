@@ -63,6 +63,8 @@ public:
 	void saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat = SaveTriangles);
 	void detachPoints();
 	void makePointNei();
+	Vec3 findVtxCenter();
+	Vec3 findBoxCenter();
 	
 private:
 	///////////////////// structures for startup
