@@ -372,63 +372,65 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			>> +(',' >> get_name[push_back(_val, _1)]) 
 			>> ')')
 			;
-		loadmesh %= (lit("load") >> '(' >> lexeme[*(char_ - ')')] >> ')');
-		miscfunc %= (functions >> '(' >> ')');
+		loadmesh %= (lit("load") >> '(' >> no_close >> ')');
+		loadmesh %= (lit("load") >> '(' >> '\"' >> lexeme[*(char_ - '\"')] >> '\"' >> ')');
+		miscfunc = (functions[push_back(_val, _1)] >> '(' >> no_close[push_back(_val, _1)] >> ')');
 
 		get_name %= raw[vecsym];
+		no_close %= lexeme[*(char_ - ')')];
 
 		variable = lexeme[ alpha[_val += _1] >> (*alnum[_val += _1]) ];
 
-        expression = 
+		expression = 
 			//float_                 [_val = _1]; shortcut for faster compilation
-            term                            [_val = _1]
-            >> *(   ('+' >> term            [_val += _1])
-                |   ('-' >> term            [_val -= _1])
-                )
-            ;
+			term                            [_val = _1]
+			>> *(   ('+' >> term            [_val += _1])
+				|   ('-' >> term            [_val -= _1])
+				)
+			;
 
-        term =
-            factor                          [_val = _1]
-            >> *(   ('*' >> factor          [_val *= _1])
-                |   ('/' >> factor          [_val /= _1])
-                )
-            ;
+		term =
+			factor                          [_val = _1]
+			>> *(   ('*' >> factor          [_val *= _1])
+				|   ('/' >> factor          [_val /= _1])
+				)
+			;
 
-        factor =
-            float_                         [_val = _1]
-		    |   numsym                      [_val = _1]
-            |   '(' >> expression           [_val = _1] >> ')'
-            |   ('-' >> factor              [_val = -_1])
-            |   ('+' >> factor              [_val = _1])
-            ;
+		factor =
+			float_                         [_val = _1]
+			|   numsym                      [_val = _1]
+			|   '(' >> expression           [_val = _1] >> ')'
+			|   ('-' >> factor              [_val = -_1])
+			|   ('+' >> factor              [_val = _1])
+			;
 
 
 		ivec %= '{' >> expression >> ',' >> expression >> ',' >> expression >> '}';
 	
 		vecExpression =
-            vecTerm                            [_val = _1]
-            >> *(   ('+' >> vecTerm            [_val += _1])
-                  | ('-' >> vecTerm            [_val -= _1])
-                )
-            ;
+			vecTerm                            [_val = _1]
+			>> *(   ('+' >> vecTerm            [_val += _1])
+				  | ('-' >> vecTerm            [_val -= _1])
+				)
+			;
 
-        vecTerm =
-            vecFactor                          [_val = _1]
-            >> *(   ('*' >> vecFactor          [_val *= _1])
+		vecTerm =
+			vecFactor                          [_val = _1]
+			>> *(   ('*' >> vecFactor          [_val *= _1])
 				  | ('*' >> expression         [_val *= _1])
-                  | ('/' >> vecFactor          [_val /= _1])
+				  | ('/' >> vecFactor          [_val /= _1])
 				  | ('/' >> expression         [_val /= _1])
-                )
-            ;
+				)
+			;
 
-        vecFactor =
-            ivec                               [_val = construct<Vec3>(_1,_2,_3)]
-		    |   vecsym                         [_val = _1]
-            |   '(' >> vecExpression           [_val = _1] >> ')'
-            |   ('-' >> vecFactor              [_val = neg(_1)]) // unary
-            |   ('+' >> vecFactor              [_val = _1])  // unary
+		vecFactor =
+			ivec                               [_val = construct<Vec3>(_1,_2,_3)]
+			|   vecsym                         [_val = _1]
+			|   '(' >> vecExpression           [_val = _1] >> ')'
+			|   ('-' >> vecFactor              [_val = neg(_1)]) // unary
+			|   ('+' >> vecFactor              [_val = _1])  // unary
 			| (expression >> '*' >> vecFactor)[_val = _2][_val *= _1] //left multiple
-            ;
+			;
 
 		ivec2 %= '{' >> expression >> ',' >> expression >> '}';
 
@@ -461,19 +463,21 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 
 	vector<vector<string> > polygons;
 	vector<string> meshs;
-	vector<string> invoked;
+	vector<vector<string> > invoked, invokedArgs;
 	symbols<char, symbol_ast> vecsym;
 	symbols<char, float> numsym;
 	
 	symbols<char, string> functions; // possible general purpose no-arguments (yet) functions. added by the user
 
+	rule<Iterator, string(), space_type> no_close;
 	rule<Iterator, string(), space_type> get_name;
 	rule<Iterator, vector<string>(), space_type> addpoly;
 	rule<Iterator, vec_ast(), space_type>  vecExpression, vecTerm, vecFactor;
 	rule<Iterator, IVec(), space_type> ivec;
 	rule<Iterator, void(), space_type> assignnum, assignvec, statement, program, comment;
 
-	rule<Iterator, string(), space_type> variable, loadmesh, miscfunc;
+	rule<Iterator, string(), space_type> variable, loadmesh;
+	rule<Iterator, vector<string>(), space_type>  miscfunc;
 	rule<Iterator, float(), space_type> expression, term, factor;
 
 	rule<Iterator, IVec2(), space_type> ivec2;
@@ -516,9 +520,9 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 		//std::for_each(meshs.begin(), meshs.end(), *adder);
 	}
 
-	virtual void callFuncs(StringAdder *adder)
+	virtual void callFuncs(MultiStringAdder *adder)
 	{
-		for(vector<string>::iterator it = invoked.begin(); it != invoked.end(); ++it)
+		for(vector<vector<string> >::iterator it = invoked.begin(); it != invoked.end(); ++it)
 		{
 			(*adder)(*it);
 		}

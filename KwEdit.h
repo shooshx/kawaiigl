@@ -67,6 +67,7 @@ typedef shared_ptr<EditPage> EditPagePtr;
 typedef shared_ptr<DlgPage> DlgPagePtr;
 
 
+
 class KwEdit : public MyDialog
 {
 	Q_OBJECT

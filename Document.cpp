@@ -62,6 +62,7 @@ Document::Document(KawaiiGL* mainc)
 
 
 	m_kparser.addFunction("wholeScreenQuad");
+	m_kparser.addFunction("torus");
 
 	// default empty program
 	RenderPassPtr p(new RenderPass("Pass 1"));
@@ -268,6 +269,46 @@ void Document::removePass(Pass* pass)
 }
 
 
+struct GatherPoints : public PointActor
+{
+	vector<Vec3> pnt;
+	virtual void operator()(const std::string& name, const Vec3& p, bool used, IPoint* handle)
+	{
+		int i = QString(name.c_str()).remove(0,1).toInt();
+		pnt.resize(qMax(i+1, (int)pnt.size()));
+		pnt[i] = p;
+	}
+};
+
+
+// some custom process the I write in C++
+// for now - mobius model processing
+QString Document::dedicatedProcess()
+{
+	GatherPoints orig;
+	m_kparser.creator()->foreachPoints(orig);
+
+	QString prog;
+	prog += "d=1\nr=1\n";
+	int mi = 0, pi = 0;
+	for(size_t i = 0; i < orig.pnt.size(); i += 4)
+	{
+		Vec3 &p0 = orig.pnt[i], &p1 = orig.pnt[i+1], &p2 = orig.pnt[i+2], &p3 = orig.pnt[i+3];
+		Vec3 m = (p0+p1+p2+p3)/4.0;
+		prog += QString().sprintf("m%d={%1.3f, %1.3f, %1.3f}*d\n", mi, m.x, m.y, m.z); 
+		p0 -= m;
+		p1 -= m;
+		p2 -= m;
+		p3 -= m;
+		prog += QString().sprintf("p%d=m%d+{%1.3f, %1.3f, %1.3f}*r\n", pi++, mi, p0.x, p0.y, p0.z);
+		prog += QString().sprintf("p%d=m%d+{%1.3f, %1.3f, %1.3f}*r\n", pi++, mi, p1.x, p1.y, p1.z);
+		prog += QString().sprintf("p%d=m%d+{%1.3f, %1.3f, %1.3f}*r\n", pi++, mi, p2.x, p2.y, p2.z);
+		prog += QString().sprintf("p%d=m%d+{%1.3f, %1.3f, %1.3f}*r\n\n", pi++, mi, p3.x, p3.y, p3.z);
+		mi++;
+	}
+	return prog;
+}
+
 void Document::readModel(const QString& name, const ModelData& md)
 {
 	RenderPassPtr pass = passForModel();
@@ -276,7 +317,12 @@ void Document::readModel(const QString& name, const ModelData& md)
 
 	QString text; 
 
-	if (name == "Generate from File")
+	if (name == "Dedicated processing")
+	{
+		text = dedicatedProcess();
+		pass->model.reset(new DocSrc(text, "Generated", false, SRC_MODEL));
+	}
+	else if (name == "Generate from File")
 	{
 		text = generateFromFile();
 		pass->model.reset(new DocSrc(text, "Generated", false, SRC_MODEL));
@@ -315,7 +361,6 @@ void Document::readModel(const QString& name, const ModelData& md)
 	emit didReadModel(pass->model.get());
 
 	calc(pass->model.get());
-
 }
 
 QString Document::generateFromFile()
@@ -337,13 +382,13 @@ QString Document::generateFromFile()
 			return "// Error in file";
 		mesh.finalize(false);
 
-		mesh.rescaleAndCenter(1.0f);
+		mesh.rescaleAndCenter(2.0f);
 		for(int i = 0; i < mesh.numVtx(); ++i)
 		{
 			Mesh::Vertex_const_handle vh = mesh.find_vertex(i);
 			Vec3 p = vh->point();
 
-			prog += QString().sprintf("p%d={%1.2f, %1.2f, %1.2f}\n", i, p.x, p.y, p.z);
+			prog += QString().sprintf("p%d={%1.3f, %1.3f, %1.3f}\n", i, p.x, p.y, p.z);
 		}
 		for(int i = 0; i < mesh.numFaces(); ++i)
 		{
@@ -424,7 +469,70 @@ QString Document::getTypeName(ElementType t)
 	}
 }
 
+#define MY_2PI       (3.14159265358979323846 * 2)
 
+void Document::generateTorus(const vector<string>& args)
+{
+	if (args.size() < 2)
+		return;
+	QString sargs = args[1].c_str();
+	QStringList sep = sargs.split(',');
+	if (sep.size() < 4)
+		return;
+	
+	const float rt = sep[0].toFloat();
+	const float rc = sep[1].toFloat();
+	const int numt = sep[2].toInt();
+	const int numc = sep[3].toInt();
+
+	if (numc == 0 || numt == 0)
+		return;
+
+	MyObject& obj = *m_frameObj;
+
+	float s, t, x, y, z;
+
+	//setClipRadius( rt+rc );
+	static TexAnchor dummyAncs[4];
+
+	for(int i=0; i<numc; i++ )
+	{
+		Vec3 q[4];
+		//QuadStrip *qs = new QuadStrip();
+		for(int j=numt; j>=0; j-- )
+		{
+			q[0] = q[3];
+			q[1] = q[2];
+			for(int k=1; k>=0; k-- )
+			{
+				s = (i + k) % numc + 0.5;
+				t = j % numt;
+
+				x = (rt + rc * cos(s*MY_2PI/numc)) * cos(t*MY_2PI/numt);
+				z = (rt + rc * cos(s*MY_2PI/numc)) * sin(t*MY_2PI/numt);
+				y = rc * sin(s*MY_2PI/numc);
+				//
+				//Vertex *v = new Vertex( x, y, z );
+				Vec3 p(x, y, z);
+
+				x = cos(t*MY_2PI/numt) * cos(s*MY_2PI/numc);
+				z = sin(t*MY_2PI/numt) * cos(s*MY_2PI/numc);
+				y = sin(s*MY_2PI/numc);
+				Vec3 n(x, y, z);
+
+				q[k+2] = p;
+				//v->setNormal( Vector( x, y, z ) );
+				//qs->insert( v );
+			}
+			if (!q[0].isZero()) {
+
+				obj.AddPoly(q, Vec3(m_conf.materialCol));
+			}
+		}
+		//this->insert( qs );
+	}
+
+}
 
 
 void Document::setAddTrack()
@@ -558,13 +666,15 @@ struct MeshAdder : public StringAdder
 	Document *m_doc;
 };
 
-struct FuncAdder : public StringAdder
+struct FuncAdder : public MultiStringAdder
 {
 	FuncAdder(Document* doc) : m_doc(doc) {}
-	virtual void operator()(const string& s)
+	virtual void operator()(const vector<string>& sa)
 	{
-		if (s == "wholeScreenQuad")
+		if (sa[0] == "wholeScreenQuad")
 			m_doc->m_rends.append(shared_ptr<Renderable>(new WholeScreenQuad(NULL)));
+		else if (sa[0] == "torus")
+			m_doc->generateTorus(sa);
 	}
 	Document *m_doc;
 };
@@ -576,10 +686,14 @@ void Document::calc(DocSrc* src, bool doParse)
 		return;
 	m_inCalc = true; 
 
+	g_alloc.clear();
+	m_frameObj = new MyObject(&g_alloc);
+
+	m_rends.clear();
+
 	if (doParse)
 	{
 		m_meshs.clear();
-		m_rends.clear();
 		m_addTrack.reset(); // don't want to continue to point to smething that's going to disappear
 
 		QByteArray ba;
@@ -595,7 +709,6 @@ void Document::calc(DocSrc* src, bool doParse)
 		m_errAct->finish();
 
 		m_kparser.creator()->addMeshes(&MeshAdder(this));
-		m_kparser.creator()->callFuncs(&FuncAdder(this));
 
 		emit loaded();
 	}
@@ -605,10 +718,10 @@ void Document::calc(DocSrc* src, bool doParse)
 			return;
 	}
 
+	// this is here because the torus is not part of the parsed record so it needs to be recreated
+	m_kparser.creator()->callFuncs(&FuncAdder(this));
+
 	//m_kparser.creator()->printTree();
-	
-	g_alloc.clear();
-	m_frameObj = new MyObject(&g_alloc);
 	
 
 	MyObjAdder adder(m_frameObj, m_conf);

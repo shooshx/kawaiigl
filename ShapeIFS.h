@@ -49,7 +49,7 @@ public:
 	float nakedLinesColor; // color of the lines when the object is on its own (not in grpdef)
 	bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
 
-	MyPolygon* AddPoly(Vec3 *inplst, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
+	MyPolygon* AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
 	MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
 					   TexAnchor *ancs = NULL, Texture *tex = NULL);
 
@@ -65,6 +65,9 @@ public:
 	void makePointNei();
 	Vec3 findVtxCenter();
 	Vec3 findBoxCenter();
+
+	// add a point directly to the points repository, without duplicacy check.
+	inline void basicAddPoint(MyPoint *pnt);
 	
 private:
 	///////////////////// structures for startup
@@ -97,8 +100,7 @@ private:
 	friend bool operator==(const MyObject::MyPointWrapper &p1, const MyObject::MyPointWrapper &p2);
 
 private:
-	// add a point directly to the points repository, without duplicacy check.
-	inline void basicAddPoint(MyPoint *pnt);
+
 	// add a polygon made of points in the repository, without duplicacy checks.
 	inline void basicAddPoly(MyPoint *inparr[], TexAnchor *ancs = NULL, Texture *tex = NULL);
 

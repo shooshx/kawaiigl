@@ -242,7 +242,7 @@ void T2GLWidget::fpsTimeout()
 	m_framesLast = m_framesThisSecond;
 	m_framesThisSecond = 0;
 
-	QString s = QString("Vertices: %1 | Polygons: %2 | %3 FPS").arg(m_countVtx).arg(m_countPoly).arg(m_framesLast);
+	QString s = QString("Vertices: %1 | Polygons: %2 | %3 FPS").arg(m_doc->numPoints()).arg(m_doc->numPoly()).arg(m_framesLast);
 	emit message(s);
 }
 

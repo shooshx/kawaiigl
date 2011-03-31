@@ -86,6 +86,9 @@ void ConfXmls::loadModelsFile()
 	m_modelsMenu->addAction(act = new QAction("Load File", m_parent));
 	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
 
+	m_modelsMenu->addAction(act = new QAction("Dedicated processing", m_parent));
+	connect(act, SIGNAL(triggered(bool)), this, SLOT(myreadModel()));
+
 }
 
 void ConfXmls::loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe)

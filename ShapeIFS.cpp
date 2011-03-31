@@ -40,13 +40,16 @@ void MyObject::AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double in
 }
 
 // copies the points in the points array
-MyPolygon* MyObject::AddPoly(Vec3 *inplst, TexAnchor *ancs, Texture *tex)
+MyPolygon* MyObject::AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs, Texture *tex)
 {
 	MyPolygon *nply = m_alloc->m_polyPool.allocate();
 	nply->init(ancs, tex);
+	nply->pnum = 4;
 	for (int lstp = 0; lstp < 4; ++lstp)
 	{
-		nply->vtx[lstp] = CopyCheckPoint(&inplst[lstp]);
+		MyPoint *p = CopyCheckPoint(&inplst[lstp]);
+		p->col = col;
+		nply->vtx[lstp] = p;
 	}
 
 	plylst.push_back(nply);

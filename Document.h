@@ -41,7 +41,6 @@ public:
 
 
 
-
 class Document : public QObject
 {
 	Q_OBJECT
@@ -87,6 +86,7 @@ public:
 	RenderPassPtr passForModel(); // find the pass where the model should go.
 
 	KwSettings& sett();
+	void generateTorus(const std::vector<std::string>& args);
 
 public slots:
 	void calc(DocSrc* qstr, bool doParse = true);
@@ -124,6 +124,8 @@ signals:
 private:
 	bool parseParam(const ParamInput& in); // if not NULL this prop should get the value as well.
 	void parseAllParams(const RenderPassPtr &pass);
+
+	QString dedicatedProcess();
 	
 	QString generateFromFile();
 

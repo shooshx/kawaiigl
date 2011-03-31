@@ -30,6 +30,10 @@ struct StringAdder
 {
 	virtual void operator()(const std::string& s) = 0;
 };
+struct MultiStringAdder
+{
+	virtual void operator()(const std::vector<std::string>& s) = 0;
+};
 
 struct PointActor
 {
@@ -44,7 +48,7 @@ public:
 	virtual void printTree() = 0;
 	virtual void createPolygons(PolyAdder *adder) = 0;
 	virtual void addMeshes(StringAdder *adder) = 0;
-	virtual void callFuncs(StringAdder *adder) = 0;
+	virtual void callFuncs(MultiStringAdder *adder) = 0;
 	virtual void foreachPoints(PointActor &actor) = 0;
 };
 

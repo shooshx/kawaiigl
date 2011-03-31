@@ -7,7 +7,7 @@
 		<file display="Tetrahedron">model.tetrahedron.txt</file>
 		<file display="Holed-Cube">model.holed_cube.txt</file>
 		<file display="Holed-Tetrahedron">model.holed_tetrahedron.txt</file>
-		<file display="Torus" type="mesh">models/scene.gsd</file>
+		<file display="Torus">model.gen_torus.txt</file>
 		<file display="Square-Torus">model.sq_torus.txt</file>
 		<file display="Plus">model.plus.txt</file>
 		<file display="Screen-Quad">model.screenQuad.txt</file>
