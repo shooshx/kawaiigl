@@ -114,7 +114,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 
 	connect(&m_sett.disp.bVtxNormals, SIGNAL(changed()), m_doc, SLOT(calcNoParse())); // TBD - this is bad.
 
-	//connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
+	connect(m_contDlg->ui.clipSlider, SIGNAL(valueChanged(int)), m_kView, SLOT(setClipValue(int)));
 
 	m_kView->setContextMenuPolicy(Qt::ActionsContextMenu);
 

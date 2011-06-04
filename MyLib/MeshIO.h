@@ -159,8 +159,17 @@ public:
 	ObjReader(MeshBuilder *bld) : FileReader(bld) {}
 	virtual ~ObjReader() {}
 	virtual bool read(const QString& filename);
-
 };
+
+class JsonReader : public FileReader
+{
+public:
+	JsonReader(MeshBuilder *bld) : FileReader(bld) {}
+	virtual ~JsonReader() {}
+	virtual bool read(const QString& filename);
+};
+
+
 
 // this by no means supports the full behemoth of VRML. only files used for meshes by AIM_Shape.
 class VrmlReader : public FileReader

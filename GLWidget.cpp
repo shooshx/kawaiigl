@@ -121,9 +121,9 @@ void GLWidget::resetLight()
 
 void GLWidget::setClipValue(int percent) 
 { 
-	//m_clipView = percent / 100.0f; 
-	//reCalcProj(); 
-	//updateGL();
+	m_clipView = percent / 100.0f; 
+	reCalcProj(); 
+	updateGL();
 }
 
 
@@ -270,7 +270,8 @@ void GLWidget::reCalcProj(bool fFromScratch) // = true default
 		float znear = 0.1f;
 		float zfar = 8.0f;
 
-		float clipznear = znear; //(zfar - znear) * m_clipView + znear;
+		//float clipznear = znear; //(zfar - znear) * m_clipView + znear;
+		float clipznear = (zfar - znear) * m_clipView + znear;
 
 		gluPerspective(60.0, m_AspectRatio, clipznear, zfar);
 

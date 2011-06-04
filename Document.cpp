@@ -329,13 +329,13 @@ void Document::readModel(const QString& name, const ModelData& md)
 	}
 	else if (name == "Load File")
 	{
-		QString filename = QFileDialog::getOpenFileName(m_main, "Load Model", m_conf.lastDir, "model files (*.obj *.off *.ply2 *.gsd)");
+		QString filename = QFileDialog::getOpenFileName(m_main, "Load Model", m_conf.lastDir, "model files (*.obj *.off *.ply2 *.gsd *.json)");
 		if (filename.isEmpty())
 			return;
 		m_conf.lastDir = QFileInfo(filename).absolutePath();
 		filename = QDir::current().relativeFilePath(filename);
 
-		text = "load(" + filename + ")";
+		text = "load(\"" + filename + "\")";
 		pass->model.reset(new DocSrc(text, "Loaded Mesh", false, SRC_MODEL));
 	}
 	else if (name == "clear")
@@ -614,9 +614,10 @@ struct MyObjAdder : public PolyAdder
 	{}
 	virtual void operator()(vector<IPoint*>& v)
 	{
-		if (v.size() < 3)
+		if (v.size() < 3 || v.size() > 4)
 			return;
 		MyPolygon *poly = m_obj->AddPoly(v[0], v[1], v[2], (v.size() > 3)?(v[3]):NULL, constAncs);
+
 		for(size_t i = 0; i < v.size(); ++i)
 		{
 			Vec3 gc = v[i]->getColor();

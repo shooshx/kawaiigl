@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'KawaiiGL.ui'
 **
-** Created: Mon Jan 31 12:37:17 2011
-**      by: Qt User Interface Compiler version 4.6.2
+** Created: Thu Mar 31 14:15:02 2011
+**      by: Qt User Interface Compiler version 4.7.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/

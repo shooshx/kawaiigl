@@ -340,7 +340,7 @@ bool ObjReader::read(const QString& filename)
 
 }
 
-
+// a very limited form of VRML that was found somewhere
 bool VrmlReader::read(const QString& filename)
 {
 	QFile file(filename);
@@ -403,6 +403,53 @@ bool VrmlReader::read(const QString& filename)
 	m_build->endSurface();
 
 
+	return true;
+}
+
+
+bool JsonReader::read(const QString& filename)
+{
+	QFile file(filename);
+	if (!file.open(QIODevice::ReadOnly))
+		return false;
+	QTextStream in(&file);
+
+	m_build->startSurface(1, 1, 3); // no initial guess
+	m_build->setVtxStart(0);
+
+	QString line;
+	do {
+		line = in.readLine();
+		if (line.length() == 0)
+			continue;
+		QStringList sl = line.split(QRegExp("[\\s,\":\\]\\[]+"), QString::SkipEmptyParts);
+		if (sl[0] == "vertexPositions")
+		{
+			for(int i = 1; i < sl.length(); i+= 3)
+			{
+				float a = sl[i].toFloat();
+				float b = sl[i+1].toFloat();
+				float c = sl[i+2].toFloat();
+				m_build->addVtx(a, b, c);
+			}
+		}
+		else if (sl[0] == "quads" || sl[0] == "triangles")
+		{
+			int psz = (sl[0] == "quads")?4:3;
+			for(int i = 1; i < sl.length(); i+= psz)
+			{
+				Face f;
+				for(int j = 0; j < psz; ++j)
+				{
+					int a = sl[i+j].toInt();
+					f.add(a);
+				}
+				m_build->addFace(f);
+			}
+		}
+	} while (!line.isNull()); 
+
+	m_build->endSurface();
 	return true;
 }
 
@@ -506,6 +553,7 @@ void JsonWriter::write(QTextStream& out)
 
 
 
+
 bool MeshIO::write_Obj(const QString& filename, Mesh* rmesh)
 {
 	QFile file(filename);
@@ -542,6 +590,12 @@ bool MeshIO::read_Ext(const QString& filename, Mesh* rmesh)
 	{
 		MeshBuilder b(rmesh);
 		GSDReader r(&b);
+		return r.read(filename);
+	}
+	else if (extension == "json")
+	{
+		MeshBuilder b(rmesh);
+		JsonReader r(&b);
 		return r.read(filename);
 	}
 	else

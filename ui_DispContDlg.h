@@ -1,8 +1,8 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DispContDlg.ui'
 **
-** Created: Mon Jan 31 12:37:16 2011
-**      by: Qt User Interface Compiler version 4.6.2
+** Created: Sun Apr 3 14:01:10 2011
+**      by: Qt User Interface Compiler version 4.7.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -22,6 +22,7 @@
 #include <QtGui/QLabel>
 #include <QtGui/QLineEdit>
 #include <QtGui/QPushButton>
+#include <QtGui/QSlider>
 #include <QtGui/QSpacerItem>
 #include <QtGui/QSpinBox>
 #include <QtGui/QVBoxLayout>
@@ -86,6 +87,7 @@ public:
     QCheckBox *zbufBox;
     QPushButton *resetBot;
     QPushButton *resetView;
+    QSlider *clipSlider;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_5;
     QSpacerItem *horizontalSpacer;
@@ -113,7 +115,7 @@ public:
     {
         if (DispContDlg->objectName().isEmpty())
             DispContDlg->setObjectName(QString::fromUtf8("DispContDlg"));
-        DispContDlg->resize(208, 522);
+        DispContDlg->resize(208, 542);
         DispContDlg->setMinimumSize(QSize(208, 0));
         verticalLayout = new QVBoxLayout(DispContDlg);
         verticalLayout->setSpacing(3);
@@ -121,7 +123,7 @@ public:
         verticalLayout->setObjectName(QString::fromUtf8("verticalLayout"));
         widget = new QWidget(DispContDlg);
         widget->setObjectName(QString::fromUtf8("widget"));
-        widget->setMinimumSize(QSize(0, 380));
+        widget->setMinimumSize(QSize(0, 400));
         line_2 = new QFrame(widget);
         line_2->setObjectName(QString::fromUtf8("line_2"));
         line_2->setGeometry(QRect(10, 150, 85, 3));
@@ -302,6 +304,12 @@ public:
         resetView->setObjectName(QString::fromUtf8("resetView"));
         resetView->setGeometry(QRect(72, 221, 21, 23));
         resetView->setMaximumSize(QSize(21, 23));
+        clipSlider = new QSlider(widget);
+        clipSlider->setObjectName(QString::fromUtf8("clipSlider"));
+        clipSlider->setGeometry(QRect(10, 376, 181, 19));
+        clipSlider->setMaximum(100);
+        clipSlider->setSingleStep(1);
+        clipSlider->setOrientation(Qt::Horizontal);
 
         verticalLayout->addWidget(widget);
 
