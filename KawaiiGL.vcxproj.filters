@@ -269,6 +269,9 @@
     <ClCompile Include="ShapeIFS.cpp">
       <Filter>MyObject</Filter>
     </ClCompile>
+    <ClCompile Include="GeometryGenerators.cpp">
+      <Filter>Engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general.h">

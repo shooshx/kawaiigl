@@ -63,12 +63,14 @@ Document::Document(KawaiiGL* mainc)
 
 	m_kparser.addFunction("wholeScreenQuad");
 	m_kparser.addFunction("torus");
+	m_kparser.addFunction("curveLine");
+	m_kparser.addFunction("curveRotate");
 
 	// default empty program
 	RenderPassPtr p(new RenderPass("Pass 1"));
 	p->model = shared_ptr<DocSrc>(new DocSrc("Model", false, SRC_MODEL));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
-	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
+//	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
 	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
 	addPass(p);
 }
@@ -469,71 +471,6 @@ QString Document::getTypeName(ElementType t)
 	}
 }
 
-#define MY_2PI       (3.14159265358979323846 * 2)
-
-void Document::generateTorus(const vector<string>& args)
-{
-	if (args.size() < 2)
-		return;
-	QString sargs = args[1].c_str();
-	QStringList sep = sargs.split(',');
-	if (sep.size() < 4)
-		return;
-	
-	const float rt = sep[0].toFloat();
-	const float rc = sep[1].toFloat();
-	const int numt = sep[2].toInt();
-	const int numc = sep[3].toInt();
-
-	if (numc == 0 || numt == 0)
-		return;
-
-	MyObject& obj = *m_frameObj;
-
-	float s, t, x, y, z;
-
-	//setClipRadius( rt+rc );
-	static TexAnchor dummyAncs[4];
-
-	for(int i=0; i<numc; i++ )
-	{
-		Vec3 q[4];
-		//QuadStrip *qs = new QuadStrip();
-		for(int j=numt; j>=0; j-- )
-		{
-			q[0] = q[3];
-			q[1] = q[2];
-			for(int k=1; k>=0; k-- )
-			{
-				s = (i + k) % numc + 0.5;
-				t = j % numt;
-
-				x = (rt + rc * cos(s*MY_2PI/numc)) * cos(t*MY_2PI/numt);
-				z = (rt + rc * cos(s*MY_2PI/numc)) * sin(t*MY_2PI/numt);
-				y = rc * sin(s*MY_2PI/numc);
-				//
-				//Vertex *v = new Vertex( x, y, z );
-				Vec3 p(x, y, z);
-
-				x = cos(t*MY_2PI/numt) * cos(s*MY_2PI/numc);
-				z = sin(t*MY_2PI/numt) * cos(s*MY_2PI/numc);
-				y = sin(s*MY_2PI/numc);
-				Vec3 n(x, y, z);
-
-				q[k+2] = p;
-				//v->setNormal( Vector( x, y, z ) );
-				//qs->insert( v );
-			}
-			if (!q[0].isZero()) {
-
-				obj.AddPoly(q, Vec3(m_conf.materialCol));
-			}
-		}
-		//this->insert( qs );
-	}
-
-}
-
 
 void Document::setAddTrack()
 {
@@ -672,10 +609,21 @@ struct FuncAdder : public MultiStringAdder
 	FuncAdder(Document* doc) : m_doc(doc) {}
 	virtual void operator()(const vector<string>& sa)
 	{
+		vector<string> args;
+		if (sa.size() >= 2) {
+			QString sargs = sa[1].c_str();
+			QStringList sep = sargs.split(',', QString::SkipEmptyParts);
+			foreach(const QString& s, sep)
+				args.push_back(s.trimmed().toAscii().data());
+		}
 		if (sa[0] == "wholeScreenQuad")
 			m_doc->m_rends.append(shared_ptr<Renderable>(new WholeScreenQuad(NULL)));
 		else if (sa[0] == "torus")
-			m_doc->generateTorus(sa);
+			m_doc->generateTorus(args);
+		else if (sa[0] == "curveLine")
+			m_doc->generateCurve(args);
+		else if (sa[0] == "curveRotate")
+			m_doc->generateRotObj(args);
 	}
 	Document *m_doc;
 };

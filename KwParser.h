@@ -50,6 +50,8 @@ public:
 	virtual void addMeshes(StringAdder *adder) = 0;
 	virtual void callFuncs(MultiStringAdder *adder) = 0;
 	virtual void foreachPoints(PointActor &actor) = 0;
+	// get a point by its name or NULL if it doesn't exist
+	virtual IPoint* lookupSymbol(const std::string& pname) = 0;
 };
 
 class DocSrc;

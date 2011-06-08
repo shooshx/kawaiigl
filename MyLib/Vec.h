@@ -15,6 +15,7 @@
 #define HALFPI (0.5 * PI)
 #define SQRT_2 (1.414213562373)
 
+
 #pragma warning (disable: 4100) // unreferences formal parameter
 
 
@@ -69,6 +70,11 @@ public:
 	Vec3() : x(0.0f), y(0.0f), z(0.0f) {}
 	Vec3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 	Vec3(float _r, float _g, float _b, float _a) : r(_r), g(_g), b(_b) {} // alphs is discarded
+	Vec3(const float* p, int sz) {
+		v[0] = (sz>0)?p[0]:0.0f;
+		v[1] = (sz>1)?p[1]:0.0f;
+		v[2] = (sz>2)?p[2]:0.0f;
+	}
 
 	Vec3(Qt::GlobalColor qc) 
 	{

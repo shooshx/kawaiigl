@@ -87,6 +87,8 @@ public:
 
 	KwSettings& sett();
 	void generateTorus(const std::vector<std::string>& args);
+	void generateCurve(const std::vector<std::string>& args);
+	void generateRotObj(const std::vector<std::string>& args);
 
 public slots:
 	void calc(DocSrc* qstr, bool doParse = true);

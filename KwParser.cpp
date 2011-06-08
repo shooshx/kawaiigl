@@ -499,16 +499,25 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			for(size_t p = 0; p < pol.size(); ++p)
 			{
 				string& pname = pol[p];
-				symbol_ast* va = vecsym.lookup()->find(pname.begin(), pname.end());
+				IPoint* va = lookupSymbol(pname);
 				if (va != NULL)
 				{
 					pnts.push_back(va);
-					va->used = true;
 				}
 			}
 
 			(*adder)(pnts);
 		}
+	}
+
+	virtual IPoint* lookupSymbol(const string& pname) 
+	{
+		symbol_ast* va = vecsym.lookup()->find(pname.begin(), pname.end());
+		if (va != NULL) {
+			va->used = true;
+			return va;
+		}
+		return va;
 	}
 
 	virtual void addMeshes(StringAdder *adder)
