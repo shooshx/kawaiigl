@@ -40,16 +40,23 @@ void MyObject::AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double in
 }
 
 // copies the points in the points array
-MyPolygon* MyObject::AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs, Texture *tex)
+MyPolygon* MyObject::AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs, Texture *tex, int count)
 {
 	MyPolygon *nply = m_alloc->m_polyPool.allocate();
 	nply->init(ancs, tex);
-	nply->pnum = 4;
+	nply->pnum = 0;
 	for (int lstp = 0; lstp < 4; ++lstp)
 	{
-		MyPoint *p = CopyCheckPoint(&inplst[lstp]);
-		p->col = col;
-		nply->vtx[lstp] = p;
+		if (lstp < count) {
+			MyPoint *p = CopyCheckPoint(&inplst[lstp]);
+			p->col = col;
+			nply->vtx[lstp] = p;
+			++nply->pnum;
+		}
+		else {
+			nply->vtx[lstp] = NULL;
+		}
+
 	}
 
 	plylst.push_back(nply);
@@ -678,14 +685,16 @@ void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWha
 		{
 			out << " \"triangles\" : [";
 			MyPolygon *pl = poly[0];
-			out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
-			out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+			out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index;
+			if (pl->vtx[3] != NULL)
+				out << "," << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
 			for(int i = 1; i < nPolys; ++i)
 			{
 				pl = poly[i];
 				out << ",";
-				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index << ",";
-				out << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
+				out << pl->vtx[0]->index << "," << pl->vtx[1]->index << "," << pl->vtx[2]->index ;
+				if (pl->vtx[3] != NULL)
+					out << "," << pl->vtx[0]->index << "," << pl->vtx[2]->index << "," << pl->vtx[3]->index;
 			}
 			out << "]\n";
 		}	

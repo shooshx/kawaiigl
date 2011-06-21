@@ -49,7 +49,7 @@ public:
 	float nakedLinesColor; // color of the lines when the object is on its own (not in grpdef)
 	bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
 
-	MyPolygon* AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs = NULL, Texture *tex = NULL); //copy needed vertices, add poly
+	MyPolygon* AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs = NULL, Texture *tex = NULL, int count = 4); //copy needed vertices, add poly
 	MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
 					   TexAnchor *ancs = NULL, Texture *tex = NULL);
 

@@ -1,0 +1,10 @@
+#extension GL_EXT_geometry_shader4 : enable
+
+void main()
+{	
+	for(int vi = 0; vi < gl_VerticesIn; ++vi)
+	{
+		gl_Position = gl_PositionIn[vi];
+		EmitVertex();
+	}
+}

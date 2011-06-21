@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<program>
+	<pass>
+		<conf name="what">model</conf>
+		<conf name="to">texture0</conf>	
+	</pass>
+	<pass>
+		<conf name="what">quad_tex0</conf>
+		<conf name="to">display</conf>
+		<vtxtext>vtx.scrquad.glsl.txt</vtxtext>
+		<fragtext>frag.img_pass.glsl.txt</fragtext>
+	</pass>
+</program>

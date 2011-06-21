@@ -11,5 +11,6 @@
 		<file display="Square-Torus">model.sq_torus.txt</file>
 		<file display="Plus">model.plus.txt</file>
 		<file display="Screen-Quad">model.screenQuad.txt</file>
+		<file display="Curve Rotation">model.curveRot.txt</file>
 	</shapes_edit>
 </conf>

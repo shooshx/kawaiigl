@@ -186,27 +186,44 @@ void Document::generateRotObj(const std::vector<std::string>& args)
 
 	vector<Vec3> samp;
 	curve.sample(&samp);
+	int sampsz = samp.size();
 	
 	vector<Vec3> last = samp, cur(samp.size());
-	for(int angi = 0; angi < circSamp; ++angi) {
-		float theta = (TWOPI/circSamp)*angi;
+	for(int angi = 0; angi < circSamp+1; ++angi) {
+		if (angi < circSamp) {
+			float theta = (TWOPI/circSamp)*angi;
+			for(size_t j = 0; j < samp.size(); ++j) {
+				cur[j] = rotateAround(samp[j], curve.first(), axisVec, theta);
+			}
+		}
+		else {
+			cur = samp;
+		}
 
 		for(size_t j = 0; j < samp.size(); ++j) {
-			Vec3 p = rotateAround(samp[j], curve.first(), axisVec, theta);
-			cur[j] = p;
-
 			if (j == 0 || angi == 0)
 				continue;
-			Vec3 q[4] = { last[j-1], last[j], cur[j], cur[j-1] };
-			obj.AddPoly(q, Vec3(m_conf.materialCol));
+			if (j == 1) {
+				// first and last are triangles
+				Vec3 q[4] = { samp[0], samp[0], last[j], cur[j] };
+				obj.AddPoly(q, Vec3(m_conf.materialCol), NULL, NULL, 4);
+			}
+			else if (j == sampsz - 1) {
+				Vec3 q[4] = { last[j-1], samp[sampsz-1], samp[sampsz-1], cur[j-1] };
+				obj.AddPoly(q, Vec3(m_conf.materialCol), NULL, NULL, 4);
+			}
+			else {
+				Vec3 q[4] = { last[j-1], last[j], cur[j], cur[j-1] };
+				obj.AddPoly(q, Vec3(m_conf.materialCol));
+			}
 		}
 		last = cur;
 	}
 
-	for(size_t j = 1; j < samp.size(); ++j) {
+/*	for(size_t j = 1; j < samp.size(); ++j) {
 
 		Vec3 q[4] = { last[j-1], last[j], samp[j], samp[j-1] };
 		obj.AddPoly(q, Vec3(m_conf.materialCol));
-	}
+	}*/
 
 }
