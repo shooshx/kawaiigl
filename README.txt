@@ -34,6 +34,19 @@ feature list:
 - use per-vertex normals for smoother look, works best with subdivision passes.
 - see how many polygons are currently rendered in the blue number in the lower left corner.
 
+
+Models language
+torus(radius-outer, radius-inner, outer-slices, inner-slices)
+sphereTri(radius, subdivision)
+curveLine
+curveRotate
+wholeScreenQuad
+arrow
+
+sphereQuads - not
+
+
+
 author:
 Shy Shalom
 shooshX@gmail.com

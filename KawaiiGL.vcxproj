@@ -144,7 +144,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>"/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" "/MANIFESTDEPENDENCY:type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27 processorArchitecture=%27*%27" %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>gdi32.lib;user32.lib;qtmain.lib;QtOpenGL4.lib;QtGui4.lib;QtCore4.lib;QtXml4.lib;glew32.lib;libgles_cm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gdi32.lib;user32.lib;qtmain.lib;QtOpenGL4.lib;QtGui4.lib;QtCore4.lib;QtXml4.lib;glew32.lib;opengl32.lib;glu13\glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>release\KawaiiGL.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;$(LIBSROOT)\glew\glew\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -170,6 +170,7 @@
     <ClCompile Include="general.cpp" />
     <ClCompile Include="GeometryGenerators.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenGL\Quadric.cpp" />
     <ClCompile Include="Release\moc_CloseButton.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -186,9 +187,11 @@
     </ClCompile>
     <ClCompile Include="Debug\moc_ControlPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Release\moc_ControlPanel.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Release\moc_DisplayConf.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
@@ -338,6 +341,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general.h" />
+    <ClInclude Include="OpenGL\Quadric.h" />
     <ClInclude Include="ui_DispContDlg.h" />
     <ClInclude Include="ui_KawaiiGL.h" />
     <ClInclude Include="ui_KwEdit.h" />

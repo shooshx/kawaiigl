@@ -1,0 +1,12 @@
+a={0,0,0}
+b={1,0,0}
+col1={1,0,0}
+arrow(a,b,col1)
+
+c={0,1,0}
+col2={0,1,0}
+arrow(a,c,col2)
+
+d={0,0,1}
+col3={0,0,1}
+arrow(a,d,col3)

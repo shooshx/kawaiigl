@@ -3,36 +3,48 @@
 #define KRENDERABLE_H_INCLUDED
 
 #include "MyLib/Vec.h"
+#include <vector>
+
+using namespace std;
 
 class GLWidget;
-
+class Document;
 
 class Renderable
 {
 public:
-	Renderable(GLWidget *glw) : m_glw(glw) {}
+	Renderable() {}
 	virtual ~Renderable() {}
-	void setEnv(GLWidget *glw) { m_glw = glw; }
-
-	virtual void render() = 0;
-
-protected:
-	GLWidget *m_glw;
+	
+	virtual void render(GLWidget *m_glw) = 0;
 };
 
 
 class WholeScreenQuad : public Renderable
 {
 public:
-	WholeScreenQuad(GLWidget *glw, int _texUnit, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0)) 
-		: Renderable(glw), backCol(_backCol), texUnit(_texUnit) {}
+	WholeScreenQuad(int _texUnit, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0)) 
+		: backCol(_backCol), texUnit(_texUnit) {}
 
-	WholeScreenQuad(GLWidget *glw, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0), int _texUnit = 1) 
-		: Renderable(glw), backCol(_backCol), texUnit(_texUnit) {}
-	virtual void render();
+	WholeScreenQuad(const Vec3& _backCol = Vec3(1.0, 1.0, 1.0), int _texUnit = 1) 
+		: backCol(_backCol), texUnit(_texUnit) {}
+
+	virtual void render(GLWidget *glw);
 
 	Vec3 backCol;
 	uint texUnit;
+};
+
+class ArrowRenderable : public Renderable
+{
+public:
+	ArrowRenderable();
+	bool init(const vector<string>& sep, Document* doc);
+	virtual void render(GLWidget *glw);
+
+	Vec3 from, to, color;
+	float barRadius, tipRadius, tipLen, barLen;
+	int slices;
 };
 
 

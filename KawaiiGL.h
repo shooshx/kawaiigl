@@ -19,6 +19,7 @@ public:
 	~KawaiiGL() {}
 
 	KwSettings& sett() { return m_sett; }
+	T2GLWidget* view() { return m_kView; }
 	void processCmdArgs();
 protected:
 	virtual void closeEvent(QCloseEvent *event);

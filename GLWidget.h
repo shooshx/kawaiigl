@@ -79,6 +79,7 @@ public:
 	int getZoomVal() { return m_zoomVal; }
 
 	void checkErrors(const char* place);
+	QSize clientRect() { return QSize(m_cxClient, m_cyClient); }
 
 protected:
 
@@ -116,6 +117,7 @@ protected:
 	EAxis m_axis;
 	ETransformType m_transformType;
 	int m_zoomVal;
+	float m_viewAngle;
 	float m_clipView; // 1.0 no clipping, 0.0 all clipping.
 	int m_renderFromLight; // -1 for normal rendering;
 

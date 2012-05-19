@@ -272,6 +272,9 @@
     <ClCompile Include="GeometryGenerators.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
+    <ClCompile Include="OpenGL\Quadric.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="general.h">
@@ -360,6 +363,9 @@
     </ClInclude>
     <ClInclude Include="Texture.h">
       <Filter>MyObject</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenGL\Quadric.h">
+      <Filter>OpenGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

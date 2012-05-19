@@ -8,7 +8,7 @@ void main()
 	vec3 ECposition = vec3( gl_ModelViewMatrix * gl_Vertex );
     	LightIntensity  = dot( normalize(LightPos - ECposition), tnorm );
     	LightIntensity = abs( LightIntensity );
-    	LightIntensity *= 1.5;
+    //	LightIntensity *= 1.5;
 
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 	Color = gl_Color;

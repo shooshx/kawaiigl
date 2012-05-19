@@ -677,12 +677,15 @@ public:
 	class Material
 	{
 	public:
-		Material(const QString& nm = "") : name(nm) {}
+		Material(const QString& nm = "", Vec3 dc = INVALID_COLOR) : name(nm), diffuseCol(dc) {}
 		QString name;
 		Vec3 diffuseCol;
 	};
 	QVector<Material>& mtl() { return m_mtl; }
 	const QVector<Material>& mtl() const { return m_mtl; }
+
+	void setDefaultMtl(const Material& mtl) { m_defaultMtl = mtl; }
+	const Material& defaultMtl() const { return m_defaultMtl; }
 
 private:
 	Mesh(const Mesh&);
@@ -723,6 +726,7 @@ private:
 	// not paying for something I don't want
 	// vertex properties
 
+	Material m_defaultMtl;
 	QVector<Material> m_mtl;
 };
 

@@ -1,7 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'DispContDlg.ui'
 **
-** Created: Sun Apr 3 14:01:10 2011
+** Created: Wed Dec 14 12:12:44 2011
 **      by: Qt User Interface Compiler version 4.7.1
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
@@ -88,6 +88,8 @@ public:
     QPushButton *resetBot;
     QPushButton *resetView;
     QSlider *clipSlider;
+    QSpinBox *lineWidthSpin;
+    QCheckBox *linePoly;
     QSpacerItem *verticalSpacer;
     QHBoxLayout *horizontalLayout_5;
     QSpacerItem *horizontalSpacer;
@@ -310,6 +312,14 @@ public:
         clipSlider->setMaximum(100);
         clipSlider->setSingleStep(1);
         clipSlider->setOrientation(Qt::Horizontal);
+        lineWidthSpin = new QSpinBox(widget);
+        lineWidthSpin->setObjectName(QString::fromUtf8("lineWidthSpin"));
+        lineWidthSpin->setGeometry(QRect(150, 195, 42, 21));
+        lineWidthSpin->setMaximum(255);
+        lineWidthSpin->setValue(1);
+        linePoly = new QCheckBox(widget);
+        linePoly->setObjectName(QString::fromUtf8("linePoly"));
+        linePoly->setGeometry(QRect(163, 234, 70, 17));
 
         verticalLayout->addWidget(widget);
 
@@ -491,6 +501,7 @@ public:
         resetView->setToolTip(QApplication::translate("DispContDlg", "Reset View", 0, QApplication::UnicodeUTF8));
 #endif // QT_NO_TOOLTIP
         resetView->setText(QApplication::translate("DispContDlg", "0", 0, QApplication::UnicodeUTF8));
+        linePoly->setText(QApplication::translate("DispContDlg", "line", 0, QApplication::UnicodeUTF8));
         label_3->setText(QApplication::translate("DispContDlg", "0.", 0, QApplication::UnicodeUTF8));
         tex1FileBot->setText(QApplication::translate("DispContDlg", "...", 0, QApplication::UnicodeUTF8));
         label_4->setText(QApplication::translate("DispContDlg", "1.", 0, QApplication::UnicodeUTF8));

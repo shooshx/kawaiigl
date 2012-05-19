@@ -20,12 +20,14 @@ public:
 	TypeProp<bool> *passRound[N_PASS];
 	TypeProp<bool> bVtxNormals;
 	TypeProp<bool> bLines, bPoly, bPoints, bUnusedPoints, bAllPolyPoints, bLinesAll, bCull, bCoordNum, bCoordName;
+	TypeProp<bool> linePoly; // draw polygons as lines (with lighting)
 	TypeProp<bool> bTriangulate;
 	TypeProp<bool> bBlend;
 	TypeProp<bool> bDepthTest;
 	TypeProp<bool> perspective, lighting;
 	TypeProp<int> coordFontSize;
 	TypeProp<int> pointSize;
+	TypeProp<int> lineWidth;
 	TypeProp<bool> bLitBackFace;
 	TypeProp<bool> bLightMove, isPointLight;
 	TypeProp<ETexAct> texAct;
@@ -57,8 +59,10 @@ public:
 		,bTriangulate(this, "bTriangulate", "Triangulate Quads", false)
 		,bBlend(this, "bBlend", "Alpha Blending", false)
 		,bDepthTest(this, "bDepthTest", "Enable Depth Test", true)
+		,linePoly(this, "linePoly", "Polygons as lit lines", false)
 		,coordFontSize(this, "coordFontSize", "Font Size", init(10, 1, 72))
 		,pointSize(this, "pointSize", "Point Size", init(14, 1, 200))
+		,lineWidth(this, "lineWidth", "Line Width", init(1, 1, 255))
 		,bCoordNum(this, "bCoordNum", "Show coordinates", false)
 		,bCoordName(this, "bCoordName", "Show Names", false)
 		,bCull(this, "bCull", "Show Cull", false)

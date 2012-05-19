@@ -84,11 +84,14 @@ public:
 	void addPass(PassPtr pass);
 	void clearPasses();
 	RenderPassPtr passForModel(); // find the pass where the model should go.
+	const DisplayConf& dispConf() { return m_conf; }
 
 	KwSettings& sett();
 	void generateTorus(const std::vector<std::string>& args);
 	void generateCurve(const std::vector<std::string>& args);
 	void generateRotObj(const std::vector<std::string>& args);
+	void generateQuadSphere(const std::vector<std::string>& sep);
+	void generateTriSphere(const std::vector<std::string>& sep);
 
 public slots:
 	void calc(DocSrc* qstr, bool doParse = true);

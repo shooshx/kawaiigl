@@ -63,6 +63,9 @@ Document::Document(KawaiiGL* mainc)
 
 	m_kparser.addFunction("wholeScreenQuad");
 	m_kparser.addFunction("torus");
+	m_kparser.addFunction("arrow");
+	m_kparser.addFunction("sphereQuads");
+	m_kparser.addFunction("sphereTri");
 	m_kparser.addFunction("curveLine");
 	m_kparser.addFunction("curveRotate");
 
@@ -574,19 +577,23 @@ TexAnchor MyObjAdder::constAncs[4] = { TexAnchor(0,0), TexAnchor(1,0), TexAnchor
 
 struct MeshAdder : public StringAdder
 {
-	MeshAdder(Document* doc) : m_doc(doc) {}
+	MeshAdder(Document* doc) : m_doc(doc), m_index(0) {}
 	virtual void operator()(const string& s)
 	{
 		QString filename = QString(s.c_str()).toLower();
 		Document::TMeshIndex::iterator it = m_doc->m_meshIndex.find(filename);
 		shared_ptr<Mesh> mesh;
-		if (it != m_doc->m_meshIndex.end())
+		/*if (it != m_doc->m_meshIndex.end())
 		{  // TBD: compare date as well
 			mesh = it.value();
 		}
-		else
+		else*/
 		{
 			mesh.reset(new Mesh(filename.toAscii().data()));
+			IPoint *p = m_doc->m_kparser.creator()->lookupSymbol(QString("defcol%1").arg(m_index).toAscii().data());
+			if (p != NULL)
+				mesh->setDefaultMtl(Mesh::Material("", p->getCoord()));
+			
 			if (MeshIO::read_Ext(filename, mesh.get()))
 			{
 				mesh->finalize(false);
@@ -600,8 +607,10 @@ struct MeshAdder : public StringAdder
 		}
 
 		m_doc->m_meshs.append(mesh);
+		++m_index;
 	}
 	Document *m_doc;
+	int m_index;
 };
 
 struct FuncAdder : public MultiStringAdder
@@ -617,9 +626,18 @@ struct FuncAdder : public MultiStringAdder
 				args.push_back(s.trimmed().toAscii().data());
 		}
 		if (sa[0] == "wholeScreenQuad")
-			m_doc->m_rends.append(shared_ptr<Renderable>(new WholeScreenQuad(NULL)));
+			m_doc->m_rends.append(shared_ptr<Renderable>(new WholeScreenQuad()));
+		else if (sa[0] == "arrow") {
+			shared_ptr<ArrowRenderable> p(new ArrowRenderable());
+			if (p->init(args, m_doc))
+				m_doc->m_rends.append(shared_ptr<Renderable>(p));
+		}
 		else if (sa[0] == "torus")
 			m_doc->generateTorus(args);
+		else if (sa[0] == "sphereQuads")
+			m_doc->generateQuadSphere(args);
+		else if (sa[0] == "sphereTri")
+			m_doc->generateTriSphere(args);
 		else if (sa[0] == "curveLine")
 			m_doc->generateCurve(args);
 		else if (sa[0] == "curveRotate")
@@ -872,8 +890,14 @@ bool Document::parseParam(const ParamInput& pi)
 		return pi.lastParseOk;
 	}
 	
+	QString value = pi.value;
+	// handle special variables.
+	QSize glRect = m_main->view()->clientRect();
+	value.replace("$(screenHeight)", QString("%1").arg(glRect.height()));
+	value.replace("$(screenWidth)", QString("%1").arg(glRect.width()));
 
-	QByteArray ba = (pi.name + "=" + pi.value).toAscii();
+
+	QByteArray ba = (pi.name + "=" + value).toAscii();
 	const char* iter = ba.data();
 	const char* end = ba.data() + ba.size();
 	const char* nameend = ba.data() + pi.name.size();

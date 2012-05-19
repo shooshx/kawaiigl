@@ -57,10 +57,12 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 	(new CheckBoxIn(&conf->bBlend, ui.blendBox))->reload();
 	(new CheckBoxIn(&conf->bDepthTest, ui.zbufBox))->reload();
 	(new CheckBoxIn(&conf->bPoly, ui.SD_polygons))->reload();
+	(new CheckBoxIn(&conf->linePoly, ui.linePoly))->reload();
 	(new CheckBoxIn(&conf->bPoints, ui.SD_points))->reload();
 	(new CheckBoxIn(&conf->bUnusedPoints, ui.SD_unused))->reload();
 	(new CheckBoxIn(&conf->bAllPolyPoints, ui.SD_allpoly))->reload();
 	(new SpinBoxIn<int>(&conf->pointSize, ui.pointSizeSpin))->reload();
+	(new SpinBoxIn<int>(&conf->lineWidth, ui.lineWidthSpin))->reload();
 	(new CheckBoxIn(&conf->bCoordNum, ui.coordNum))->reload();
 	(new CheckBoxIn(&conf->bCoordName, ui.coordName))->reload();
 	(new ColorSelIn(&conf->lightAmb, ui.ambBot, WidgetIn::DoModal))->reload();

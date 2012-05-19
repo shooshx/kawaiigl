@@ -626,8 +626,9 @@ void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWha
 		{
 			MyPolygon *p = poly[i];
 			out << "f ";
-			for(int i = 0; i < 4; ++i)
-				out << p->vtx[i]->index + 1<< " ";
+			for(int j = 0; j < p->pnum; ++j)
+				if (p->vtx[j] != NULL)
+					out << p->vtx[j]->index + 1<< " ";
 			out << "\n";
 		}
 		out << "\n";

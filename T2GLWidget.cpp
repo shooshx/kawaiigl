@@ -84,6 +84,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.bLines, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bLinesAll, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bPoly, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.linePoly, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bPoints, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bUnusedPoints, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bAllPolyPoints, SIGNAL(changed()), this, SLOT(updateGL()));
@@ -93,6 +94,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.lineColor, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bTriangulate, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.pointSize, SIGNAL(changed()), this, SLOT(updateGL()));
+	connect(&conf.lineWidth, SIGNAL(changed()), this, SLOT(updateGL()));
 	connect(&conf.bDepthTest, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
@@ -163,6 +165,7 @@ void T2GLWidget::reconfLight()
 	m_fUseLight = conf.lighting; 
 
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, conf.bLitBackFace?(1):(0));
+	//glFrontFace(GL_CW);
 
 	reLight();
 }
@@ -215,9 +218,6 @@ void T2GLWidget::newModelLoaded()
 {
 	m_selPnt = NULL;
 	m_dragPnts.clear();
-
-	foreach(shared_ptr<Renderable> r, m_doc->m_rends)
-		r->setEnv(this);
 }
 
 
@@ -404,7 +404,9 @@ void T2GLWidget::paintFlat()
 
 		if (conf.bLinesAll)
 		{
+			glLineWidth(conf.lineWidth);
 			drawSolids(false);
+			glLineWidth(1.0);
 		}
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
@@ -442,12 +444,17 @@ void T2GLWidget::paintPoly()
 
 	if (m_curTexTarget)
 		glEnable(m_curTexTarget);
+	if (conf.linePoly) {
+		glLineWidth(conf.lineWidth);
+	}
 
 	drawSolids(true);
 
 	if (m_curTexTarget)
 		glDisable(m_curTexTarget);
-
+	if (conf.linePoly) {
+		glLineWidth(1);
+	}
 }
 
 void T2GLWidget::drawSolids(bool colorize)
@@ -459,7 +466,7 @@ void T2GLWidget::drawSolids(bool colorize)
 		drawMesh(mesh.get(), colorize);
 	}
 	foreach(shared_ptr<Renderable> r, m_doc->m_rends)
-		r->render();
+		r->render(this);
 }
 
 // should be in ShaderProgram?
@@ -725,8 +732,8 @@ void T2GLWidget::myPaintGL()
 				int texunit = (int)pconf.what;
 				glActiveTexture(GL_TEXTURE0 + texunit);
 				glEnable(GL_TEXTURE_2D);
-				WholeScreenQuad wsq(this, texunit);
-				wsq.render();
+				WholeScreenQuad wsq(texunit);
+				wsq.render(this);
 				glDisable(GL_TEXTURE_2D);
 			}
 			MyFramebufferObject::doRelease(fbo);
@@ -806,40 +813,64 @@ void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 {
 	bool hasTex = true; //false;
 	bool triangulate = conf.bTriangulate;
+	bool lines = conf.linePoly;
 	VertexDrawer drawer(this, hasTex, colorize, obj.verterxNormals);
 
 	if (!obj.poly.isEmpty())
 	{
-		glBegin(triangulate?GL_TRIANGLES:GL_QUADS); 
-		for(int pli = 0; pli < obj.poly.size(); ++pli)
-		{
-			MyPolygon &curpl = *obj.poly[pli];
-			if (curpl.pnum != 4)
-				continue;
-
-			if (triangulate)
+		if (!lines) {
+			glBegin(triangulate?GL_TRIANGLES:GL_QUADS);
+			for(int pli = 0; pli < obj.poly.size(); ++pli)
 			{
+				MyPolygon &curpl = *obj.poly[pli];
+				if (curpl.pnum != 4) {
+					//printf("error pnum=4\n");
+					continue;
+				}
+
+				if (triangulate)
+				{
+					drawer.drawVertex(curpl, 0);
+					drawer.drawVertex(curpl, 1);
+					drawer.drawVertex(curpl, 2);
+
+					drawer.drawVertex(curpl, 0);
+					drawer.drawVertex(curpl, 3);
+					drawer.drawVertex(curpl, 2);
+					m_countPoly += 2;
+					m_countVtx += 6;
+				}
+				else
+				{
+					for(int pni = 0; pni < 4; ++pni) 
+					{
+						drawer.drawVertex(curpl, pni);
+					}	
+					++m_countPoly;
+					m_countVtx += 3;
+				}
+			} 
+			glEnd();
+		}
+		else { // draw lines 
+			glBegin(GL_LINES);
+			for(int pli = 0; pli < obj.poly.size(); ++pli)
+			{
+				MyPolygon &curpl = *obj.poly[pli];
+
 				drawer.drawVertex(curpl, 0);
 				drawer.drawVertex(curpl, 1);
+				drawer.drawVertex(curpl, 1);
 				drawer.drawVertex(curpl, 2);
-
-				drawer.drawVertex(curpl, 0);
+				drawer.drawVertex(curpl, 2);
 				drawer.drawVertex(curpl, 3);
-				drawer.drawVertex(curpl, 2);
-				m_countPoly += 2;
-				m_countVtx += 6;
+				drawer.drawVertex(curpl, 3);
+				drawer.drawVertex(curpl, 0);
+
 			}
-			else
-			{
-				for(int pni = 0; pni < 4; ++pni) 
-				{
-					drawer.drawVertex(curpl, pni);
-				}	
-				++m_countPoly;
-				m_countVtx += 3;
-			}
-		} 
-		glEnd();
+			glEnd();
+
+		}
 	}
 
 	if (!obj.triangles.isEmpty())
@@ -898,8 +929,11 @@ void T2GLWidget::drawMesh(const Mesh* rmesh, bool colorize)
 
 	int texUnit = (int)(conf.texAct.val());
 
-	if (colorize)
+	if (colorize) {
 		glColor3fv(Vec4(m_materialDiffAmb, 1.0f).v);
+		if (!Vec3::exactEqual(rmesh->defaultMtl().diffuseCol, INVALID_COLOR))
+			glColor3fv(Vec4(rmesh->defaultMtl().diffuseCol, 1.0f).v);
+	}
 
 	glBegin(GL_TRIANGLES);
 

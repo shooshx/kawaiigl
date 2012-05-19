@@ -110,6 +110,7 @@ GLWidget::GLWidget(QWidget *parent, QGLWidget *sharefrom)
 
 	m_clipView = 0.0f;
 	m_renderFromLight = -1;
+	m_viewAngle = 60.0f;
 }
 
 void GLWidget::resetLight()
@@ -273,7 +274,7 @@ void GLWidget::reCalcProj(bool fFromScratch) // = true default
 		//float clipznear = znear; //(zfar - znear) * m_clipView + znear;
 		float clipznear = (zfar - znear) * m_clipView + znear;
 
-		gluPerspective(60.0, m_AspectRatio, clipznear, zfar);
+		gluPerspective(m_viewAngle, m_AspectRatio, clipznear, zfar);
 
 		//glTranslated(0.0, 0.0, -4);
 
@@ -422,6 +423,7 @@ void GLWidget::DoReset()
 	m_osf = 1.0;
 	makeCurrent();	
 	m_zoomVal = 100;
+	m_viewAngle = 60;
 
 	reCalcProj(true);
 	reCalcLight();
@@ -717,9 +719,15 @@ Vec3 PointMover::movePointXZ(const Vec3& in) const
 
 void GLWidget::wheelEvent(QWheelEvent *event)
 {
-	m_zoomVal += event->delta() / 13;
-	m_zoomVal = qMin(qMax(m_zoomVal, ZOOM_MIN), ZOOM_MAX);
-	emit zoomChanged(m_zoomVal);
+	if (event->modifiers() == Qt::ControlModifier) {
+		m_viewAngle += event->delta() / 20;
+		reCalcProj();
+	}
+	else {
+		m_zoomVal += event->delta() / 13;
+		m_zoomVal = qMin(qMax(m_zoomVal, ZOOM_MIN), ZOOM_MAX);
+		emit zoomChanged(m_zoomVal);
+	}
 	updateGL();
 }
 
