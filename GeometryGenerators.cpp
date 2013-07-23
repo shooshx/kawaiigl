@@ -141,21 +141,24 @@ public:
 	NurbsCurve(int nSamples)
 		:Renderable()
 	{
-		m_nurb = gluNewNurbsRenderer();
+/*		m_nurb = gluNewNurbsRenderer();
 		// specify manually how many samples we want
+
 		gluNurbsProperty(m_nurb, GLU_SAMPLING_METHOD, GLU_DOMAIN_DISTANCE); 
-		gluNurbsProperty(m_nurb, GLU_U_STEP, nSamples);
+		gluNurbsProperty(m_nurb, GLU_U_STEP, nSamples);*/
 	}
 	virtual ~NurbsCurve() {
+/*
 		if (m_nurb != 0)
-			gluDeleteNurbsRenderer(m_nurb);
+			gluDeleteNurbsRenderer(m_nurb);*/
 	}
 	virtual void render(GLWidget *m_glw) {
+/*
 		glDisable(GL_LIGHTING);
 		gluBeginCurve(m_nurb);
 		gluNurbsCurve(m_nurb, m_knots.size(), &m_knots[0], 3, (float*)&m_pnts[0], m_pnts.size(), GL_MAP1_VERTEX_3);
 		gluEndCurve(m_nurb);
-		glEnable(GL_LIGHTING);
+		glEnable(GL_LIGHTING);*/
 	}
 
 	void addPoint(const Vec3 p) {
@@ -171,17 +174,18 @@ public:
 	Vec3 last() { return m_pnts[m_pnts.size()-1]; }
 	
 	void sample(vector<Vec3>* pnts) {
+/*
 		gluNurbsProperty(m_nurb, GLU_NURBS_MODE, GLU_NURBS_TESSELLATOR);
 		gluNurbsCallbackData(m_nurb, pnts);
 		gluNurbsCallback(m_nurb, GLU_NURBS_VERTEX_DATA, (_GLUfuncptr)vertexData);
 		gluBeginCurve(m_nurb);
 		gluNurbsCurve(m_nurb, m_knots.size(), &m_knots[0], 3, (float*)&m_pnts[0], m_pnts.size(), GL_MAP1_VERTEX_3);
 		gluEndCurve(m_nurb);
-		gluNurbsProperty(m_nurb, GLU_NURBS_MODE, GLU_NURBS_RENDERER);
+		gluNurbsProperty(m_nurb, GLU_NURBS_MODE, GLU_NURBS_RENDERER);*/
 	}
 
 private:
-	GLUnurbsObj *m_nurb;
+	//GLUnurbsObj *m_nurb;
 	vector<Vec3> m_pnts;
 	vector<float> m_knots;
 

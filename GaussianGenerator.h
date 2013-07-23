@@ -7,9 +7,14 @@ class GlTexture;
 class GaussianGenerator
 {
 public:
-	GaussianGenerator() {}
-	
-	GlTexture* make2D(int size);
+	static GlTexture* make2D(int size);
+};
+
+
+class CheckersGen
+{
+public:
+	static GlTexture* make3D(int size);
 };
 
 

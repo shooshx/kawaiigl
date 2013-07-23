@@ -87,16 +87,20 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
 	connect(ui.saveBot, SIGNAL(clicked()), this, SIGNAL(saveMesh()));
 
 	(new ComboBoxIn<DisplayConf::ETexAct>(&conf->texAct, ui.texSel))->reload();
+    (new ComboBoxIn<DisplayConf::ETexEdge>(&conf->texEdge, ui.texEdgeBox))->reload();
+//    (new CheckBoxIn(&conf->texSigned, ui.texSignedBox))->reload();
 
 	updateSDlowLevel(*conf);
+    
 
 }
 
 
+
+
 //void ControlPanel::coordFontSizeChanged(int v) { conf->coordFontSize = v; emit changedFont(); }
 
-void ControlPanel::chFontEnable() 
-{ 
+void ControlPanel::chFontEnable() { 
 	ui.coordFontSize->setEnabled(conf->bCoordNum || conf->bCoordName);
 }
 

@@ -30,14 +30,14 @@ void ConfXmls::loadModelsFile()
 	QFile file(m_modelsFile);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		printf("could not open examples file %s\n", m_modelsFile.toAscii().data());
+		printf("could not open examples file %s\n", m_modelsFile.toLatin1().data());
 		return;
 	}
 	QDomDocument doc("conf");
 	if (!doc.setContent(&file))
 	{
 		file.close();
-		printf("could not parse XML file %s\n", m_modelsFile.toAscii().data());
+		printf("could not parse XML file %s\n", m_modelsFile.toLatin1().data());
 		return;
 	}
 	QDomElement de = doc.documentElement();
@@ -136,7 +136,7 @@ void ConfXmls::loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe)
 				etype = EPTexture;
 			else 
 			{
-				printf("unknown param type %s\n", type.toAscii().data());
+				printf("unknown param type %s\n", type.toLatin1().data());
 				continue;
 			}
 
@@ -200,13 +200,13 @@ void ConfXmls::loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe)
 			Prop *p = pass->conf->propByName(name);
 			if (p == NULL)
 			{
-				printf("unknown config name %s\n", name.toAscii().data());
+				printf("unknown config name %s\n", name.toLatin1().data());
 				continue;
 			}
 			QString value = e.text();
 			if (!p->fromString(value))
 			{
-				printf("Unable to understand config `%s` value `%s`\n", name.toAscii().data(), value.toAscii().data());
+				printf("Unable to understand config `%s` value `%s`\n", name.toLatin1().data(), value.toLatin1().data());
 				continue;
 			}
 
@@ -259,7 +259,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 				continue;
 			QString name = namea.value();
 			if (m_conf.propByName(name) == NULL)
-				printf("No such property %s\n", name.toAscii().data());
+				printf("No such property %s\n", name.toLatin1().data());
 			else
 				prog->args[name] = e.text();
 		}
@@ -287,7 +287,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 			else if (opt == "tex2tex")
 				tempTemplate = RunTex2Tex;
 			else
-				printf("unknown runType option %s\n", opt.toAscii().data());
+				printf("unknown runType option %s\n", opt.toLatin1().data());
 		}
 
 	}
@@ -296,7 +296,7 @@ void ConfXmls::loadProgramElement(QMenu* menu, const QString& display, QDomEleme
 	{
 		if (!prog->m_passes.isEmpty())
 		{
-			printf("error in prog %s, can't have passes and template at the same time\n", display.toAscii().data());
+			printf("error in prog %s, can't have passes and template at the same time\n", display.toLatin1().data());
 			return;
 		}
 
@@ -367,14 +367,14 @@ void ConfXmls::loadProgramsElement(QMenu* menu, QDomElement &de)
 				QFile file(filename);
 				if (!file.open(QIODevice::ReadOnly))
 				{
-					printf("could not open examples file %s\n", filename.toAscii().data());
+					printf("could not open examples file %s\n", filename.toLatin1().data());
 					continue;
 				}
 				QDomDocument doc("program");
 				if (!doc.setContent(&file))
 				{
 					file.close();
-					printf("could not parse XML file %s\n", filename.toAscii().data());
+					printf("could not parse XML file %s\n", filename.toLatin1().data());
 					continue;
 				}	
 				loadProgramElement(menu, display, doc.documentElement());
@@ -398,14 +398,14 @@ void ConfXmls::loadProgramsFile(QMenu* menu)
 	QFile file(m_progFiles);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		printf("could not open examples file %s\n", m_progFiles.toAscii().data());
+		printf("could not open examples file %s\n", m_progFiles.toLatin1().data());
 		return;
 	}
 	QDomDocument doc("conf");
 	if (!doc.setContent(&file))
 	{
 		file.close();
-		printf("could not parse XML file %s\n", m_progFiles.toAscii().data());
+		printf("could not parse XML file %s\n", m_progFiles.toLatin1().data());
 		return;
 	}
 

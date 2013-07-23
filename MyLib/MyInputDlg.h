@@ -51,7 +51,7 @@ public:
 
 	bool isInCommit() const { return inCommit; }
 
-	enum EFlags { None, DoModal }; // for ColorSelIn (DoModal is inface DoModalLess)
+	enum EFlags { None, DoModal }; // for ColorSelIn (DoModal is infact DoModalLess)
 signals:
 	void commitedChange();
 

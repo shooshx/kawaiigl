@@ -1,6 +1,7 @@
 #include "GaussianGenerator.h"
 
 #include "OpenGL/Texture.h"
+#include "general.h"
 
 inline float evalHermite(float pA, float pB, float vA, float vB, float u)
 {
@@ -48,6 +49,43 @@ GlTexture* GaussianGenerator::make2D(int size)
 	tex->init(GL_TEXTURE_2D, QSize(size, size), 1, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 
 		data, GL_LINEAR, GL_LINEAR, GL_REPEAT);
 	delete data; // GL_LINEAR_MIPMAP_LINEAR
+
+	return tex;
+}
+
+
+class Buf3D {
+
+};
+
+GlTexture* CheckersGen::make3D(int N)
+{
+	unsigned char *buf = new unsigned char[4*N*N*N];
+	int NN = N*N;
+	for(int z = 0; z < N; ++z) {
+		for(int y = 0; y < N; ++y) {
+			for(int x = 0; x < N; ++x) {
+				bool b = hXor( (((x / 8) % 2) == 0), hXor( (((y / 8) % 2) == 0), (((z / 8) % 2) == 0) ));
+				unsigned char f = 0;
+				if (b) 
+					f = 0xff;
+				bool xt = x == 0 || x == N-1, yt = y == 0 || y == N-1, zt = z == 0 || z == N-1;
+				if (xt && yt || yt && zt || zt && xt)
+					f = 0x7f;
+
+				int i = (x + y*N + z*NN)*4;
+				buf[i] = f;
+				buf[i+1] = f;
+				buf[i+2] = f;
+				buf[i+3] = 0xff;
+			}
+		}
+	}
+
+	GlTexture *tex = new GlTexture();
+	tex->init(GL_TEXTURE_3D, QSize(N, N), N, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 
+		buf, GL_LINEAR, GL_LINEAR, GL_REPEAT);
+	delete[] buf;
 
 	return tex;
 }

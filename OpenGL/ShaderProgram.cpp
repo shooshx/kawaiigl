@@ -108,7 +108,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 	for (int i = 0; i < m_vtxprog.size(); ++i)
 	{
 		uint vso = glCreateShader(GL_VERTEX_SHADER);
-		QByteArray ba = m_vtxprog[i].toAscii();
+		QByteArray ba = m_vtxprog[i].toLatin1();
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(vso, 2, srcs, NULL);
 		glCompileShader(vso);
@@ -121,7 +121,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 	for (int i = 0; i < m_geomprog.size(); ++i)
 	{
 		uint gso = glCreateShader(GL_GEOMETRY_SHADER_EXT);
-		QByteArray ba = m_geomprog[i].toAscii();
+		QByteArray ba = m_geomprog[i].toLatin1();
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(gso, 2, srcs, NULL);
 		glCompileShader(gso);
@@ -134,7 +134,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 	for (int i = 0; i < m_fragprog.size(); ++i)
 	{
 		uint fso = glCreateShader(GL_FRAGMENT_SHADER);
-		QByteArray ba = m_fragprog[i].toAscii();
+		QByteArray ba = m_fragprog[i].toLatin1();
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(fso, 2, srcs, NULL);
 		glCompileShader(fso);

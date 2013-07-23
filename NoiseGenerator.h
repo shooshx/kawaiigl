@@ -11,7 +11,7 @@ public:
 	NoiseGenerator(QWidget* parent) : m_inWidget(parent) {}
 
 	// size in pixels, start amplitude, factor amplitude
-	GlTexture* make3Dnoise(int size = 128, float ampStart = 0.5, float ampFactor = 0.5);
+	GlTexture* make3Dnoise(int size = 128, float ampStart = 0.5, float ampFactor = 0.5, int startFrequency = 4);
 
 private:
 	QWidget *m_inWidget;

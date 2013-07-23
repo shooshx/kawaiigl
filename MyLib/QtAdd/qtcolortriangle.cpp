@@ -50,17 +50,17 @@
 #include <QtCore/QMap>
 #include <QtCore/QVarLengthArray>
 #include <QtGui/QConicalGradient>
-#include <QtGui/QFrame>
+#include <QtWidgets/QFrame>
 #include <QtGui/QImage>
 #include <QtGui/QKeyEvent>
-#include <QtGui/QLayout>
+#include <QtWidgets/QLayout>
 #include <QtGui/QMouseEvent>
 #include <QtGui/QPainter>
 #include <QtGui/QPainterPath>
 #include <QtGui/QPixmap>
 #include <QtGui/QResizeEvent>
-#include <QtGui/QToolTip>
-#include <QtGui/QVBoxLayout>
+#include <QtWidgets/QToolTip>
+#include <QtWidgets/QVBoxLayout>
 
 #include <math.h>
 
@@ -528,7 +528,7 @@ void QtColorTriangle::paintEvent(QPaintEvent *e)
 {
     QPainter p(this);
     if (e->rect().intersects(contentsRect()))
-        p.setClipRegion(e->region().intersect(contentsRect()));
+        p.setClipRegion(e->region().intersected(contentsRect()));
     if (mustGenerateBackground) {
 	genBackground();
 	mustGenerateBackground = false;

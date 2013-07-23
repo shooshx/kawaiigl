@@ -11,9 +11,11 @@
 class DisplayConf : public ParamBase
 {
 	Q_OBJECT
+	Q_ENUMS(ETexAct)
+    Q_ENUMS(ETexEdge)
 public:
 	enum ETexAct { Tex_None = -1, Tex_File0, Tex_File1, Tex_File2, Tex_File3 };
-	Q_ENUMS(ETexAct)
+    enum ETexEdge { Clamp, Repeat, Mirror };
 
 
 	TypeProp<int> numberOfPasses; // 0, 1, 2, 3, 4, 5
@@ -43,6 +45,8 @@ public:
 	TypeProp<bool> addFace;
 	TypeProp<int> trackForParam; // should the mouse be tracked for param updates
 	TypeProp<QString> lastDir;
+    TypeProp<bool> texSigned;
+    TypeProp<ETexEdge> texEdge;
 //	TypeProp<RunType> runType;
 
 	DisplayConf() 
@@ -86,6 +90,8 @@ public:
 		,lastDir(this, "lastDir", "lastDir", "")
 		,fullFps(this, "fullFps", "fullFps", false)
 		,vSync(this, "vSync", "vSync", true)
+        ,texSigned(this, "texSigned", "texSigned", false) // not used
+        ,texEdge(this, "texEdge", "texEdge", Clamp)
 	//	,runType(this, "runType", "runType", RunNormal)
 	{
 		for(int i = 0; i < N_PASS; ++i)
@@ -106,7 +112,7 @@ public:
 };
 
 Q_DECLARE_METATYPE(DisplayConf::ETexAct);
-
+Q_DECLARE_METATYPE(DisplayConf::ETexEdge);
 
 
 class GUIParams : public ParamBase

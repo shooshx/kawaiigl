@@ -92,7 +92,7 @@ void Document::readToString(const QString& filename, QString& into)
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly))
 	{
-		printf("can't open %s\n", filename.toAscii().data());
+		printf("can't open %s\n", filename.toLatin1().data());
 		into = "can't open " + filename + "\n";
 	}
 	file.setTextModeEnabled(true);
@@ -107,7 +107,7 @@ void Document::writeToFile(const QString& text, const QString filename)
 	QFile file(filename);
 	if (!file.open(QIODevice::WriteOnly))
 	{
-		printf("can't open %s\n", filename.toAscii().data());
+		printf("can't open %s\n", filename.toLatin1().data());
 	}
 	file.setTextModeEnabled(true);
 	QTextStream out(&file);
@@ -508,7 +508,7 @@ void Document::calcSave()
 	QFile file(filename);
 	if (!file.open(QFile::WriteOnly))
 	{
-		printf("unable to open file %s\n", filename.toAscii().data());
+		printf("unable to open file %s\n", filename.toLatin1().data());
 		return;
 	}
 
@@ -589,19 +589,19 @@ struct MeshAdder : public StringAdder
 		}
 		else*/
 		{
-			mesh.reset(new Mesh(filename.toAscii().data()));
-			IPoint *p = m_doc->m_kparser.creator()->lookupSymbol(QString("defcol%1").arg(m_index).toAscii().data());
+			mesh.reset(new Mesh(filename.toLatin1().data()));
+			IPoint *p = m_doc->m_kparser.creator()->lookupSymbol(QString("defcol%1").arg(m_index).toLatin1().data());
 			if (p != NULL)
 				mesh->setDefaultMtl(Mesh::Material("", p->getCoord()));
 			
 			if (MeshIO::read_Ext(filename, mesh.get()))
 			{
 				mesh->finalize(false);
-				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toAscii().data(), mesh->diagLength().toStringF().toAscii().data());
+				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toLatin1().data(), mesh->diagLength().toStringF().toLatin1().data());
 
 				//mesh->translateCenter();
 				mesh->rescaleAndCenter(6.0f);
-				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toAscii().data(), mesh->diagLength().toStringF().toAscii().data());
+				printf("  center=%s  boxSize=%s\n", mesh->minMaxCenter().toStringF().toLatin1().data(), mesh->diagLength().toStringF().toLatin1().data());
 			}
 			m_doc->m_meshIndex[filename] = mesh;
 		}
@@ -623,7 +623,7 @@ struct FuncAdder : public MultiStringAdder
 			QString sargs = sa[1].c_str();
 			QStringList sep = sargs.split(',', QString::SkipEmptyParts);
 			foreach(const QString& s, sep)
-				args.push_back(s.trimmed().toAscii().data());
+				args.push_back(s.trimmed().toLatin1().data());
 		}
 		if (sa[0] == "wholeScreenQuad")
 			m_doc->m_rends.append(shared_ptr<Renderable>(new WholeScreenQuad()));
@@ -666,7 +666,7 @@ void Document::calc(DocSrc* src, bool doParse)
 		QByteArray ba;
 		if (src != NULL)
 		{
-			ba = src->text.toAscii();
+			ba = src->text.toLatin1();
 		} // otherwise it's empty
 
 		const char* iter = ba.data();
@@ -897,7 +897,7 @@ bool Document::parseParam(const ParamInput& pi)
 	value.replace("$(screenWidth)", QString("%1").arg(glRect.width()));
 
 
-	QByteArray ba = (pi.name + "=" + value).toAscii();
+	QByteArray ba = (pi.name + "=" + value).toLatin1();
 	const char* iter = ba.data();
 	const char* end = ba.data() + ba.size();
 	const char* nameend = ba.data() + pi.name.size();

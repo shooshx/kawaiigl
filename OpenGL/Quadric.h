@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GL/glew.h"
-#include "Vec.h"
+#include "MyLib/Vec.h"
 
 class Quadric
 {

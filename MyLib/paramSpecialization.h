@@ -24,7 +24,7 @@ void TypeProp<T>::addInnerWidget(WidgetLine& wl)
 
 		if (n.startsWith("enum") && (mo->enumeratorCount() != 0))
 		{
-			int ie = mo->indexOfEnumerator(n.section(':', -1).toAscii());
+			int ie = mo->indexOfEnumerator(n.section(':', -1).toLatin1());
 			if (ie == -1)
 				return;
 			QMetaEnum me = mo->enumerator(ie);

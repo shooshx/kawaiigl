@@ -31,11 +31,7 @@ void Prop::fireChanged()
 	if (isChanged()) 
 		emit changed();
 }
-void TypePropN::fireChanged()
-{
-	foreach(Prop* p, m_props)
-		p->fireChanged();
-}
+
 
 void ParamBase::copyFrom(const ParamBase *other)
 {
@@ -121,14 +117,6 @@ void Prop::addWidget(MyInputDlg* dlg)
 }
 
 
-void TypePropN::addWidget(MyInputDlg* dlg)
-{
-	WidgetLine wl = dlg->startLine(this);
-	wl.keepLabel = keepLabel;
-	foreach(Prop* p, m_props)
-		p->addInnerWidget(wl);
-	dlg->endLine(wl);
-}
 
 
 template<> void TypeProp<QColor>::addInnerWidget(WidgetLine& wl)
@@ -204,12 +192,8 @@ void Prop::addSelfTo(ParamBase* param, const QString& type)
 		param->addProperty(this);
 }
 
-void TypePropN::addSelfTo(ParamBase* param, const QString& type)
-{
-	foreach(Prop* p, m_props)
-		p->addSelfTo(param, type);
 
-}
+
 
 
 MySettings::MySettings(const QString& group, const QString& name)
@@ -332,3 +316,29 @@ template<> QString TypeProp<StringSelect>::toString() const { return QString(); 
 template<> bool TypeProp<StringSelect>::fromStringImp(const QString& s) { return false; }
 template<> QString TypeProp<QStringList>::toString() const { return QString(); }
 template<> bool TypeProp<QStringList>::fromStringImp(const QString& s) { return false; }
+
+
+#if 0 
+void TypePropN::fireChanged()
+{
+	foreach(Prop* p, m_props)
+		p->fireChanged();
+}
+
+void TypePropN::addWidget(MyInputDlg* dlg)
+{
+	WidgetLine wl = dlg->startLine(this);
+	wl.keepLabel = keepLabel;
+	foreach(Prop* p, m_props)
+		p->addInnerWidget(wl);
+	dlg->endLine(wl);
+}
+
+
+void TypePropN::addSelfTo(ParamBase* param, const QString& type)
+{
+	foreach(Prop* p, m_props)
+		p->addSelfTo(param, type);
+
+}
+#endif

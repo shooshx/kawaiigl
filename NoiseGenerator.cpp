@@ -274,21 +274,69 @@ double PerlinNoise3D(double x, double y, double z, double alpha, double beta, in
 #include <QProgressDialog>
 #include <QApplication>
 
+int ceilDiv(int x, int y) {
+	return (x + y - 1)/y;
+}
+
+void saveto2D(uchar *data, int n, int depth, int inArow)
+{
+	int dmin = 260, dmax = -1;
+
+	int iwidth = n * inArow;
+	int iheight = (ceilDiv(depth, inArow)) * n; // should be up-div
+	uchar *ni = new uchar[iwidth * iheight*4];
+	int rowX = 0, rowY = 0, rowCount = 0;
+	int nn = n*n;
+	for(int z = 0; z < depth; ++z) {
+		for(int y = 0; y < n; ++y) {
+			for(int x = 0; x < n; ++x) {
+				uchar d = data[(x + y*n + z*nn) * 4]; // take just the first
+				int di = (x + rowX + (y + rowY)*iwidth)*4;
+				ni[di] = d;
+				ni[di+1] = d;
+				ni[di+2] = d;
+				ni[di+3] = 0xff;
+
+				if (d < dmin)
+					dmin = d;
+				if (d > dmax)
+					dmax = d;
+			}
+		}
+		rowX += n;
+		++rowCount;
+		if (rowCount >= inArow) {
+			rowX = 0;
+			rowY += n;
+			rowCount = 0;
+		}
+	}
+
+	QImage img(ni, iwidth, iheight, QImage::Format_ARGB32);
+
+	img.save("c:/temp/tex2d.jpg");
+	printf("%d - %d = %d\n", dmax, dmin, dmax - dmin);
+}
+
+#define NUM_OCT 1 // 4
+#define N_FACT 2.2
 
 // copied from the orange book
-GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv)
+GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv, int startFrequency)
 {
 	int noise3DTexSize = size;
 	GLubyte *noise3DTexPtr;
 
 	int f, i, j, k, inc;
-	int startFrequency = 4;
-	int numOctaves = 4;
+	//int startFrequency = 4;
+	int numOctaves = NUM_OCT; //4;
 	double ni[3];
 	double inci, incj, inck;
 	int frequency = startFrequency;
 	GLubyte *ptr;
 	double amp = ampStart;
+
+	double minn = 100.0, maxn = -100.0;
 
 	uint bufsize = noise3DTexSize * noise3DTexSize * noise3DTexSize * 4;
 	if ((noise3DTexPtr = (GLubyte *) malloc(bufsize)) == NULL)
@@ -322,7 +370,12 @@ GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv)
 				inck = 1.0 / (noise3DTexSize / frequency);
 				for (k = 0; k < noise3DTexSize; ++k, ni[2] += inck, ptr+= 4)
 				{
-					*(ptr+inc) = (GLubyte)(((noise3(ni)+1.0) * amp)*128.0);
+					double ns = noise3(ni) * N_FACT;
+					*(ptr+inc) = (GLubyte)(((ns+1.0) * amp)*255.0);
+					if (ns > maxn)
+						maxn = ns;
+					if (ns < minn)
+						minn = ns;
 				}
 			}
 		}
@@ -330,7 +383,11 @@ GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv)
 
 	GlTexture *tex = new GlTexture();
 	tex->init(GL_TEXTURE_3D, QSize(size, size), size, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 
-			 noise3DTexPtr, GL_NEAREST, GL_NEAREST, GL_REPEAT);
+			 noise3DTexPtr, GL_LINEAR, GL_LINEAR, GL_REPEAT); //GL_NEAREST
+
+	printf("%lf - %lf = %lf\n", maxn, minn, maxn - minn);
+	saveto2D(noise3DTexPtr, size, size/4, 8);
+
 	free(noise3DTexPtr);
 
 	return tex;

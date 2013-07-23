@@ -48,7 +48,7 @@ struct IVec2
 };
 
 // immediate Vec3 - for initialization using an init list. where is C++0x when you need it?
-struct IVec
+struct IVec3
 {
 	float x, y, z;
 	float* ptr() { return &x; }
@@ -76,16 +76,16 @@ public:
 		v[2] = (sz>2)?p[2]:0.0f;
 	}
 
-	Vec3(Qt::GlobalColor qc) 
+	explicit Vec3(Qt::GlobalColor qc) 
 	{
 		initFromColor(qc);
 	}
-	Vec3(const QColor& c) 
+	explicit Vec3(const QColor& c) 
 	{
 		initFromColor(c);
 	}
 
-	Vec3(const IVec& iv) : x(iv.x), y(iv.y), z(iv.z) {}
+	explicit Vec3(const IVec3& iv) : x(iv.x), y(iv.y), z(iv.z) {}
 
 	Vec3(const Vec3& a, const Vec3& b) // from, to
 	{
@@ -565,6 +565,7 @@ public:
 	Vec4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
 	explicit Vec4(const Vec3& a) : x(a.x), y(a.y), z(a.z), w(1.0f) {}
 	Vec4(const Vec3& a, float w) : x(a.x), y(a.y), z(a.z), w(w) {}
+    explicit Vec4(const IVec4& a) : x(a.x), y(a.y), z(a.z), w(a.w) {}
 	explicit Vec4(const QColor& c) 
 	{
 		initFromColor(c);
@@ -636,6 +637,7 @@ class Vec2
 {
 public:
 	Vec2() : x(0.0f), y(0.0f) {}
+    explicit Vec2(const IVec2 iv) : x(iv.x), y(iv.y) {}
 	Vec2(float _x, float _y) : x(_x), y(_y) {}
 	explicit Vec2(const Vec3& a) : x(a.x), y(a.y) {}
 	union
@@ -898,7 +900,7 @@ class VecI : public VecT<int>
 {
 public:
 	VecI() : VecT<int>(-1, -1, -1) {}
-	VecI(int _p0, int _p1, int _p2) : VecT<int>(qRound(_p0), qRound(_p1), qRound(_p2)) {}
+	VecI(int _p0, int _p1, int _p2) : VecT<int>(_p0, _p1, _p2) {}
 	VecI(const Vec3& v) : VecT<int>(v) {}
 };
 

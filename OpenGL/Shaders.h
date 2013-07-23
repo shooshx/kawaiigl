@@ -7,7 +7,7 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 //#include "defs.h"
-#include "../MyLib/Vec.h"
+#include "MyLib/Vec.h"
 
 
 
@@ -33,14 +33,7 @@ class UniformParam : public ShaderParam
 {
 public:
 	UniformParam(const QString& name) : ShaderParam(name) {}
-	virtual void getLocation(uint progId)
-	{
-		if (m_name.isEmpty())
-			return;
-		m_uid = glGetUniformLocation(progId, m_name.toAscii().data());
-		if (m_uid == -1)
-			printf("WARNING: uniform '%s' location is -1!\n", m_name.toAscii().data());
-	}
+	virtual void getLocation(uint progId);
 
 	template<typename T>
 	void set(const T& v) const;
@@ -51,15 +44,8 @@ class AttribParam : public ShaderParam
 {
 public:
 	AttribParam(const QString& name) : ShaderParam(name) {}
-	virtual void getLocation(uint progId)
-	{
-		if (m_name.isEmpty())
-			return;
-		m_uid = glGetAttribLocation(progId, m_name.toAscii().data());
-		if (m_uid == -1)
-			printf("WARNING: attribute '%s' location is -1!\n", m_name.toAscii().data());
-	}
-
+	virtual void getLocation(uint progId);
+	
 	template<typename T>
 	void set(const T& v) const;
 };
@@ -102,7 +88,7 @@ public:
 		UniformParam* p = dynamic_cast<UniformParam*>(m_params[index]);
 		if (p == NULL)
 		{
-			printf("Param %s is not a uniform\n", m_params[index]->name().toAscii().data());
+			printf("Param %s is not a uniform\n", m_params[index]->name().toLatin1().data());
 			return false;
 		}
 		p->set(val);
@@ -119,7 +105,7 @@ public:
 		AttribParam* p = dynamic_cast<AttribParam*>(m_params[index]);
 		if (p == NULL)
 		{
-			printf("Param %s is not an attribute\n", m_params[index]->name().toAscii().data());
+			printf("Param %s is not an attribute\n", m_params[index]->name().toLatin1().data());
 			return false;
 		}
 		p->set(val);

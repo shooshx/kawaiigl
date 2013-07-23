@@ -115,7 +115,7 @@ class ShaderDefines
 public:
 	ShaderDefines()
 	{
-		m_source = QString("").toAscii();
+		m_source = QString("").toLatin1();
 	}
 	void add(const QString& d)
 	{

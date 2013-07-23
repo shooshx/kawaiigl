@@ -1,3 +1,5 @@
+#include <GL/glew.h>
+
 #include "T2GLWidget.h"
 
 #include "MyLib/MyInputDlg.h"
@@ -16,6 +18,8 @@
 
 
 #include <GL/wglew.h>
+
+
 
 // TBD 
 // halfedge sanity check, 
@@ -98,6 +102,8 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 	connect(&conf.bDepthTest, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	connect(&conf.texAct, SIGNAL(changed()), this, SLOT(updateGL()));
+    connect(&conf.texSigned, SIGNAL(changed()), this, SLOT(updateGL()));
+    connect(&conf.texEdge, SIGNAL(changed()), this, SLOT(updateGL()));
 
 	//connect(&conf.selectedCol, SIGNAL(changed()), this, SLOT(updateGL()));
 
@@ -252,7 +258,7 @@ shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd)
 	QStringList args = cmd.split(QRegExp("[\\s,()]"), QString::SkipEmptyParts);
 	if (args.isEmpty())
 		return shared_ptr<GlTexture>();
-	int size = 128;
+	int size = 128, startFrequency = 4;
 	float ampStart = 0.5, ampFactor = 0.5;
 	if (args.size() > 1)
 		size = args[1].toInt();
@@ -260,13 +266,15 @@ shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd)
 		ampStart = args[2].toFloat();
 	if (args.size() > 3)
 		ampFactor = args[3].toFloat();
+	if (args.size() > 4)
+		startFrequency = args[4].toInt();
 	
-	QString key = QString("%1_%2_%3").arg(size).arg(ampStart).arg(ampFactor);
+	QString key = QString("%1_%2_%3_%4").arg(size).arg(ampStart).arg(ampFactor).arg(startFrequency);
 	TNoiseCache::iterator it = m_noisesCache.find(key);
 	if (it == m_noisesCache.end())
 	{
 		NoiseGenerator n(this);
-		shared_ptr<GlTexture> ntex(n.make3Dnoise(size, ampStart, ampFactor));
+		shared_ptr<GlTexture> ntex(n.make3Dnoise(size, ampStart, ampFactor, startFrequency));
 		m_noisesCache[key] = ntex;
 		return ntex;
 	}
@@ -277,7 +285,7 @@ void T2GLWidget::rebindTexture(int which)
 {
 	if (!isTextureValid(which))
 		return;
-	glActiveTexture(GL_TEXTURE0 + which);
+	mglActiveTexture(GL_TEXTURE0 + which);
 	m_textures[which]->bind();
 }
 
@@ -286,8 +294,11 @@ void T2GLWidget::setTexture(int which)
 {
 	QString filename = *conf.texFile[which];
 
-	glActiveTexture(GL_TEXTURE0 + which);
+	mglActiveTexture(GL_TEXTURE0 + which);
 	filename = filename.trimmed();
+
+	bool isGaus = filename.startsWith("gaussian") && filename.endsWith(")");
+	bool isCheck = filename.startsWith("checkers") && filename.endsWith(")");
 
 	if (filename.startsWith("noise") && filename.endsWith(")"))
 	{
@@ -298,15 +309,19 @@ void T2GLWidget::setTexture(int which)
 			doBindTexture(which, NULL);
 
 	}
-	else if (filename.startsWith("gaussian") && filename.endsWith(")"))
+	else if (isGaus || isCheck)
 	{
 		QStringList args = filename.split(QRegExp("[\\s,()]"), QString::SkipEmptyParts);
 		int size = 128;
 		if (args.size() > 1)
 			size = args[1].toInt();
 
-		GaussianGenerator gen;
-		shared_ptr<GlTexture> ntex(gen.make2D(size));
+		shared_ptr<GlTexture> ntex;
+		if (isGaus)
+			ntex.reset(GaussianGenerator::make2D(size));
+		else if (isCheck)
+			ntex.reset(CheckersGen::make3D(size));
+
 		doTakeTexture(which, ntex);
 	}
 	else // it probably is a filename
@@ -321,7 +336,7 @@ void T2GLWidget::setTexture(int which)
 				doBindTexture(which, &img);
 		}
 	}
-	glActiveTexture(GL_TEXTURE0);
+	mglActiveTexture(GL_TEXTURE0);
 	updateGL();
 }
 
@@ -519,12 +534,12 @@ void T2GLWidget::paint3DScene(bool clearBack)
 	{
 		if (isTextureValid(texunit))
 		{
-			glActiveTexture(GL_TEXTURE0 + texunit);
+			mglActiveTexture(GL_TEXTURE0 + texunit);
 			m_curTexTarget = m_textures[texunit]->target();
 		}
 		else if (m_offbufA[texunit] != NULL)
 		{
-			glActiveTexture(GL_TEXTURE0 + texunit);
+			mglActiveTexture(GL_TEXTURE0 + texunit);
 			m_curTexTarget = GL_TEXTURE_2D; // frame buffers render to 2D
 		}
 	}
@@ -619,7 +634,7 @@ void T2GLWidget::redoFrameBuffers()
 
 				bool doMulti = GLEW_EXT_framebuffer_blit && multisamp;
 				
-				glActiveTexture(GL_TEXTURE0 + index); // all binding are going to happen in the right unit
+				mglActiveTexture(GL_TEXTURE0 + index); // all binding are going to happen in the right unit
 				const GlTexture* drawTex = NULL;
 				if (doMulti) 
 				{	// rendering to the multisampled fbo and then immediatly copy to the normal one which is the texture
@@ -664,7 +679,7 @@ void T2GLWidget::doSwapPass(int sa, int sb)
 	qSwap(m_offbufB[sa], m_offbufB[sb]);
 	if (m_offbufA[sb] != NULL)
 	{
-		glActiveTexture(GL_TEXTURE0 + sa);
+		mglActiveTexture(GL_TEXTURE0 + sa);
 		if (m_offbufB[sb]) // multi sampled
 			m_offbufB[sb]->texture()->bind();
 		else
@@ -672,7 +687,7 @@ void T2GLWidget::doSwapPass(int sa, int sb)
 	}
 	if (m_offbufA[sa] != NULL)
 	{
-		glActiveTexture(GL_TEXTURE0 + sb);
+		mglActiveTexture(GL_TEXTURE0 + sb);
 		if (m_offbufB[sa]) // multi sampled
 			m_offbufB[sa]->texture()->bind();
 		else
@@ -730,7 +745,7 @@ void T2GLWidget::myPaintGL()
 					proguser.use(&m_curPass->prog);
 
 				int texunit = (int)pconf.what;
-				glActiveTexture(GL_TEXTURE0 + texunit);
+				mglActiveTexture(GL_TEXTURE0 + texunit);
 				glEnable(GL_TEXTURE_2D);
 				WholeScreenQuad wsq(texunit);
 				wsq.render(this);
@@ -744,12 +759,12 @@ void T2GLWidget::myPaintGL()
 				bool doMulti = GLEW_EXT_framebuffer_blit && pconf.toMultisample;
 				if (doMulti && m_offbufA[toIndex] != NULL && m_offbufB[toIndex] != NULL)
 				{ // can't read directly from a multi-sample render buffer, need to copy it to a texture.
-					glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_offbufA[toIndex]->handle()); // from
-					glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_offbufB[toIndex]->handle()); // to
+					mglBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, m_offbufA[toIndex]->handle()); // from
+					mglBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, m_offbufB[toIndex]->handle()); // to
 					// using GL_ARB_framebuffer_object
 					glBlitFramebuffer(0, 0, width(), height(), 0, 0, width(), height(), GL_COLOR_BUFFER_BIT, GL_NEAREST);
-					glBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
-					glBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
+					mglBindFramebuffer(GL_READ_FRAMEBUFFER_EXT, 0);
+					mglBindFramebuffer(GL_DRAW_FRAMEBUFFER_EXT, 0);
 				}
 			}
 		}

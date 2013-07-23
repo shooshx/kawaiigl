@@ -1,5 +1,6 @@
 
-#include "../MyLib/Vec.h" 
+#pragma once
+#include "MyLib/Vec.h" 
 
 #include <gl/gl.h>
 #include <QString>
@@ -24,3 +25,7 @@ public:
 private:
 	Vec3 m_oldc;
 };
+
+// needed due to a coflict with qt includes
+void mglActiveTexture(uint v);
+void mglBindFramebuffer(uint a, uint b);

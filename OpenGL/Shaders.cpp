@@ -4,6 +4,30 @@
 
 #include "glGlob.h"
 
+     
+void mglActiveTexture(uint v) {
+    glActiveTexture(v);
+}
+void mglBindFramebuffer(uint a, uint b) {
+    glBindFramebuffer(a, b);
+}
+
+void UniformParam::getLocation(uint progId)
+{
+	if (m_name.isEmpty())
+		return;
+	m_uid = glGetUniformLocation(progId, m_name.toLatin1().data());
+	if (m_uid == -1)
+		printf("WARNING: uniform '%s' location is -1!\n", m_name.toLatin1().data());
+}
+void AttribParam::getLocation(uint progId)
+{
+	if (m_name.isEmpty())
+		return;
+	m_uid = glGetAttribLocation(progId, m_name.toLatin1().data());
+	if (m_uid == -1)
+		printf("WARNING: attribute '%s' location is -1!\n", m_name.toLatin1().data());
+}
 
 template<> 
 void UniformParam::set(const float& v) const

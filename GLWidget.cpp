@@ -15,7 +15,7 @@ public:
 	PatchQGLContext() :QGLContext(QGLFormat()) {}
 	void generateFontDisplayLists(const QFont & fnt, int listBase)
 	{
-		QGLContext::generateFontDisplayLists(fnt, listBase);
+		//QGLContext::generateFontDisplayLists(fnt, listBase);
 	}
 	bool initialized () const
 	{
@@ -863,7 +863,7 @@ void GLWidget::mglPrint(const QString &str, int fontIndex)
 	glPushAttrib(GL_LIST_BIT);							// Pushes The Display List Bits
 	glDisable(GL_TEXTURE_2D);
 	glListBase(m_fontBases[fontIndex].base);					// Sets The Base Character to 32
-	glCallLists(str.length(), GL_UNSIGNED_BYTE, str.toAscii());	// Draws The Display List Text
+	glCallLists(str.length(), GL_UNSIGNED_BYTE, str.toLatin1());	// Draws The Display List Text
 	glPopAttrib();										// Pops The Display List Bits
 }
 
@@ -898,17 +898,17 @@ void mglCheckErrors(const char* place = NULL)
 		QString ps =  "\n";
 		if (place != NULL)
 			ps = QString(place) + "\n";
-		s.sprintf("GLError: %s%s", ps.toAscii().data(), s.toAscii().data());
+		s.sprintf("GLError: %s%s", ps.toLatin1().data(), s.toLatin1().data());
 		int ret = QMessageBox::critical(NULL, "GLError", s, "Continue", "Exit", "Break");
 		if (ret == 1)
 			TerminateProcess(GetCurrentProcess(), 1);
 		if (ret == 2)
-			__asm int 3;
+			DebugBreak();
 	}
 }
 void mglCheckErrors(const QString& s)
 {
-	mglCheckErrors(s.toAscii().data());
+	mglCheckErrors(s.toLatin1().data());
 }
 
 
@@ -923,12 +923,12 @@ void mglCheckErrorsC(const char* place = NULL)
 		QString ps =  "\n";
 		if (place != NULL)
 			ps = QString(place) + "\n";
-		printf("GLError: %s%s", ps.toAscii().data(), s.toAscii().data());
+		printf("GLError: %s%s", ps.toLatin1().data(), s.toLatin1().data());
 	}
 }
 void mglCheckErrorsC(const QString& s)
 {
-	mglCheckErrorsC(s.toAscii().data());
+	mglCheckErrorsC(s.toLatin1().data());
 }
 
 void GLWidget::checkErrors(const char* place)

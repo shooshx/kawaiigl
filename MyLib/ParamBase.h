@@ -16,7 +16,7 @@ class ParamBase;
 #pragma warning (disable :4100) // unreferenced formal parameter
 
 
-class Prop : virtual public QObject
+class Prop : public QObject
 {
 	Q_OBJECT;
 protected:
@@ -154,7 +154,7 @@ Initor<T> init(const T& defv, const T& minv, const T& maxv)
 
 // those who gather Props
 // it's a QObject because of its double use also as the guy with the enums, sometimes.
-class IPropGather : virtual public QObject
+class IPropGather : public QObject
 {
 public:
 	virtual void addProperty(Prop *p) = 0;
@@ -320,7 +320,7 @@ QMetaEnum getMetaEnum(QObject *container)
 	const type_info& ti = typeid(T);
 	QString n(ti.name());
 	const QMetaObject* mo = container->metaObject();
-	int ie = mo->indexOfEnumerator(n.section(':', -1).toAscii());
+	int ie = mo->indexOfEnumerator(n.section(':', -1).toLatin1());
 	if (ie == -1)
 		return QMetaEnum(); // invalid;
 	return mo->enumerator(ie);
@@ -339,7 +339,7 @@ bool Prop::tryAssignTypeVal(const T& v)
 }
 
 
-
+#if 0
 class TypePropN : public Prop, public IPropGather
 {
 public:
@@ -416,6 +416,8 @@ public:
 protected:
 	QList<Prop*> m_props;
 };
+
+#endif
 
 // for interface completion, let there be 1 as well...
 #define DTypeProp1(T1, NAME1) \
@@ -778,10 +780,10 @@ public slots:
 		foreach(ParamBase *pr, m_params)
 			pr->storeToReg(*this);
 	}
-	void loadFromReg()
+	void loadFromReg(bool setUnChange = true)
 	{
 		foreach(ParamBase *pr, m_params)
-			pr->loadFromReg(*this);
+			pr->loadFromReg(*this, setUnChange);
 	}
 	void reset()
 	{

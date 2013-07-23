@@ -106,7 +106,9 @@ TrackPui::TrackPui(ParamUi *pui, Vec2GuiConf* conf) : PuiCont(pui)
 
 void TrackPui::config()
 {
-	ParamTemp dummy("track"); 
+    throw exception("not implemented");
+/*	
+    ParamTemp dummy("track"); 
 	TypeProp<bool> abs(&dummy, "_abs", "Absolute Coordinates", !relative);
 	DTypeProp2(float, minv, float, maxv) x(&dummy, "X range", xmin, xmax), y(&dummy, "Y range", ymin, ymax);
 	dummy.reset();
@@ -115,6 +117,7 @@ void TrackPui::config()
 	relative = !abs.val();
 	xmin = x.minv; xmax = x.maxv;
 	ymin = y.minv; ymax = y.maxv;
+*/
 }
 
 TimePui::TimePui(ParamUi *pui) : PuiCont(pui)

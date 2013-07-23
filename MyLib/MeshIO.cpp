@@ -120,7 +120,7 @@ bool Ply2Reader::read(const QString& filename)
 	}
 	else
 	{
-		printf("unknown extension %s\n", extension.toAscii().data());
+		printf("unknown extension %s\n", extension.toLatin1().data());
 	}
 
 	return read(in, readFacetSize, readEdgesNum, readNumVertices);
@@ -330,7 +330,7 @@ bool ObjReader::read(const QString& filename)
 		}
 		else
 		{
-			printf("unable to open materials file %s\n", mtlfileName.toAscii().data());
+			printf("unable to open materials file %s\n", mtlfileName.toLatin1().data());
 		}
 
 
@@ -607,6 +607,6 @@ bool MeshIO::read_Ext(const QString& filename, Mesh* rmesh)
 
 bool GSDReader::read(const QString& filename)
 {
-	CGSDParser p(filename.toAscii().data());
+	CGSDParser p(filename.toLatin1().data());
 	return p.CCreateCompositeObjectFromGSD(m_build);
 }

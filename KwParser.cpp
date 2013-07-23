@@ -24,10 +24,11 @@
 
 //using namespace boost;
 using namespace boost::spirit;
-using namespace boost::spirit::qi;
-using namespace boost::spirit::ascii;
 
-using namespace boost::spirit::arg_names;
+namespace qi = boost::spirit::qi;
+namespace ascii = boost::spirit::ascii;
+
+//using namespace boost::spirit::arg_names;
 using namespace boost::phoenix;
 using std::string;
 using std::vector;
@@ -39,7 +40,7 @@ namespace lambda = boost::lambda;
 struct write_action
 {
 	template<typename T>
-	void operator()(T const& i, unused_type, unused_type) const
+	void operator()(T const& i, qi::unused_type, qi::unused_type) const
 	{
 		std::cout << i << std::endl;
 	}
@@ -48,7 +49,7 @@ struct write_action
 struct null_action
 {
 	template<typename T>
-	void operator()(T const& i, unused_type, unused_type) const
+	void operator()(T const& i, qi::unused_type, qi::unused_type) const
 	{
 
 	}
@@ -70,7 +71,7 @@ std::ostream& operator<<(std::ostream& out, const Vec3& v)
 
 
 BOOST_FUSION_ADAPT_STRUCT(
-	IVec,
+	IVec3,
 	(float, x)
 	(float, y)
 	(float, z)
@@ -123,6 +124,7 @@ struct vec_ast
 	vec_ast(const vec_ast& a) : expr(a.expr), isCached(false), used(false) {}
 	vec_ast(const Vec3& expr);
 	vec_ast(const float& expr);
+
 
 	vec_ast& operator+=(vec_ast const& rhs);
 	vec_ast& operator-=(vec_ast const& rhs);
@@ -285,6 +287,14 @@ vec_ast& vec_ast::operator/=(vec_ast const& rhs)
 	return *this;
 }
 
+vec_ast operator*(vec_ast const& lhs, vec_ast const& rhs) // for left-hand multiplication
+{
+    vec_ast r;
+	r.expr = new EvalablePtr(new binary_op<multOp>(lhs, rhs));
+	return r;
+}
+
+
 
 
 // see comment in calc2_ast.cpp of the spirit2 examples
@@ -314,7 +324,7 @@ std::ostream& operator<<(std::ostream& out, vec_ast& v)
 
 
 template<typename ValT>
-void add_sym(symbols<char, ValT>& table, const std::string& name, const ValT& value);
+void add_sym(qi::symbols<char, ValT>& table, const std::string& name, const ValT& value);
 /*
 {
 	//cout << name << " : " << value << endl;
@@ -323,29 +333,27 @@ void add_sym(symbols<char, ValT>& table, const std::string& name, const ValT& va
 */
 
 template<>
-void add_sym(symbols<char, symbol_ast>& table, const std::string& name, const symbol_ast& value)
+void add_sym(qi::symbols<char, symbol_ast>& table, const std::string& name, const symbol_ast& value)
 {
 	//cout << "ADDV " << name << " : " << "..." << endl;
-	std::string::const_iterator it = name.begin();
-	const symbol_ast* v = table.lookup()->find(it, name.end());
-	if (v != NULL && it == name.end()) 
+	const symbol_ast* v = table.find(name);
+    if (v != NULL) 
 		table.remove(name.c_str());
 	table.add(name.c_str(), symbol_ast(value, name));
 }
 template<>
-void add_sym(symbols<char, float>& table, const std::string& name, const float& value)
+void add_sym(qi::symbols<char, float>& table, const std::string& name, const float& value)
 {
 	//cout << "ADDN " << name << " : " << value << endl;
-	std::string::const_iterator it = name.begin();
-	const float* v = table.lookup()->find(it, name.end());
-	if (v != NULL && it == name.end()) 
+	const float* v = table.find(name);
+	if (v != NULL) 
 		table.remove(name.c_str()); 
 	table.add(name.c_str(), value);
 }
 
 
 template <typename Iterator>
-struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreator
+struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public IPolyCreator
 {
 	kwprog(bool verbose) : kwprog::base_type(program), m_verbose(verbose)
 	{
@@ -360,7 +368,7 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			>> *comment
 			; 
 
-		comment = lexeme[ (lit('#') | lit("//")) >> *(char_ - eol) >> eol];
+		comment = lexeme[ (lit('#') | lit("//")) >> *(ascii::char_ - eol) >> eol];
 
 		//assignnum = (variable >> '=' >> expression)[bind(numsym.add, _1, _2)] ;
 		assignnum = (variable >> '=' >> expression)[phoenix::bind(&add_sym<float>, ref(numsym), _1, _2)] ;
@@ -373,13 +381,13 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			>> ')')
 			;
 		loadmesh %= (lit("load") >> '(' >> no_close >> ')');
-		loadmesh %= (lit("load") >> '(' >> '\"' >> lexeme[*(char_ - '\"')] >> '\"' >> ')');
+		loadmesh %= (lit("load") >> '(' >> '\"' >> lexeme[*(ascii::char_ - '\"')] >> '\"' >> ')');
 		miscfunc = (functions[push_back(_val, _1)] >> '(' >> no_close[push_back(_val, _1)] >> ')');
 
 		get_name %= raw[vecsym];
-		no_close %= lexeme[*(char_ - ')')];
+		no_close %= lexeme[*(ascii::char_ - ')')];
 
-		variable = lexeme[ alpha[_val += _1] >> (*alnum[_val += _1]) ];
+		variable = lexeme[ ascii::alpha[_val += _1] >> (*ascii::alnum[_val += _1]) ];
 
 		expression = 
 			//float_                 [_val = _1]; shortcut for faster compilation
@@ -424,24 +432,24 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 			;
 
 		vecFactor =
-			ivec                               [_val = construct<Vec3>(_1,_2,_3)]
+			ivec                               [_val = construct<Vec3>(_1)]
 			|   vecsym                         [_val = _1]
 			|   '(' >> vecExpression           [_val = _1] >> ')'
 			|   ('-' >> vecFactor              [_val = neg(_1)]) // unary
 			|   ('+' >> vecFactor              [_val = _1])  // unary
-			| (expression >> '*' >> vecFactor)[_val = _2][_val *= _1] //left multiple
+			| (expression >> '*' >> vecFactor)[_val = _2 * _1] //left multiple
 			;
 
 		ivec2 %= '{' >> expression >> ',' >> expression >> '}';
 
 		vec2Expression = 
-			ivec2			[_val = construct<Vec2>(_1,_2)]
+			ivec2			[_val = construct<Vec2>(_1)]
 			;
 
 		ivec4 %= '{' >> expression >> ',' >> expression >> ',' >> expression >> ',' >> expression >> '}';
 
 		vec4Expression = 
-			ivec4			[_val = construct<Vec4>(_1,_2,_3,_4)]
+			ivec4			[_val = construct<Vec4>(_1)]
 			;
 
 	}
@@ -461,30 +469,30 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 // 		meshs.push_back(v);
 // 	}
 
-	vector<vector<string> > polygons;
-	vector<string> meshs;
-	vector<vector<string> > invoked, invokedArgs;
-	symbols<char, symbol_ast> vecsym;
-	symbols<char, float> numsym;
+	vector<vector<std::string> > polygons;
+	vector<std::string> meshs;
+	vector<vector<std::string> > invoked, invokedArgs;
+	qi::symbols<char, symbol_ast> vecsym;
+	qi::symbols<char, float> numsym;
 	
-	symbols<char, string> functions; // possible general purpose no-arguments (yet) functions. added by the user
+	qi::symbols<char, std::string> functions; // possible general purpose no-arguments (yet) functions. added by the user
 
-	rule<Iterator, string(), space_type> no_close;
-	rule<Iterator, string(), space_type> get_name;
-	rule<Iterator, vector<string>(), space_type> addpoly;
-	rule<Iterator, vec_ast(), space_type>  vecExpression, vecTerm, vecFactor;
-	rule<Iterator, IVec(), space_type> ivec;
-	rule<Iterator, void(), space_type> assignnum, assignvec, statement, program, comment;
+	qi::rule<Iterator, std::string(), ascii::space_type> no_close;
+	qi::rule<Iterator, std::string(), ascii::space_type> get_name;
+	qi::rule<Iterator, vector<std::string>(), ascii::space_type> addpoly;
+	qi::rule<Iterator, vec_ast(), ascii::space_type>  vecExpression, vecTerm, vecFactor;
+	qi::rule<Iterator, IVec3(), ascii::space_type> ivec;
+	qi::rule<Iterator, void(), ascii::space_type> assignnum, assignvec, statement, program, comment;
 
-	rule<Iterator, string(), space_type> variable, loadmesh;
-	rule<Iterator, vector<string>(), space_type>  miscfunc;
-	rule<Iterator, float(), space_type> expression, term, factor;
+	qi::rule<Iterator, std::string(), ascii::space_type> variable, loadmesh;
+	qi::rule<Iterator, vector<std::string>(), ascii::space_type>  miscfunc;
+	qi::rule<Iterator, float(), ascii::space_type> expression, term, factor;
 
-	rule<Iterator, IVec2(), space_type> ivec2;
-	rule<Iterator, Vec2(), space_type> vec2Expression;
+	qi::rule<Iterator, IVec2(), ascii::space_type> ivec2;
+	qi::rule<Iterator, Vec2(), ascii::space_type> vec2Expression;
 
-	rule<Iterator, IVec4(), space_type> ivec4;
-	rule<Iterator, Vec4(), space_type> vec4Expression;
+	qi::rule<Iterator, IVec4(), ascii::space_type> ivec4;
+	qi::rule<Iterator, Vec4(), ascii::space_type> vec4Expression;
 
 
 	bool m_verbose;
@@ -512,7 +520,7 @@ struct kwprog : public grammar<Iterator, void(), space_type>, public IPolyCreato
 
 	virtual IPoint* lookupSymbol(const string& pname) 
 	{
-		symbol_ast* va = vecsym.lookup()->find(pname.begin(), pname.end());
+		symbol_ast* va = vecsym.find(pname);
 		if (va != NULL) {
 			va->used = true;
 			return va;
@@ -593,7 +601,7 @@ bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActo
 
 	while(iter != end)
 	{
-		bool ok = phrase_parse(iter, end, *m_kg, space);
+		bool ok = phrase_parse(iter, end, *m_kg, ascii::space);
 		if (!ok || iter != end)
 		{ // consume till end of line and try again
 			const char* estart = iter;
@@ -628,10 +636,10 @@ bool KwParser::kparseFloat(const char* iter, const char* end, const char* nameen
 		return false; 
 
 	const char* nameiter = iter;
-	bool ok = phrase_parse(iter, end, m_kg->assignnum, space);
+	bool ok = phrase_parse(iter, end, m_kg->assignnum, ascii::space);
 	if (ok && iter == end)
 	{
-		f = *(m_kg->numsym.lookup()->find(nameiter, nameend));
+		f = *(m_kg->numsym.find(std::string(nameiter, nameend) ));
 		return true;
 	}
 	return false;
@@ -643,10 +651,10 @@ bool KwParser::kparseVec(const char* iter, const char* end, const char* nameend,
 		return false;
 
 	const char* nameiter = iter;
-	bool ok = phrase_parse(iter, end, m_kg->assignvec, space);
+	bool ok = phrase_parse(iter, end, m_kg->assignvec, ascii::space);
 	if (ok && iter == end)
 	{
-		p = m_kg->vecsym.lookup()->find(nameiter, nameend);
+		p = m_kg->vecsym.find( std::string(nameiter, nameend));
 		return true;
 	}
 	return false;
@@ -658,7 +666,7 @@ bool KwParser::kparseVec2(const char* iter, const char* end, Vec2& p)
 	if (!isValid())
 		return false;
 
-	bool ok = phrase_parse(iter, end, m_kg->vec2Expression, p, space);
+	bool ok = phrase_parse(iter, end, m_kg->vec2Expression, ascii::space, p);
 	return (ok && iter == end);
 }
 
@@ -669,7 +677,7 @@ bool KwParser::kparseVec4(const char* iter, const char* end, Vec4& p)
 	if (!isValid())
 		return false;
 
-	bool ok = phrase_parse(iter, end, m_kg->vec4Expression, p, space);
+	bool ok = phrase_parse(iter, end, m_kg->vec4Expression, ascii::space, p);
 	return (ok && iter == end);
 }
 

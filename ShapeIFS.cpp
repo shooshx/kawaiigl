@@ -600,12 +600,12 @@ void MyObject::saveAs(QTextStream& out, const QString& format, ESaveWhat saveWha
 	if (moveToVtxCenter) // center object before save
 	{
 		c = findVtxCenter();
-		printf("center=%s\n", c.toStringF().toAscii().data());
+		printf("center=%s\n", c.toStringF().toLatin1().data());
 	}
 	else if (moveToBoxCente)
 	{
 		c = findBoxCenter();
-		printf("center=%s\n", c.toStringF().toAscii().data());
+		printf("center=%s\n", c.toStringF().toLatin1().data());
 	}
 
 

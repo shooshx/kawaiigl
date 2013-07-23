@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>KawaiiGL Control</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="mainLayout">
    <property name="spacing">
     <number>3</number>
    </property>
@@ -808,6 +808,9 @@
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
+     <item>
+      <widget class="QComboBox" name="texEdgeBox"/>
+     </item>
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">

@@ -1,5 +1,5 @@
 
-
+#include <gl/glew.h>
 #include <QApplication>
 #include <QIcon>
 
