@@ -44,6 +44,7 @@ private slots:
 	void on_removeBut_clicked();
 	void on_downBut_clicked();
 	void on_upBut_clicked();
+    void on_saveBut_clicked();
 	void itemClicked(QTreeWidgetItem *item, int col);
 	void itemChanged(QTreeWidgetItem *item, int col);
 

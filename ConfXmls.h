@@ -14,23 +14,25 @@ class QAction;
 struct ModelData;
 class KawaiiGL;
 class DisplayConf;
+class Document;
 
 class ConfXmls : public QObject
 {
 	Q_OBJECT
 public:
-	ConfXmls(KawaiiGL* mainc);
+	ConfXmls(KawaiiGL* mainc, const QString& modelsFile, const QString& progFiles);
 
-	void init(const QString& modelsFile, const QString& progFiles);
-
-	void loadModelsFile();
+	void loadModelsFile(const QString& filename, QMenu* menu);
+	void loadProgramsFile(const QString& filename, QMenu* menu);
 
 	void loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe);
-	void loadProgramElement(QMenu* menu, const QString& display, QDomElement &pe);
+    void loadProgramElement(const QString& display, QDomElement &pe, ProgKeep *prog);
 	void loadProgramsElement(QMenu* menu, QDomElement &pe);
-	void loadProgramsFile(QMenu* menu);
 
 	void activateAction(const QString& name);
+
+    void parseProgFile(const QString& filename, ProgKeep* prog);
+    bool saveProg(const Document& doc, const QString& filename);
 
 private:
 	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
@@ -48,16 +50,11 @@ private:
 	DisplayConf &m_conf;
 	QWidget *m_parent;
 
-	QString m_modelsFile, m_progFiles;
-	
-	
 	QList<ProgKeep*> m_progrep;
 
 	typedef QMap<QString, QAction*> TActionMap;
 	TActionMap m_userActions;
 
-public:
-	QMenu *m_progMenu, *m_modelsMenu;
 
 };
 

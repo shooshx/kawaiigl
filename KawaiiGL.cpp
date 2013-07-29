@@ -45,7 +45,14 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 
 	QDir::setCurrent(EXAMPLES_DIR); // we're reading the config and textures from there
 
-	m_doc = new Document(this);
+    m_progMenu = new QMenu(this);
+	m_modelsMenu = new QMenu(this);
+
+	m_doc = new Document(this); // adds to the menus
+
+    m_progMenu->addSeparator();
+    QAction *loadFromFileAct = m_progMenu->addAction("From file...");
+    connect(loadFromFileAct, SIGNAL(triggered(bool)), m_doc, SLOT(loadProgramFile()));
 
 	m_kView = new T2GLWidget(this, m_doc);
 	setCentralWidget(m_kView);

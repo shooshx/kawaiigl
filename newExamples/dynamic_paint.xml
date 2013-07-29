@@ -1,0 +1,31 @@
+<!DOCTYPE prog>
+<program>
+ <pass name="Screen Pass">
+  <fragtext name="frag.paint.glsl.txt"><![CDATA[
+uniform vec2 curs;
+uniform sampler2D img;
+
+void main()
+{
+	if (distance(gl_FragCoord.xy,curs)<5.0)
+		gl_FragColor = vec4(0.0,0.0,0.0,0.0);
+	else	
+		gl_FragColor = texelFetch(img, ivec2(gl_FragCoord.xy), 0) + 0.1;
+		//gl_FragColor = vec4(1.0,0.0,0.0,0.0);
+}
+]]></fragtext>
+  <param name="img" type="texture" kind="uniform">0</param>
+  <param name="curs" type="vec2" gui="screen" kind="uniform">{0.0, 0.0}</param>
+  <conf name="to">Texture0</conf>
+  <conf name="toMultisample">0</conf>
+  <conf name="what">Quad_Tex1</conf>
+ </pass>
+ <pass name="Model Pass">
+  <conf name="clear">0</conf>
+  <conf name="to">Texture0</conf>
+ </pass>
+ <pass name="To Display Pass">
+  <conf name="what">Quad_Tex0</conf>
+ </pass>
+ <swappass a="0" b="1"/>
+</program>

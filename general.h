@@ -22,6 +22,7 @@
 #include <QVector>
 #include <string>
 #include <memory>
+#include <iostream>
 using namespace std;
 
 #include "MyLib/Vec.h"

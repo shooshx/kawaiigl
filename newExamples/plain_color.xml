@@ -1,0 +1,22 @@
+<!DOCTYPE prog>
+<program>
+ <pass>
+  <vtxtext name="vtx.plain.glsl.txt"><![CDATA[
+void main()
+{
+	gl_Position = ftransform();
+} 
+
+
+
+]]></vtxtext>
+  <fragtext name="frag.plain.glsl.txt"><![CDATA[
+uniform float c;
+
+void main()
+{	
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+]]></fragtext>
+ </pass>
+</program>

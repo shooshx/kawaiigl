@@ -1,1 +1,6 @@
 BUG - move point after translate
+
+save single file
+add model to pass
+crashes
+disable pass

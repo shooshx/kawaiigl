@@ -41,7 +41,6 @@
   <ItemGroup>
     <ClCompile Include="ConfXmls.cpp" />
     <ClCompile Include="ControlPanel.cpp" />
-    <ClCompile Include="DisplayConf.cpp" />
     <ClCompile Include="DistMapTexture.cpp" />
     <ClCompile Include="Document.cpp" />
     <ClCompile Include="GaussianGenerator.cpp" />
@@ -242,7 +241,6 @@
     <ClCompile Include="OpenGL\Shaders.cpp" />
     <ClCompile Include="OpenGL\Texture.cpp" />
     <ClCompile Include="ParamUI.cpp" />
-    <ClCompile Include="Pass.cpp" />
     <ClCompile Include="PParamsWidget.cpp" />
     <ClCompile Include="PresetModels.cpp" />
     <ClCompile Include="ProjBrowser.cpp" />
@@ -303,7 +301,6 @@
     <ClInclude Include="GeneratedFiles\ui_PParamsWidget.h" />
     <ClInclude Include="GeneratedFiles\ui_ProjBrowser.h" />
     <ClInclude Include="GeneratedFiles\ui_ShaderConfigDlg.h" />
-    <ClInclude Include="GeometryGenerators.h" />
     <ClInclude Include="GlobDefs.h" />
     <ClInclude Include="KwParser.h" />
     <ClInclude Include="MyLib\CtxTreeWidget.h" />
@@ -888,6 +885,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="MyLib\QtAdd\QtColorTriangle" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -965,7 +963,7 @@
       <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>

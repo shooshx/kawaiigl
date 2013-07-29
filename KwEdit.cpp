@@ -19,6 +19,7 @@
 #include "ParamUI.h"
 #include "ProgTextEdit.h"
 #include "ShaderConfigDlg.h"
+#include "KawaiiGL.h"
 
 #include "MyLib/QtAdd/CloseButton.h"
 
@@ -66,8 +67,7 @@ static QFont fixedFont("Courier", 10);
 
 
 KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *view)
-:MyDialog(parent), m_conf(conf), m_doc(doc), m_view(view)
-,m_lastActiveTabIndex(0)
+    : MyDialog(parent), m_conf(conf), m_doc(doc), m_view(view), m_lastActiveTabIndex(0)
 {
 	setWindowTitle("Kawaii Script");
 	ui.setupUi(this);
@@ -86,8 +86,8 @@ KwEdit::KwEdit(QWidget* parent, DisplayConf& conf, Document* doc, T2GLWidget *vi
 
 	connect(ui.update_shader, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
 	connect(ui.shaderEnable, SIGNAL(clicked()), this, SLOT(doShadersUpdate()));
-	connect(ui.saveBot1, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
-	connect(ui.saveBot2, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
+	//connect(ui.saveBot1, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
+	//connect(ui.saveBot2, SIGNAL(clicked()), this, SLOT(saveCurDoc()));
 
 	//resize(300, 500);
 	//move(pos().x()+500, pos().y());
@@ -208,6 +208,7 @@ void KwEdit::editTextChanged(int pos, int rem, int add)
 	}
 }
 
+/*
 void KwEdit::saveCurDoc()
 {
 	KPagePtr curEd;
@@ -232,6 +233,7 @@ void KwEdit::saveCurDoc()
 	Document::writeToFile(src->text, src->name());
 	src->setChangedSinceLoad(false);
 }
+*/
 
 void KwEdit::modificateChanged(bool modif)
 {
@@ -468,7 +470,7 @@ void KwEdit::readProg(ProgKeep* prog)
 {
 	// automatically open the progs of first pass that has shaders
 	RenderPassPtr rpass;
-	for (Document::TPasses::iterator it = m_doc->m_passes.begin(), end = m_doc->m_passes.end(); it != end; ++it)
+	for (auto it = m_doc->m_passes.begin(), end = m_doc->m_passes.end(); it != end; ++it)
 	{
 		rpass = dynamic_pointer_cast<RenderPass>(*it);
 		if (rpass && !rpass->shaders.isEmpty())
@@ -605,11 +607,11 @@ KPagePtr KwEdit::addTextPage(DocSrc* src, int& index)
 
 	if (src->type != SRC_MODEL)
 	{
-		page->ed->setMenu(m_doc->m_confxmls.m_progMenu);
+		page->ed->setMenu(m_view->m_mainwin->m_progMenu);
 	}
 	else
 	{
-		page->ed->setMenu(m_doc->m_confxmls.m_modelsMenu);
+		page->ed->setMenu(m_view->m_mainwin->m_modelsMenu);
 		page->m_high = new MySyntaxHighlighter(page->ed->document(), this);
 		index = 0;
 	}

@@ -1,19 +1,19 @@
-
+#version 130
 /* Texture to halftone. */
 uniform sampler2D halftoneTexture;
-/* Divide in this many halftone dots along x and y.
+/* Divide in this many halftone dots along x and y. */
 uniform vec2 halftoneResolution;
 
 /* Angle of halftone grid (radians; positive = counterclockwise) */
 const float angle = 0.54;
 
 /* Contrast control */
-const float contrastDelta = 0.3; // higher -> grey gets darker
+const float contrastDelta = 0.1; // higher -> grey gets darker
 const float brightness = 0.0; // analog for white
 const float blackness = 1.1; // higher -> larger areas completely covered by dots
 
 /* smoothness black to white (pseudo anti-aliasing). */
-const float smooth = 0.2;
+const float smoothx = 0.2;
 
 const vec4 dotColor = vec4(0.0, 0.0, 0.0, 1.0);
 const vec4 backgroundColor = vec4(1.0, 1.0, 1.0, 0.0);
@@ -26,7 +26,7 @@ void main(void)
 	                                -sin(angle), cos(angle));
 
 	/* Distance to next dot divided by two. */ 
-	const vec2 halfLineDist = vec2(1.0)/vec2(halftoneResolution)/vec2(2.0);
+	vec2 halfLineDist = vec2(1.0)/halftoneResolution/vec2(2.0);
 
 	/* Find center of the halftone dot. */
 	vec2 center =  rotate * gl_TexCoord[0].st;
@@ -35,13 +35,13 @@ void main(void)
 	center = inverse_rotate * center;
 
 	/* Only red (texture is grey scale) */
-	const float luminance = texture2D(halftoneTexture, center).r;
+	float luminance = texture2D(halftoneTexture, center).r;
 
 
 	/* Radius of the halftone dot. */
 	float radius = sqrt(2.0)*halfLineDist.x*(1.0 - luminance)*blackness;
 
-	const float contrast = 1.0 + (contrastDelta)/(2.0);
+	float contrast = 1.0 + (contrastDelta)/(2.0);
 	float radiusSqrd = contrast * pow(radius,2.0)
 		- (contrastDelta * halfLineDist.x*halfLineDist.x)/2.0
 		- brightness * halfLineDist.x*halfLineDist.x;
@@ -50,7 +50,7 @@ void main(void)
 	vec2 power = pow(abs(center-gl_TexCoord[0].st),vec2(2.0));
 	float pixelDist2 = power.x + power.y; // Distance pixel to center squared.
 
-	const float delta = smooth*pow(halfLineDist.x,2.0);
+	float delta = smoothx*pow(halfLineDist.x,2.0);
 	float gradient = smoothstep(radiusSqrd-delta, radiusSqrd+delta, pixelDist2);
 	gl_FragColor = mix(dotColor, backgroundColor, gradient);
 }

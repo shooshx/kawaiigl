@@ -9,16 +9,16 @@
 
 enum EParamType
 {
-	EPFloat = 0, 
-	EPFloatRange,
-	EPFloatTime,
-	EPInt,
-	EPVec2,
-	EPVec3,
-	EPVec4,
-	EPVec3Color,
-	EPVec4Color,
-	EPTexture
+    EPFloat = 0, 
+    EPFloatRange,
+    EPFloatTime,
+    EPInt,
+    EPVec2,
+    EPVec3,
+    EPVec4,
+    EPVec3Color,
+    EPVec4Color,
+    EPTexture
 }; // ADDTYPE tag to search for
 
 
@@ -28,17 +28,19 @@ EParamType getBaseType(EParamType t);
 
 
 struct GuiConf
-{};
+{
+    virtual ~GuiConf() {}
+};
 struct Vec2GuiConf : public GuiConf
 {
-	Vec2GuiConf() : relative(true), xmin(0.0), xmax(1.0), ymin(0.0), ymax(1.0) {}
-	bool relative;
-	float xmin, xmax, ymin, ymax;
+    Vec2GuiConf() : relative(true), xmin(0.0), xmax(1.0), ymin(0.0), ymax(1.0) {}
+    bool relative;
+    float xmin, xmax, ymin, ymax;
 };
 struct FloatGuiConf : public GuiConf
 {
-	FloatGuiConf() : vmin(0.0), vmax(1.0) {}
-	float vmin, vmax;
+    FloatGuiConf() : vmin(0.0), vmax(1.0) {}
+    float vmin, vmax;
 };
 
 class RenderPass;
@@ -46,24 +48,24 @@ class RenderPass;
 // trivially copyable.
 struct ParamInput
 {
-	ParamInput() {}
-	ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform, RenderPass* _mypass)
-		:name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
-		 prop(NULL), lastParseOk(true), mypass(_mypass)
-	{}
-	
-	QString name;
-	QString value;
-	EParamType type;
-	bool isUniform; // false if attribute
+    ParamInput() {}
+    ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform, RenderPass* _mypass)
+        :name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
+         prop(NULL), lastParseOk(true), mypass(_mypass)
+    {}
+    
+    QString name;
+    QString value;
+    EParamType type;
+    bool isUniform; // false if attribute
 
-	GuiConf* guiconf; // gui arguments (loaded from the xml and never destroyed)
+    GuiConf* guiconf; // gui arguments (loaded from the xml and never destroyed)
 
-	mutable Prop* prop; // the prop to update, if it exists (share with another widget using this) set by the PParamWidget
-	mutable int index; // in the program registry.
-	mutable bool lastParseOk;
+    mutable Prop* prop; // the prop to update, if it exists (share with another widget using this) set by the PParamWidget
+    mutable int index; // in the program registry.
+    mutable bool lastParseOk;
 
-	RenderPass* mypass; // the pass this param is part of.
+    RenderPass* mypass; // the pass this param is part of.
 };
 
 
@@ -72,24 +74,24 @@ struct ParamInput
 /*
 struct ProgKeep 
 {
-	ProgKeep() : runType(DisplayConf::RunNormal) {}
-	typedef QMap<QString, QString> TArgsMap;
+    ProgKeep() : runType(DisplayConf::RunNormal) {}
+    typedef QMap<QString, QString> TArgsMap;
 
-	QString vtxProg, fragProg, geomProg;
-	QString name;
-	TArgsMap args; // any name from DisplayConf and a value as string
-	DisplayConf::RunType runType;
-	QVector<ParamInput> params; 
+    QString vtxProg, fragProg, geomProg;
+    QString name;
+    TArgsMap args; // any name from DisplayConf and a value as string
+    DisplayConf::RunType runType;
+    QVector<ParamInput> params; 
 };
 */
 
 
 struct ModelData
 {
-	ModelData() {}
-	ModelData(QString name, bool _isMesh) :filename(name), isMesh(_isMesh) {}
-	QString filename;
-	bool isMesh;
+    ModelData() {}
+    ModelData(QString name, bool _isMesh) :filename(name), isMesh(_isMesh) {}
+    QString filename;
+    bool isMesh;
 };
 Q_DECLARE_METATYPE(ModelData);
 

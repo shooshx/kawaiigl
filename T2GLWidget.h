@@ -10,6 +10,7 @@
 class T2GLWidget;
 class Document;
 class Mesh;
+class KawaiiGL;
 
 
 typedef QSet<IPoint*> TIPoints; // indexed by the pointer of course
@@ -132,6 +133,7 @@ public:
 		weak_ptr<Pass> outputOf;
 	};
 	QVector<TexUnit> m_texUnits;
+    KawaiiGL *m_mainwin;
 };
 
 

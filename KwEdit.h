@@ -107,7 +107,7 @@ private slots:
 
 	void tabsBarClose();
 	void pageNameChanged(const QString&);
-	void saveCurDoc();
+	//void saveCurDoc();
 	void decompile();
 
 	void updateCursorPosLine();

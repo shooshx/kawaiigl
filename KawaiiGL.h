@@ -39,6 +39,10 @@ private:
 	MyDialog *m_control;
 	Document *m_doc;
 
+public:
+    QMenu *m_progMenu, *m_modelsMenu;
+
+
 };
 
 #endif // KAWAIIGL_H

@@ -82,8 +82,14 @@ void ShaderProgram::clear()
 	m_isOk = false; 
 } 
 
+//void __stdcall debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam) {
+//    printf("debugCallback: %s\n", message);
+//}
+
 bool ShaderProgram::init(const ProgCompileConf& conf)
 {
+    //glDebugMessageCallbackARB(debugCallback, NULL);
+    printf("------------------------------------------------------------\n");
 	mglCheckErrorsC("clear errors");
 	const char* name = typeid(this).name();
 
@@ -112,6 +118,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(vso, 2, srcs, NULL);
 		glCompileShader(vso);
+        printShaderInfoLog(vso);
 		glAttachShader(m_progId, vso);
 		m_createdShaders.append(vso);
 	}
@@ -125,6 +132,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(gso, 2, srcs, NULL);
 		glCompileShader(gso);
+        printShaderInfoLog(gso);
 		glAttachShader(m_progId, gso);
 		m_createdShaders.append(gso);
 	}
@@ -138,6 +146,7 @@ bool ShaderProgram::init(const ProgCompileConf& conf)
 		const char *srcs[2] = { defines.c_str(), ba.data() };
 		glShaderSource(fso, 2, srcs, NULL);
 		glCompileShader(fso);
+        printShaderInfoLog(fso);
 		glAttachShader(m_progId, fso);
 		m_createdShaders.append(fso);
 	}

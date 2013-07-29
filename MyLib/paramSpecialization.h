@@ -75,7 +75,7 @@ QString TypeProp<T>::toString() const
 	QMetaEnum me = getMetaEnum<T>(container);
 	if (me.isValid())
 	{
-		return QString(me.key(value)); // string name
+		return QString(me.valueToKey(value)); // string name
 	}
 	return QString("%1").arg(value);
 }
