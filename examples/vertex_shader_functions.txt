@@ -1,0 +1,82 @@
+a1={1,1,0}
+a2={1,0,0}
+a3={0,0,0}
+a4={0,1,0}
+add(a4,a3,a2,a1)
+a5={-1,0,0}
+a6={-1,1,0}
+add(a5,a3,a4,a6)
+a7={1,-1,0}
+a8={0,-1,0}
+add(a8,a7,a2,a3)
+a9={-1,-1,0}
+add(a9,a8,a3,a5)
+
+
+----- vertex
+varying vec3 normal;
+varying vec3 lightVec;
+varying vec3 eyeVec;
+varying vec3 position;
+
+void main()
+{	
+     vec4 p = gl_Vertex;
+
+	float x = p.x;
+	float y = p.y;
+	p.z = x*x+sin(y*15)/20 + sin(x*15)/20+y*y;
+
+	//p.z = (sin(x*3)+sin(y*5))/3;
+
+	gl_Position = gl_ModelViewProjectionMatrix * p;
+	position = p.xyz;
+
+	normal = gl_NormalMatrix * gl_Normal;
+	vec3 vVertex = vec3(gl_ModelViewMatrix * p);
+	vVertex.z = gl_Position.z;
+
+	// towards light in camera space
+	lightVec = vec3(gl_LightSource[0].position.xyz - vVertex);
+	// towards the eye in camera space
+	eyeVec = -vVertex;
+
+	gl_FrontColor = gl_Color;
+
+}
+
+
+
+----- fragment
+varying vec3 normal;
+varying vec3 lightVec;
+varying vec3 eyeVec;
+varying vec3 position;
+
+void main (void)
+{			
+	vec3 X = dFdx(position);
+	vec3 Y = dFdy(position);
+	vec3 normal=normalize(cross(X,Y));
+		
+	vec3 N = normalize(normal);
+	vec3 L = normalize(lightVec);
+	
+	float lambertTerm = abs(dot(N,L));
+	
+ 	// ** phong
+	// vec3 E = normalize(eyeVec);
+	// float prod = dot(reflect(L, N), E);
+	// ** blinn
+	float prod = dot(gl_LightSource[0].halfVector.xyz, N); 
+
+	float specularTerm = pow( max(prod, 0.0), gl_FrontMaterial.shininess );
+
+	vec4 ambient = gl_LightSource[0].ambient;
+	vec4 diffuse = gl_LightSource[0].diffuse * lambertTerm;	
+	vec4 specular = gl_LightSource[0].specular * 
+	                gl_FrontMaterial.specular * specularTerm;	
+
+	// mimicing GL_COLOR_MATERIAL
+	gl_FragColor = (ambient + diffuse) * gl_Color + specular;			
+}
