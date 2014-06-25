@@ -119,7 +119,7 @@ public:
 	//int guiA, guiB;
 
 	EParamType m_dtype;
-	bool m_isUniform;
+	EParamDest m_dest; // uniform/attribute/model
 
 	PParamsWidget *m_parent;
 	T2GLWidget *m_view;

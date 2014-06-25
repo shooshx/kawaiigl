@@ -21,6 +21,12 @@ enum EParamType
     EPTexture
 }; // ADDTYPE tag to search for
 
+enum EParamDest
+{
+    EDAttribute = 0,
+    EDUniform,
+    EDModel
+};
 
 template<typename T>
 bool isEType(EParamType t, const T& v);
@@ -46,18 +52,19 @@ struct FloatGuiConf : public GuiConf
 class RenderPass;
 
 // trivially copyable.
+// single parameter definition
 struct ParamInput
 {
     ParamInput() {}
-    ParamInput(const QString& _name, EParamType _type, const QString& _value, bool _isUniform, RenderPass* _mypass)
-        :name(_name), type(_type), value(_value), isUniform(_isUniform), index(-1), guiconf(NULL), 
+    ParamInput(const QString& _name, EParamType _type, const QString& _value, EParamDest _dest, RenderPass* _mypass)
+        :name(_name), type(_type), value(_value), dest(_dest), index(-1), guiconf(NULL), 
          prop(NULL), lastParseOk(true), mypass(_mypass)
     {}
     
     QString name;
     QString value;
     EParamType type;
-    bool isUniform; // false if attribute
+    EParamDest dest; // false if attribute
 
     GuiConf* guiconf; // gui arguments (loaded from the xml and never destroyed)
 

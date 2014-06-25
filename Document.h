@@ -94,7 +94,7 @@ public:
     void generateTriSphere(const std::vector<std::string>& sep);
 
 public slots:
-    void calc(DocSrc* qstr, bool doParse = true);
+    void calc(DocSrc* qstr, bool doParse = true, bool purgePointCache = false);
     void calcNoParse();
     void calcSave();
 
@@ -171,7 +171,7 @@ public:
     // the mapping is done to avoid multiple adapters for the same parameter
     // TBD: need to get rid of them when they change type?
     typedef QMap<QString, shared_ptr<ParamAdapter> >  TAdaptersList;
-    TAdaptersList m_onCalcEvals; // things that are re-evaluated when there's a calc() call
+    //TAdaptersList m_onCalcEvals; // things that are re-evaluated when there's a calc() call
     TAdaptersList m_onFrameEvals; // things that are reeveluated every frame
 
     struct AttribEval

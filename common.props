@@ -12,7 +12,7 @@
       <PreprocessorDefinitions>GLEW_STATIC</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\lib\glew-1.9.0\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\lib\glew-1.10.0\lib\Release\$(Platform)</AdditionalLibraryDirectories>
       <AdditionalDependencies>glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

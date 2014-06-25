@@ -817,7 +817,8 @@ public:
         if (hasTex)
         {
             //glTexCoord2f(curpl.texAncs[pni].x, curpl.texAncs[pni].y);
-            glMultiTexCoord2f(GL_TEXTURE0 + m_texUnit, curpl.texAncs[pni].x, curpl.texAncs[pni].y);
+            if (glMultiTexCoord2f) // WinXP
+                glMultiTexCoord2f(GL_TEXTURE0 + m_texUnit, curpl.texAncs[pni].x, curpl.texAncs[pni].y);
         }
 
         if (m_glw->shouldUseProg())

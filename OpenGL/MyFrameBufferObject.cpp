@@ -25,13 +25,13 @@ public:
     MyFramebufferObjectPrivate() : valid(false), ctx(0), fbo(0) {}
 
     void init(const QSize& sz, MyFramebufferObject::Attachment attachment,
-			  GLenum texture_target, MyFramebufferObject::ETexFormat format, int numSamp,
-			  MyFramebufferObject::EFiltering filtering);
+              GLenum texture_target, MyFramebufferObject::ETexFormat format, int numSamp,
+              MyFramebufferObject::EFiltering filtering);
     bool checkFramebufferStatus() const;
 
     GlTexture texture, depth_stencil_buffer;
     GLuint fbo;
-	RenderBuffer renderBuf, depth_renderBuf;
+    RenderBuffer renderBuf, depth_renderBuf;
 
     GLenum target;
     QSize size;
@@ -84,96 +84,96 @@ bool MyFramebufferObjectPrivate::checkFramebufferStatus() const
 // glRenderbufferStorageMultisampleEXT
 
 void MyFramebufferObjectPrivate::init(const QSize &sz, MyFramebufferObject::Attachment attachment,
-									  GLenum texture_target, MyFramebufferObject::ETexFormat format, 
-									  int numSamp, MyFramebufferObject::EFiltering filtering)
+                                      GLenum texture_target, MyFramebufferObject::ETexFormat format, 
+                                      int numSamp, MyFramebufferObject::EFiltering filtering)
 {
     size = sz;
     target = texture_target;
     // texture dimensions
 
-	//numSamp = 0; // this doesn't work yet.
+    //numSamp = 0; // this doesn't work yet.
 
-	mglCheckErrorsC();
+    mglCheckErrorsC();
 
     glGenFramebuffersEXT(1, &fbo);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo);
 
-	if (numSamp == 0)
-	{
-		uint filter = (filtering == MyFramebufferObject::FI_LINEAR)?GL_LINEAR:GL_NEAREST;
-		// init texture
-		if (format == MyFramebufferObject::FMT_RGBA)
-			texture.init(texture_target, sz, 6, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, NULL, filter, filter);
-		else if (format == MyFramebufferObject::FMT_FLOAT)
-			texture.init(texture_target, sz, 6, GL_ALPHA32F_ARB, GL_ALPHA, GL_FLOAT, NULL, filter, filter);
+    if (numSamp == 0)
+    {
+        uint filter = (filtering == MyFramebufferObject::FI_LINEAR)?GL_LINEAR:GL_NEAREST;
+        // init texture
+        if (format == MyFramebufferObject::FMT_RGBA)
+            texture.init(texture_target, sz, 6, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, NULL, filter, filter);
+        else if (format == MyFramebufferObject::FMT_FLOAT)
+            texture.init(texture_target, sz, 6, GL_ALPHA32F_ARB, GL_ALPHA, GL_FLOAT, NULL, filter, filter);
 
-		glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, texture.handle(), 0);
-	}
-	else // use a renderbuffer.
-	{
-		renderBuf.init(sz, GL_RGB, numSamp);
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_EXT, renderBuf.handle());
-	}
+        glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, texture.handle(), 0);
+    }
+    else // use a renderbuffer.
+    {
+        renderBuf.init(sz, GL_RGB, numSamp);
+        glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_EXT, renderBuf.handle());
+    }
 
 
     valid = checkFramebufferStatus();
 
     if (attachment == MyFramebufferObject::CombinedDepthStencil) 
-	{
-        // depth and stencil buffer needs another extension
-		if (texture_target == GL_TEXTURE_2D)
-		{
-			depth_stencil_buffer.init(GL_TEXTURE_2D, sz, 1, GL_DEPTH24_STENCIL8_EXT, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT);
-			glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-			glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-		} 
-		else if (texture_target == GL_TEXTURE_3D)
-		{
-			depth_stencil_buffer.init(GL_TEXTURE_2D_ARRAY_EXT, sz, 6, GL_DEPTH24_STENCIL8_EXT, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT);
-			glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-			glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-		}
-		Q_ASSERT(numSamp == 0);
-
-		valid = checkFramebufferStatus();
-    } 
-	else if (attachment == MyFramebufferObject::Depth)
     {
-		if (numSamp == 0)
-		{
-			if (texture_target == GL_TEXTURE_2D)
-			{
-				depth_stencil_buffer.init(GL_TEXTURE_2D, sz, 1, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-				glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-			}
-			else if (texture_target == GL_TEXTURE_3D)
-			{
-				depth_stencil_buffer.init(GL_TEXTURE_2D_ARRAY_EXT, sz, 6, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
-				glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
-			}
-		}
-		else
-		{
-			Q_ASSERT(texture_target == GL_TEXTURE_2D);
-			depth_renderBuf.init(sz, GL_DEPTH_COMPONENT, numSamp);
-			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_renderBuf.handle());
-		}
-		valid = checkFramebufferStatus();
+        // depth and stencil buffer needs another extension
+        if (texture_target == GL_TEXTURE_2D)
+        {
+            depth_stencil_buffer.init(GL_TEXTURE_2D, sz, 1, GL_DEPTH24_STENCIL8_EXT, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT);
+            glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+            glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+        } 
+        else if (texture_target == GL_TEXTURE_3D)
+        {
+            depth_stencil_buffer.init(GL_TEXTURE_2D_ARRAY_EXT, sz, 6, GL_DEPTH24_STENCIL8_EXT, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT);
+            glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+            glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+        }
+        Q_ASSERT(numSamp == 0);
+
+        valid = checkFramebufferStatus();
     } 
-	else 
-	{
+    else if (attachment == MyFramebufferObject::Depth)
+    {
+        if (numSamp == 0)
+        {
+            if (texture_target == GL_TEXTURE_2D)
+            {
+                depth_stencil_buffer.init(GL_TEXTURE_2D, sz, 1, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+                glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+            }
+            else if (texture_target == GL_TEXTURE_3D)
+            {
+                depth_stencil_buffer.init(GL_TEXTURE_2D_ARRAY_EXT, sz, 6, GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT);
+                glFramebufferTextureEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, depth_stencil_buffer.handle(), 0);
+            }
+        }
+        else
+        {
+            Q_ASSERT(texture_target == GL_TEXTURE_2D);
+            depth_renderBuf.init(sz, GL_DEPTH_COMPONENT, numSamp);
+            glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, depth_renderBuf.handle());
+        }
+        valid = checkFramebufferStatus();
+    } 
+    else 
+    {
         fbo_attachment = MyFramebufferObject::NoAttachment;
     }
 
-	depth_renderBuf.unbind();
-	fbo_attachment = attachment;
+    depth_renderBuf.unbind();
+    fbo_attachment = attachment;
 
-	glBindTexture(texture_target, 0);
+    glBindTexture(texture_target, 0);
 
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
     if (!valid) 
-	{
+    {
         glDeleteFramebuffersEXT(1, &fbo);
     }
     mglCheckErrorsC("fbo");
@@ -197,8 +197,8 @@ MyFramebufferObject::MyFramebufferObject(int width, int height, GLenum target)
 
 
 MyFramebufferObject::MyFramebufferObject(int width, int height, Attachment attachment,
-										 GLenum target, MyFramebufferObject::ETexFormat format, 
-										 int numSamp, EFiltering filtering)
+                                         GLenum target, MyFramebufferObject::ETexFormat format, 
+                                         int numSamp, EFiltering filtering)
     : d_ptr(new MyFramebufferObjectPrivate)
 {
     Q_D(MyFramebufferObject);
@@ -208,7 +208,7 @@ MyFramebufferObject::MyFramebufferObject(int width, int height, Attachment attac
 
 MyFramebufferObject::MyFramebufferObject(const QSize &size, Attachment attachment,
                                            GLenum target, MyFramebufferObject::ETexFormat format, 
-										   int numSamp, EFiltering filtering)
+                                           int numSamp, EFiltering filtering)
     : d_ptr(new MyFramebufferObjectPrivate)
 {
     Q_D(MyFramebufferObject);
@@ -242,7 +242,7 @@ bool MyFramebufferObject::isValid() const
 bool MyFramebufferObject::bind()
 {
     if (!isValid())
-		return false;
+        return false;
     Q_D(MyFramebufferObject);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, d->fbo);
     d->valid = d->checkFramebufferStatus();
@@ -253,24 +253,27 @@ bool MyFramebufferObject::bind()
 bool MyFramebufferObject::release()
 {
     if (!isValid())
-		return false;
+        return false;
     Q_D(MyFramebufferObject);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    if (glBindFramebufferEXT) // WinXP
+        glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     d->valid = d->checkFramebufferStatus();
     return d->valid;
 }
 
 void MyFramebufferObject::doBind(MyFramebufferObject* fbo)
 {
-	if (fbo != NULL)
-		fbo->bind();
-	else
-		 glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    if (fbo != NULL)
+        fbo->bind();
+    else {
+        if (glBindFramebufferEXT) // WinXP
+            glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    }
 }
 void MyFramebufferObject::doRelease(MyFramebufferObject* fbo)
 {
-	if (fbo != NULL)
-		fbo->release();
+    if (fbo != NULL)
+        fbo->release();
 }
 
 
@@ -283,21 +286,21 @@ const GlTexture* MyFramebufferObject::texture() const
 #if 0
 QImage MyFramebufferObject::toImage() const
 {
-	Q_D(const MyFramebufferObject);
-	if (!d->valid)
-		return QImage();
+    Q_D(const MyFramebufferObject);
+    if (!d->valid)
+        return QImage();
 
-	const_cast<MyFramebufferObject *>(this)->bind();
-	mglCheckErrors("bind");
+    const_cast<MyFramebufferObject *>(this)->bind();
+    mglCheckErrors("bind");
 
-	FastImage fi(d->size);
-	glReadPixels(0, 0, d->size.width(), d->size.height(), GL_RGBA, GL_UNSIGNED_BYTE, fi.ptr());
-	mglCheckErrors("read");
+    FastImage fi(d->size);
+    glReadPixels(0, 0, d->size.width(), d->size.height(), GL_RGBA, GL_UNSIGNED_BYTE, fi.ptr());
+    mglCheckErrors("read");
 
-	const_cast<MyFramebufferObject *>(this)->release();
-	mglCheckErrors("toImage");
+    const_cast<MyFramebufferObject *>(this)->release();
+    mglCheckErrors("toImage");
 
-	return fi.toImage();
+    return fi.toImage();
 }
 #endif
 
@@ -316,37 +319,37 @@ QSize MyFramebufferObject::size() const
 QImage QGLFramebufferObject::toImage() const
 {
     Q_D(const QGLFramebufferObject);
-	if (!d->valid)
-		return QImage();
+    if (!d->valid)
+        return QImage();
 
-	const_cast<QGLFramebufferObject *>(this)->bind();
-	QImage::Format image_format = QImage::Format_RGB32;
+    const_cast<QGLFramebufferObject *>(this)->bind();
+    QImage::Format image_format = QImage::Format_RGB32;
     if (d->ctx->format().alpha())
         image_format = QImage::Format_ARGB32_Premultiplied;
     QImage img(d->size, image_format);
     int w = d->size.width();
     int h = d->size.height();
     // ### fix the read format so that we don't have to do all the byte swapping
-	glReadPixels(0, 0, d->size.width(), d->size.height(), GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+    glReadPixels(0, 0, d->size.width(), d->size.height(), GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
     if (QSysInfo::ByteOrder == QSysInfo::BigEndian) {
-	// OpenGL gives RGBA; Qt wants ARGB
-	uint *p = (uint*)img.bits();
-	uint *end = p + w*h;
-	if (1) {
-	    while (p < end) {
-		uint a = *p << 24;
-		*p = (*p >> 8) | a;
-		p++;
-	    }
-	} else {
-	    while (p < end) {
-		*p = 0xFF000000 | (*p>>8);
-		++p;
-	    }
-	}
+    // OpenGL gives RGBA; Qt wants ARGB
+    uint *p = (uint*)img.bits();
+    uint *end = p + w*h;
+    if (1) {
+        while (p < end) {
+        uint a = *p << 24;
+        *p = (*p >> 8) | a;
+        p++;
+        }
     } else {
-	// OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
-	img = img.rgbSwapped();
+        while (p < end) {
+        *p = 0xFF000000 | (*p>>8);
+        ++p;
+        }
+    }
+    } else {
+    // OpenGL gives ABGR (i.e. RGBA backwards); Qt wants ARGB
+    img = img.rgbSwapped();
     }
     const_cast<QGLFramebufferObject *>(this)->release();
     return img.mirrored();

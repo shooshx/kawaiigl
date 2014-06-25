@@ -154,15 +154,17 @@ void ConfXmls::loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe)
                 continue;
             }
 
-            bool isUniform = true;
+            EParamDest dest = EDUniform;
             QDomAttr kinda = e.attributeNode("kind");
             if (!kinda.isNull())
             {
+                if (kinda.value() == "model")
+                    dest = EDModel;
                 if (kinda.value() != "uniform")
-                    isUniform = false;
+                    dest = EDAttribute;
             }
 
-            ParamInput pi(namea.value(), etype, e.text(), isUniform, NULL);
+            ParamInput pi(namea.value(), etype, e.text(), dest, NULL);
 
             QDomAttr guia = e.attributeNode("gui");
             if (!guia.isNull())
@@ -532,7 +534,7 @@ bool saveParam(QDomDocument& xml, QDomElement& xmlprm, const ParamInput& prm) {
     if (!typeName)
         return false;
     xmlprm.setAttribute("type", typeName);
-    xmlprm.setAttribute("kind", prm.isUniform ? "uniform":"attribute");
+    xmlprm.setAttribute("kind", (prm.dest == EDUniform) ? "uniform": ((prm.dest == EDAttribute) ? "attribute" : "model"));
     xmlprm.appendChild(xml.createTextNode(prm.value));
     if (prm.guiconf != NULL) {
         QString gui;

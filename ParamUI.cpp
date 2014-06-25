@@ -10,7 +10,7 @@
 
 
 ParamUi::ParamUi(PParamsWidget* parent, T2GLWidget* view) :QObject(NULL), // we don't want QObject to call our d-tor
-    m_parent(parent), m_view(view), m_doc(view->doc()), moreCont(NULL), m_isUniform(true)
+    m_parent(parent), m_view(view), m_doc(view->doc()), moreCont(NULL), m_dest(EDUniform)
 {}
 
 ParamUi::~ParamUi()
@@ -228,6 +228,10 @@ void SliderPui::sliderParamChanged()
     pui->value->setText(QString("%1").arg(v));
     if (!pui->m_doc->isProgEnabled())
         return; 
+    
+  //  pui->m_parent->doVarUpdate(pui, true);
+  //  pui->m_doc->calc(NULL, false, true);
+
     pui->directUpdate(v);
 }
 
@@ -320,11 +324,12 @@ void ParamUi::configGui()
 
 void ParamUi::setUniAttrText()
 {
-    uniAttr->setText(m_isUniform?"U":"A");
+    const char* t = (m_dest == EDUniform) ? "U" : (m_dest == EDAttribute ? "A" : "M");
+    uniAttr->setText(t);
 }
 
 void ParamUi::uniAttrChange()
 {
-    m_isUniform = !m_isUniform;
+    m_dest = (EParamDest)((m_dest + 1) % 3);
     setUniAttrText();
 }

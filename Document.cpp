@@ -554,12 +554,16 @@ MyAllocator g_alloc(50000, 50000, 50000);
 
 struct MyObjAdder : public PolyAdder
 {
-    MyObjAdder(MyObject* obj, DisplayConf& conf) : m_obj(obj), m_defColor(conf.materialCol)
+    MyObjAdder(MyObject* obj, DisplayConf& conf, bool purgeCache) : m_obj(obj), m_defColor(conf.materialCol), m_purgePointCache(purgeCache)
     {}
     virtual void operator()(vector<IPoint*>& v)
     {
         if (v.size() < 3 || v.size() > 4)
             return;
+        if (m_purgePointCache) {
+            for(int i = 0; i < v.size(); ++i)
+                v[i]->purgeCache();
+        }
         MyPolygon *poly = m_obj->AddPoly(v[0], v[1], v[2], (v.size() > 3)?(v[3]):NULL, constAncs);
 
         for(size_t i = 0; i < v.size(); ++i)
@@ -573,6 +577,7 @@ struct MyObjAdder : public PolyAdder
 
     Vec3 m_defColor; // default color;
     MyObject* m_obj;
+    bool m_purgePointCache;
     static TexAnchor constAncs[4];
 };
 
@@ -650,7 +655,7 @@ struct FuncAdder : public MultiStringAdder
     Document *m_doc;
 };
 
-void Document::calc(DocSrc* src, bool doParse)
+void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
 {
     // prevent recursive calls which occur due to syntax highlighing
     if (m_inCalc)
@@ -695,9 +700,9 @@ void Document::calc(DocSrc* src, bool doParse)
     //m_kparser.creator()->printTree();
     
 
-    MyObjAdder adder(m_frameObj, m_conf);
+    MyObjAdder adder(m_frameObj, m_conf, purgePointCache);
     m_kparser.creator()->createPolygons(&adder);
-    updateParams(m_onCalcEvals); // if there's a prog active, it might depend on the variables.
+    //updateParams(m_onCalcEvals); // if there's a prog active, it might depend on the variables.
 
     //	currentDecompile.clear();
 
@@ -786,7 +791,7 @@ void Document::compileShaders()
     }
 
 
-    m_onCalcEvals.clear();
+    //m_onCalcEvals.clear();
     m_onFrameEvals.clear();
 
 
@@ -825,11 +830,13 @@ void Document::compileShaders()
         for(int i = 0; i < rpass->params.size(); ++i)
         {
             const ParamInput &pi = rpass->params[i];
-            ShaderParam *sp;
-            if (pi.isUniform)
+            ShaderParam *sp = NULL;
+            if (pi.dest == EDUniform)
                 sp = new UniformParam(pi.name);
-            else
+            else if (pi.dest == EDAttribute)
                 sp = new AttribParam(pi.name);
+            else
+                continue;
             rpass->prog.addParam(sp, i);
             pi.index = i;
         }
@@ -864,16 +871,21 @@ void Document::parseAllParams(const RenderPassPtr &pass)
 
 bool Document::parseSingleParam(const ParamInput& pi, bool update)
 {
-    if (!pi.mypass->prog.isOk())
-        return false;
-
-    bool ok;
+    bool ok = false;
+    if (pi.mypass != NULL) 
     {
-        ProgramUser use(&pi.mypass->prog);
+        if (!pi.mypass->prog.isOk())
+            return false;
+        {
+            ProgramUser use(&pi.mypass->prog);
+            ok = parseParam(pi);
+        }
+        mglCheckErrorsC("parseSingleParam");
+    }
+    else {
+        // a model parameter
         ok = parseParam(pi);
     }
-
-    mglCheckErrorsC("parseSingleParam");
 
     if (update)
         emit progParamChanged(); // causes updateGL
@@ -888,7 +900,7 @@ QString uniqueParamId(const ParamInput& pi)
 // parse uniform. this defines what a uniform variable can be.
 bool Document::parseParam(const ParamInput& pi)
 {
-    if (!pi.isUniform)
+    if (pi.dest == EDAttribute)
     {
         pi.lastParseOk = parseAttrib(pi);
         return pi.lastParseOk;
@@ -906,7 +918,9 @@ bool Document::parseParam(const ParamInput& pi)
     const char* end = ba.data() + ba.size();
     const char* nameend = ba.data() + pi.name.size();
 
-    GenericShader &prog = pi.mypass->prog;
+    GenericShader *prog = NULL;
+    if (pi.mypass != NULL)
+        prog = &pi.mypass->prog;
 
     bool ok = true;
     switch(pi.type) // ADDTYPE
@@ -918,7 +932,8 @@ bool Document::parseParam(const ParamInput& pi)
             float f = 0.0f;
             if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
             {
-                prog.setUniform(f, pi.index);
+                if (prog)
+                    prog->setUniform(f, pi.index);
             }
         }
         break;
@@ -928,7 +943,8 @@ bool Document::parseParam(const ParamInput& pi)
             if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
             {
                 int i = (int)f;
-                prog.setUniform(i, pi.index);
+                if (prog)
+                    prog->setUniform(i, pi.index);
             }
         }
         break;
@@ -937,7 +953,8 @@ bool Document::parseParam(const ParamInput& pi)
             Vec2 v;
             if (ok = m_kparser.kparseVec2(nameend + 1, end, v))
             {
-                prog.setUniform(v, pi.index);
+                if (prog)
+                    prog->setUniform(v, pi.index);
             }
         }
         break;
@@ -948,9 +965,9 @@ bool Document::parseParam(const ParamInput& pi)
             if (ok = m_kparser.kparseVec(iter, end, nameend, v))
             {
                 shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, pi.prop, pi.index));
-                m_onCalcEvals[uniqueParamId(pi)] = pa;
-
-                pa->update(prog);
+                //m_onCalcEvals[uniqueParamId(pi)] = pa;
+                if (prog)
+                    pa->update(*prog);
             }
         }
         break;
@@ -960,7 +977,8 @@ bool Document::parseParam(const ParamInput& pi)
             Vec4 v;
             if (ok = m_kparser.kparseVec4(nameend + 1, end, v))
             {
-                prog.setUniform(v, pi.index);
+                if (prog)
+                    prog->setUniform(v, pi.index);
                 if (pi.prop != NULL)
                 {
                     pi.prop->tryAssignTypeVal(v.toColor());
@@ -973,7 +991,8 @@ bool Document::parseParam(const ParamInput& pi)
             int ti = pi.value.toInt(&ok);
             if (ok)
             {
-                prog.setUniform(ti, pi.index);
+                if (prog)
+                    prog->setUniform(ti, pi.index);
                 m_onFrameEvals[uniqueParamId(pi)].reset();
             }
 /*
