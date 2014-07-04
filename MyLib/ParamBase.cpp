@@ -165,6 +165,9 @@ template<> void TypeProp<int>::addInnerWidget(WidgetLine& wl) { addNumericWidget
 template<> void TypeProp<uint>::addInnerWidget(WidgetLine& wl) { addNumericWidget(wl); }
 template<> void TypeProp<float>::addInnerWidget(WidgetLine& wl) { addNumericWidget(wl); }
 
+template<> void TypeProp<QImage>::addInnerWidget(WidgetLine& wl) 
+{}
+
 
 void SeparatorProp::addWidget(MyInputDlg* dlg)
 {
@@ -317,6 +320,8 @@ template<> bool TypeProp<StringSelect>::fromStringImp(const QString& s) { return
 template<> QString TypeProp<QStringList>::toString() const { return QString(); }
 template<> bool TypeProp<QStringList>::fromStringImp(const QString& s) { return false; }
 
+template<> QString TypeProp<QImage>::toString() const { return QString(); }
+template<> bool TypeProp<QImage>::fromStringImp(const QString& s) { return false; }
 
 #if 0 
 void TypePropN::fireChanged()

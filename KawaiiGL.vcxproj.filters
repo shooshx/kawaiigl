@@ -43,6 +43,9 @@
     <Filter Include="main">
       <UniqueIdentifier>{4e230f96-baa1-49dc-a3ba-b62f87a5590c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GUI\parser">
+      <UniqueIdentifier>{9b64fa08-3a9c-4c49-9a2b-6cba12c5fd77}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="KawaiiGL.qrc">
@@ -131,6 +134,12 @@
     </CustomBuild>
     <CustomBuild Include="Pass.h">
       <Filter>main</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GradientDlg.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="GradientDlg.h">
+      <Filter>GUI</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -362,9 +371,6 @@
     <ClCompile Include="NoiseGenerator.cpp">
       <Filter>3D</Filter>
     </ClCompile>
-    <ClCompile Include="KwParser.cpp">
-      <Filter>GUI</Filter>
-    </ClCompile>
     <ClCompile Include="GaussianGenerator.cpp">
       <Filter>3D</Filter>
     </ClCompile>
@@ -372,6 +378,21 @@
       <Filter>3D</Filter>
     </ClCompile>
     <ClCompile Include="GeometryGenerators.cpp">
+      <Filter>3D</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_GradientDlg.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_GradientDlg.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GradientDlg.cpp">
+      <Filter>GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="KwParser.cpp">
+      <Filter>GUI\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="IsoSurfaceGen.cpp">
       <Filter>3D</Filter>
     </ClCompile>
   </ItemGroup>
@@ -484,14 +505,23 @@
     <ClInclude Include="NoiseGenerator.h">
       <Filter>3D</Filter>
     </ClInclude>
-    <ClInclude Include="KwParser.h">
-      <Filter>GUI</Filter>
-    </ClInclude>
     <ClInclude Include="GaussianGenerator.h">
       <Filter>3D</Filter>
     </ClInclude>
     <ClInclude Include="DistMapTexture.h">
       <Filter>3D</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_GradientDlg.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KwParser.h">
+      <Filter>GUI\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="ParserModel.h">
+      <Filter>GUI\parser</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

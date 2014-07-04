@@ -92,6 +92,7 @@ public:
     void generateRotObj(const std::vector<std::string>& args);
     void generateQuadSphere(const std::vector<std::string>& sep);
     void generateTriSphere(const std::vector<std::string>& sep);
+    void generateIsoSurface(const std::vector<std::string>& args);
 
 public slots:
     void calc(DocSrc* qstr, bool doParse = true, bool purgePointCache = false);

@@ -293,9 +293,17 @@ void T2GLWidget::rebindTexture(int which)
 
 void T2GLWidget::setTexture(int which)
 {
-    QString filename = *conf.texFile[which];
-
     mglActiveTexture(GL_TEXTURE0 + which);
+
+    QImage img = *conf.texImage[which];
+
+    if (!img.isNull()) {
+        doBindTexture(which, &img, GL_CLAMP_TO_EDGE);
+        updateGL();
+        return;
+    }
+
+    QString filename = *conf.texFile[which];
     filename = filename.trimmed();
 
     bool isGaus = filename.startsWith("gaussian") && filename.endsWith(")");
@@ -882,13 +890,15 @@ void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
             {
                 MyPolygon &curpl = *obj.poly[pli];
 
-                drawer.drawVertex(curpl, 0);
-                drawer.drawVertex(curpl, 1);
+                drawer.drawVertex(curpl, 0); // from
+                drawer.drawVertex(curpl, 1); // to
                 drawer.drawVertex(curpl, 1);
                 drawer.drawVertex(curpl, 2);
                 drawer.drawVertex(curpl, 2);
-                drawer.drawVertex(curpl, 3);
-                drawer.drawVertex(curpl, 3);
+                if (curpl.pnum == 4) {
+                    drawer.drawVertex(curpl, 3);
+                    drawer.drawVertex(curpl, 3);
+                }
                 drawer.drawVertex(curpl, 0);
 
             }
@@ -1204,6 +1214,7 @@ void T2GLWidget::mousePressEvent(QMouseEvent *event)
     int chs = DoChoise(event->x(), event->y());
     if (chs > 0)
     {
+        // BUG the fact this work in 64 bit is pure luck
         m_selPnt = (IPoint*)chs;
         //pntDlg->setPoint(m_selPnt->name);
         updateSelPointColor();

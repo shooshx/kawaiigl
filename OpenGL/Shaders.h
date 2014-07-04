@@ -83,7 +83,7 @@ public:
 	{
 		if (!isOk())
 			return false;
-		if (index >= m_params.size())
+		if (index >= m_params.size() || index < 0)
 			return false;
 		UniformParam* p = dynamic_cast<UniformParam*>(m_params[index]);
 		if (p == NULL)

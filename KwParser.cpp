@@ -15,11 +15,12 @@
 
 #include <boost/spirit/include/phoenix_object.hpp>
 
-#define BOOST_BIND_NO_PLACEHOLDERS
-#include <boost/bind.hpp>
+
 
 #include <string>
+#include <map>
 #include "MyLib/Vec.h"
+#include "ParserModel.h"
 
 
 //using namespace boost;
@@ -37,6 +38,7 @@ namespace fusion = boost::fusion;
 namespace phoenix = boost::phoenix;
 namespace lambda = boost::lambda;
 
+/*
 struct write_action
 {
     template<typename T>
@@ -62,6 +64,7 @@ struct writer
         std::cout << i << std::endl;
     }
 };
+*/
 
 std::ostream& operator<<(std::ostream& out, const Vec3& v)
 {
@@ -69,7 +72,7 @@ std::ostream& operator<<(std::ostream& out, const Vec3& v)
     return out;
 }
 
-
+/*
 BOOST_FUSION_ADAPT_STRUCT(
     IVec3,
     (float, x)
@@ -90,306 +93,208 @@ BOOST_FUSION_ADAPT_STRUCT(
     (float, z)
     (float, w)
 )
+*/
 
 
 
-struct addOp {};
-struct subOp {};
-struct multOp {};
-struct divOp {};
+//-----------------------------------------------------------------------------------------------------
 
-struct vec_ast;
+struct IMVec3;
 
-struct Evalable
+template<typename T>
+struct t_ast 
 {
-    virtual ~Evalable() {}
-    virtual Vec3 eval() = 0;
+    t_ast() : expr(NULL)
+    {}
+    t_ast(const t_ast& a) : expr(a.expr)
+    {}
+    t_ast(const Vec3& expr)  : expr(new VecVal<T>(expr))
+    {}
+    t_ast(const float& expr) : expr(new FloatVal<T>(expr))
+    {}
+    t_ast(const IMVec3& v);
 
-// 	void printSpaces() const
-// 	{
-// 		for(int i = 0; i < m_spaces; ++i)
-// 			printf(" ");
-// 	}
-    //virtual void print() = 0;
-};
-
-typedef Evalable* EvalablePtr;
-
-
-struct vec_ast 
-{
-    vec_ast()
-        : expr(new EvalablePtr(NULL)), used(false), isCached(false) {}
-
-    vec_ast(const vec_ast& a) : expr(a.expr), isCached(false), used(false) {}
-    vec_ast(const Vec3& expr);
-    vec_ast(const float& expr);
-
-
-    vec_ast& operator+=(vec_ast const& rhs);
-    vec_ast& operator-=(vec_ast const& rhs);
-    vec_ast& operator*=(vec_ast const& rhs);
-    vec_ast& operator/=(vec_ast const& rhs);
-
-    void doCache() const
-    {
-        cache = (*expr)->eval();
-        isCached = true;
+    t_ast& operator+=(const t_ast& rhs) {
+        expr = new BinaryAdd<T>(this->expr, rhs.expr);
+        return *this;
+    }
+    t_ast& operator-=(const t_ast& rhs) {
+        expr = new BinarySub<T>(this->expr, rhs.expr);
+        return *this;
+    }
+    t_ast& operator*=(const t_ast& rhs){
+        expr = new BinaryMult<T>(this->expr, rhs.expr);
+        return *this;
+    }
+    t_ast& operator/=(const t_ast& rhs) {
+        expr = new BinaryDiv<T>(this->expr, rhs.expr);
+        return *this;
+    }
+    t_ast& operator-() {
+        expr = new UnaryNeg<T>(this->expr);
+        return *this;
     }
 
     void print();
 
+    // t_ask arguments need to be const since they are passed by value
+    mutable Evalable<T> *expr;
 
-    EvalablePtr *expr;
-    mutable Vec3 cache;
-    mutable bool isCached;
-    bool used;
 };
 
-struct symbol_ast : public vec_ast, public IPoint
+typedef t_ast<Vec3> vec_ast;
+typedef t_ast<float> float_ast;
+
+
+template<typename T>
+t_ast<T> operator*(const t_ast<T>& lhs, const t_ast<T>& rhs) // for left-hand multiplication
 {
-    symbol_ast() : color(INVALID_COLOR) {}
-    symbol_ast(const vec_ast& v) : vec_ast(v), color(INVALID_COLOR)
-    {}
-    symbol_ast(const vec_ast& v, const std::string& name) : vec_ast(v), color(INVALID_COLOR), myname(name)
-    {}
-
-    virtual void setCoord(const Vec3& v);
-    virtual const Vec3& getCoord() const
-    {
-        if (!isCached)
-            doCache();
-        return cache;
-    }
-    virtual void setColor(const Vec3& c)
-    {
-        color = c;
-    }
-    virtual const Vec3& getColor() const
-    {
-        return color;
-    }
-    virtual const std::string& getName() const
-    {
-        return myname;
-    }
-    virtual void purgeCache() {
-        isCached = false;
-    }
-
-    std::string myname;
-    Vec3 color;
-};
-
-template< typename Op>
-struct binary_op : public Evalable
-{
-    binary_op(vec_ast const& _left, vec_ast const& _right)
-        : left(const_cast<EvalablePtr*>(_left.expr) ), 
-          right(const_cast<EvalablePtr*>(_right.expr) ) {}
-
-    virtual Vec3 eval();
-
-    EvalablePtr *left;
-    EvalablePtr *right;
-};
-
-
-Vec3 binary_op<addOp>::eval()
-{
-    return (*left)->eval() + (*right)->eval();
-}
-Vec3 binary_op<subOp>::eval()
-{
-    return (*left)->eval() - (*right)->eval();
-}
-Vec3 binary_op<multOp>::eval()
-{
-    return (*left)->eval() * (*right)->eval();
-}
-Vec3 binary_op<divOp>::eval()
-{
-    return (*left)->eval() / (*right)->eval();
-}
-
-
-struct unary_op : public Evalable
-{
-    unary_op(vec_ast const& _subject)
-        : subject(const_cast<EvalablePtr*>(_subject.expr) ) {}
-
-    virtual Vec3 eval()
-    {
-        return -(*subject)->eval();
-    }
-
-    EvalablePtr *subject;
-};
-
-
-struct vec_val : public Evalable
-{
-    vec_val(const Vec3& v) : val(v) {}
-    virtual Vec3 eval()
-    {
-        return val;
-    }
-    Vec3 val;
-};
-
-struct float_val : public Evalable
-{
-    float_val(float v) : val(v) {}
-    virtual Vec3 eval()
-    {
-        return Vec3(val, val, val);
-    }
-    float val;
-};
-
-
-void symbol_ast::setCoord(const Vec3& v) 
-{
-// 	vec_val *e = dynamic_cast<vec_val*>(expr);
-// 	if (e != NULL)
-// 		e->val = v;
-//	cout << "setCoord\n";
-    *expr = new vec_val(v); //mem leak
-}
-
-
-vec_ast::vec_ast(const Vec3& expr)
-: expr(new EvalablePtr(new vec_val(expr) )), used(false), isCached(false)
-{}
-vec_ast::vec_ast(const float& expr)
-: expr(new EvalablePtr(new float_val(expr) )), used(false), isCached(false)
-{}
-
-
-
-vec_ast& vec_ast::operator+=(vec_ast const& rhs)
-{
-    expr = new EvalablePtr(new binary_op<addOp>(*this, rhs));
-    return *this;
-}
-
-vec_ast& vec_ast::operator-=(vec_ast const& rhs)
-{
-    expr = new EvalablePtr(new binary_op<subOp>(*this, rhs));
-    return *this;
-}
-
-vec_ast& vec_ast::operator*=(vec_ast const& rhs)
-{
-    expr = new EvalablePtr(new binary_op<multOp>(*this, rhs));
-    return *this;
-}
-
-vec_ast& vec_ast::operator/=(vec_ast const& rhs)
-{
-    expr = new EvalablePtr(new binary_op<divOp>(*this, rhs));
-    return *this;
-}
-
-vec_ast operator*(vec_ast const& lhs, vec_ast const& rhs) // for left-hand multiplication
-{
-    vec_ast r;
-    r.expr = new EvalablePtr(new binary_op<multOp>(lhs, rhs));
+    t_ast<T> r;
+    r.expr = new BinaryMult<T>(lhs.expr, rhs.expr);
     return r;
 }
 
+t_ast<Vec3> operator*(const t_ast<Vec3>& lhs, const t_ast<float>& rhs) 
+{
+    t_ast<Vec3> r;
+    r.expr = new BinaryVFMult(lhs.expr, rhs.expr);
+    return r;
+}
+t_ast<Vec3> operator*=(const t_ast<Vec3>& lhs, const t_ast<float>& rhs) 
+{
+    lhs.expr = new BinaryVFMult(lhs.expr, rhs.expr);
+    return lhs;
+}
+t_ast<Vec3> operator/=(const t_ast<Vec3>& lhs, const t_ast<float>& rhs) 
+{
+    lhs.expr = new BinaryVFDiv(lhs.expr, rhs.expr); 
+    return lhs;
+}
+//t_ast<Vec3> operator*(const t_ast<float>& lhs, const t_ast<Vec3>& rhs) 
+//{
+//    t_ast<Vec3> r;
+//    r.expr = new BinaryMult<Vec3>(NULL, rhs.expr); // TBD-fix with correct t_ast
+//    return r;
+//}
+
+
+
+struct IMVec3 {
+    float_ast x,y,z;
+};
+BOOST_FUSION_ADAPT_STRUCT(
+    IMVec3,
+    (float_ast, x)
+    (float_ast, y)
+    (float_ast, z)
+)
+
+template<> t_ast<Vec3>::t_ast(const IMVec3& v) 
+    : expr(new MakeVec3(v.x.expr, v.y.expr, v.z.expr))
+{}
+
+
+struct IMVec2 {
+    float_ast x,y;
+    operator Vec2() {
+        return Vec2(x.expr->eval(), y.expr->eval());
+    }
+};
+BOOST_FUSION_ADAPT_STRUCT(
+    IMVec2,
+    (float_ast, x)
+    (float_ast, y)
+)
+
+struct IMVec4 {
+    float_ast x,y,z,w;
+    operator Vec4() {
+        return Vec4(x.expr->eval(), y.expr->eval(), z.expr->eval(), w.expr->eval());
+    }
+};
+BOOST_FUSION_ADAPT_STRUCT(
+    IMVec4,
+    (float_ast, x)
+    (float_ast, y)
+    (float_ast, z)
+    (float_ast, w)
+)
 
 
 
 // see comment in calc2_ast.cpp of the spirit2 examples
+/*template<typename T>
 struct negate_expr
 {
-    template <typename T>
-    struct result { typedef T type; };
+    template <typename RT>
+    struct result { typedef RT type; };
 
-    vec_ast operator()(vec_ast const& expr) const
-    {
-        vec_ast v;
-        v.expr = new EvalablePtr(new unary_op(expr));
+    t_ast<T> operator()(t_ast<T>& expr) const  {
+        t_ast<T> v;
+        v.expr = new UnaryNeg<T>(expr.expr);
         return v;
     }
 };
 
-boost::phoenix::function<negate_expr> neg;
+boost::phoenix::function<negate_expr<Vec3>> negVec3;
+*/
 
 
-
-struct numsym_lookup  : public Evalable
+float_ast lookup_float_sym(Model* model, const std::string& name)
 {
-    numsym_lookup(qi::symbols<char, float>& tbl, const std::string& s) :table(tbl), name(s) {}
-    virtual Vec3 eval()
-    {
-        float v = *table.find(name);
-        return Vec3(v, v, v);
-    }
-    std::string name;
-    qi::symbols<char, float>& table;
-};
-
-vec_ast lookup_float_sym(qi::symbols<char, float>& table, const std::string& name)
-{
-    vec_ast r;
-    r.expr = new EvalablePtr(new numsym_lookup(table, name));
+    float_ast r;
+    r.expr = new NumsymLookup(model, name);
     return r;
 }
 
 
-std::ostream& operator<<(std::ostream& out, vec_ast& v)
+template<typename T>
+std::ostream& operator<<(std::ostream& out, t_ast<T>& v)
 {
-    out << (*v.expr)->eval();
+    out << v.expr->eval();
     //out << v.cache;
     return out;
 }
 
 
-template<typename ValT>
-void add_sym(qi::symbols<char, ValT>& table, const std::string& name, const ValT& value);
-/*
-{
-    //cout << name << " : " << value << endl;
-    table.add(name.c_str(), value);
-}
-*/
 
-template<>
-void add_sym(qi::symbols<char, symbol_ast>& table, const std::string& name, const symbol_ast& value)
+void add_sym_v(qi::symbols<char, vec_ast>& table, Model* model, const std::string& name, const vec_ast& value)
 {
     //cout << "ADDV " << name << " : " << "..." << endl;
-    const symbol_ast* v = table.find(name);
+    const vec_ast* v = table.find(name);
     if (v != NULL) 
         table.remove(name.c_str());
-    table.add(name.c_str(), symbol_ast(value, name));
+    table.add(name.c_str(), value);
+
+    model->add_point(name, value.expr);
 }
-template<>
-void add_sym(qi::symbols<char, float>& table, const std::string& name, const float& value)
+
+void add_sym_f(qi::symbols<char, float_ast>& table, Model* model, const std::string& name, const float_ast& value)
 {
     //cout << "ADDN " << name << " : " << value << endl;
-    const float* v = table.find(name);
+    const float_ast* v = table.find(name);
     if (v != NULL) 
         table.remove(name.c_str()); 
     table.add(name.c_str(), value);
+
+    model->m_numsym.set(name, value.expr);
 }
 
 
 
 
 template <typename Iterator>
-struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public IPolyCreator
+struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>
 {
-    kwprog(bool verbose) : kwprog::base_type(program), m_verbose(verbose)
+    kwprog(bool verbose, Model* model) : kwprog::base_type(program), m_verbose(verbose), m_model(model)
     {
 
         program = *statement;
             
         statement = (assignvec | assignnum  // vector assignment takes precedence
             | addpoly[phoenix::bind(&kwprog::report_poly, this, _1)] 
-            | loadmesh[push_back(phoenix::ref(meshs), _1)]
-            | miscfunc[push_back(phoenix::ref(invoked), _1)]
+            | loadmesh[push_back(phoenix::ref(m_model->meshs), _1)]
+            | miscfunc[push_back(phoenix::ref(m_model->invoked), _1)]
             )
             >> *comment
             ; 
@@ -397,8 +302,8 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
         comment = lexeme[ (lit('#') | lit("//")) >> *(ascii::char_ - eol) >> eol];
 
         //assignnum = (variable >> '=' >> expression)[bind(numsym.add, _1, _2)] ;
-        assignnum = (variable >> '=' >> expression)[phoenix::bind(&add_sym<float>, ref(numsym), _1, _2)] ;
-        assignvec = (variable >> '=' >> vecExpression)[phoenix::bind(&add_sym<symbol_ast>, ref(vecsym), _1, _2)] ;
+        assignnum = (variable >> '=' >> expression)[phoenix::bind(&add_sym_f, ref(numsym), m_model, _1, _2)] ;
+        assignvec = (variable >> '=' >> vecExpression)[phoenix::bind(&add_sym_v, ref(vecsym), m_model, _1, _2)] ;
 
         addpoly = 
             (lit("add") >> '(' >> get_name[push_back(_val, _1)] 
@@ -433,7 +338,8 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
 
         factor =
             float_                         [_val = _1]
-            |   numsym                     [_val = _1]
+            //|   numsym                     [_val = _1]
+            |   get_numname                 [_val = phoenix::bind(&lookup_float_sym, m_model, _1) ]
             |   '(' >> expression           [_val = _1] >> ')'
             |   ('-' >> factor              [_val = -_1])
             |   ('+' >> factor              [_val = _1])
@@ -459,12 +365,12 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
             ;
 
         vecFactor =
-            ivec                               [_val = construct<Vec3>(_1)]
+            ivec                               [_val = construct<vec_ast>(_1)]
             |   vecsym                         [_val = _1]
             |   '(' >> vecExpression           [_val = _1] >> ')'
-            |   ('-' >> vecFactor              [_val = neg(_1)]) // unary
+            |   ('-' >> vecFactor              [_val = -_1]) // unary
             |   ('+' >> vecFactor              [_val = _1])  // unary
-            |   get_numname             [_val = phoenix::bind(&lookup_float_sym, ref(numsym), _1) ] 
+           // |   get_numname             [_val = phoenix::bind(&lookup_float_sym, ref(numsym), _1) ] 
             | (expression >> '*' >> vecFactor)[_val = _2 * _1] //left multiple
             ;
 
@@ -489,7 +395,7 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
             std::for_each(v.begin(), v.end(), std::cout << boost::lambda::_1 << ", ");
             std::cout << "\n";
         }
-        polygons.push_back(v);
+        m_model->polygons.push_back(v);
     }
 
 // 	void report_mesh(const std::string& v)
@@ -497,11 +403,11 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
 // 		meshs.push_back(v);
 // 	}
 
-    vector<vector<std::string> > polygons;
-    vector<std::string> meshs;
-    vector<vector<std::string> > invoked, invokedArgs;
-    qi::symbols<char, symbol_ast> vecsym;
-    qi::symbols<char, float> numsym;
+    Model* m_model;
+
+
+    qi::symbols<char, vec_ast> vecsym;
+    qi::symbols<char, float_ast> numsym;
     
     qi::symbols<char, std::string> functions; // possible general purpose no-arguments (yet) functions. added by the user
 
@@ -510,120 +416,54 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>, public 
     qi::rule<Iterator, std::string(), ascii::space_type> get_numname;
     qi::rule<Iterator, vector<std::string>(), ascii::space_type> addpoly;
     qi::rule<Iterator, vec_ast(), ascii::space_type>  vecExpression, vecTerm, vecFactor;
-    qi::rule<Iterator, IVec3(), ascii::space_type> ivec;
+    qi::rule<Iterator, IMVec3(), ascii::space_type> ivec; // IVec3 - immediate Vec3
     qi::rule<Iterator, void(), ascii::space_type> assignnum, assignvec, statement, program, comment;
 
     qi::rule<Iterator, std::string(), ascii::space_type> variable, loadmesh;
     qi::rule<Iterator, vector<std::string>(), ascii::space_type>  miscfunc;
-    qi::rule<Iterator, float(), ascii::space_type> expression, term, factor;
+    qi::rule<Iterator, float_ast(), ascii::space_type> expression, term, factor; //<--
 
-    qi::rule<Iterator, IVec2(), ascii::space_type> ivec2;
+    qi::rule<Iterator, IMVec2(), ascii::space_type> ivec2;
     qi::rule<Iterator, Vec2(), ascii::space_type> vec2Expression;
 
-    qi::rule<Iterator, IVec4(), ascii::space_type> ivec4;
+    qi::rule<Iterator, IMVec4(), ascii::space_type> ivec4;
     qi::rule<Iterator, Vec4(), ascii::space_type> vec4Expression;
 
 
     bool m_verbose;
-
-    virtual void createPolygons(PolyAdder *adder)
-    {
-        vector<IPoint*> pnts;
-        for(size_t i = 0; i < polygons.size(); ++i)
-        {
-            vector<string> &pol = polygons[i];
-            pnts.clear();
-            for(size_t p = 0; p < pol.size(); ++p)
-            {
-                string& pname = pol[p];
-                IPoint* va = lookupSymbol(pname);
-                if (va != NULL)
-                {
-                    pnts.push_back(va);
-                }
-            }
-
-            (*adder)(pnts);
-        }
-    }
-
-    virtual IPoint* lookupSymbol(const string& pname) 
-    {
-        symbol_ast* va = vecsym.find(pname);
-        if (va != NULL) {
-            va->used = true;
-            return va;
-        }
-        return va;
-    }
-
-    virtual void addMeshes(StringAdder *adder)
-    {
-        for(vector<string>::iterator it = meshs.begin(); it != meshs.end(); ++it)
-        {
-            (*adder)(*it);
-        }
-        //std::for_each(meshs.begin(), meshs.end(), *adder);
-    }
-
-    virtual void callFuncs(MultiStringAdder *adder)
-    {
-        for(vector<vector<string> >::iterator it = invoked.begin(); it != invoked.end(); ++it)
-        {
-            (*adder)(*it);
-        }
-        //std::for_each(meshs.begin(), meshs.end(), *adder);
-    }
-
-    virtual void cacheVecs()
-    {
-        vecsym.for_each(boost::bind(&vec_ast::doCache, boost::arg<2>() ));
-        //vecsym.for_each(bind(&vec_ast::doCache, _2 ));
-    }
-
-    virtual void printTree()
-    {
-        vecsym.for_each(boost::bind(&vec_ast::print, boost::arg<2>() ));
-    }
-
-    struct vec_adapter
-    {
-        vec_adapter(PointActor &actor) :m_actor(actor) {}
-        void operator()(string& name, symbol_ast& v)
-        {
-            m_actor(name, v.cache, v.used, &v);
-        }
-        PointActor &m_actor;
-    };
-    virtual void foreachPoints(PointActor &actor)
-    {
-        vecsym.for_each(boost::bind<void>(vec_adapter(actor), boost::arg<1>(), boost::arg<2>() ));
-    }
 
 
 
 };
 
 
-IPolyCreator* KwParser::creator() 
-{ 
-    return m_g.get();
-}
 void KwParser::addFunction(const string& s)
 {
     m_knownFunctions.push_back(s);
 }
 
+void KwParser::defineFloatSym(const std::string& s) 
+{
+    m_kg->numsym.add(s.c_str(), float_ast());
+}
 
+KwParser::KwParser() 
+{
+}
+
+KwParser::~KwParser()
+{}
 
 bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActor* errorAct)
 {	
     const char* begin = iter;
-    m_g.reset(NULL); // detele the old one
+
+    m_modelOwn.reset(new Model);
+    m_model = m_modelOwn.get();
 
     typedef kwprog<iterator_type> kwprog;
-    m_kg = new kwprog(verbose);
-    m_g.reset(m_kg);
+    m_kg.reset(new kwprog(verbose, m_model));
+
 
     for(TFuncs::iterator it = m_knownFunctions.begin(); it != m_knownFunctions.end(); ++it)
         m_kg->functions.add(it->c_str(), *it);
@@ -643,14 +483,14 @@ bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActo
         }
     }
 
-    m_kg->cacheVecs();
+    m_model->cacheVecs();
 
     if (verbose)
     {
         std::cout << "vecs:\n";
-        m_kg->vecsym.for_each(std::cout << "  " << boost::lambda::_1 << '=' << boost::lambda::_2 << '\n');
+        //m_kg->vecsym.for_each(std::cout << "  " << boost::lambda::_1 << '=' << boost::lambda::_2 << '\n');
         std::cout << "nums:\n";
-        m_kg->numsym.for_each(std::cout << "  " << boost::lambda::_1 << '=' << boost::lambda::_2 << '\n');
+        //m_kg->numsym.for_each(std::cout << "  " << boost::lambda::_1 << '=' << boost::lambda::_2 << '\n');
     
         std::cout << "\n";
     }
@@ -658,21 +498,37 @@ bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActo
     return true;
 }
 
+ IPolyCreator* KwParser::creator() { 
+     return m_model; 
+ }
+
 // it's useful for this to be an assignment if we want to use the symbol created in later rules
 bool KwParser::kparseFloat(const char* iter, const char* end, const char* nameend, float& f)
 {
+    Evalable<float>* fa = kparseFloat(iter, end, nameend);
+    if (fa == NULL)
+        return false;
+    f = fa->eval();
+    return true;
+}
+
+Evalable<float>* KwParser::kparseFloat(const char* iter, const char* end, const char* nameend)
+{
     if (!isValid())
-        return false; 
+        return NULL; 
 
     const char* nameiter = iter;
     bool ok = phrase_parse(iter, end, m_kg->assignnum, ascii::space);
     if (ok && iter == end)
     {
-        f = *(m_kg->numsym.find(std::string(nameiter, nameend) ));
-        return true;
+        Evalable<float> **fa = m_model->m_numsym.find(std::string(nameiter, nameend) );
+        if (fa != NULL)
+            return *fa;
     }
-    return false;
+    return NULL;
 }
+
+
 
 bool KwParser::kparseVec(const char* iter, const char* end, const char* nameend, IPoint*& p)
 {
@@ -683,7 +539,7 @@ bool KwParser::kparseVec(const char* iter, const char* end, const char* nameend,
     bool ok = phrase_parse(iter, end, m_kg->assignvec, ascii::space);
     if (ok && iter == end)
     {
-        p = m_kg->vecsym.find( std::string(nameiter, nameend));
+        p = m_model->lookupSymbol( std::string(nameiter, nameend));
         return true;
     }
     return false;
@@ -711,8 +567,4 @@ bool KwParser::kparseVec4(const char* iter, const char* end, Vec4& p)
 }
 
 
-void vec_ast::print()
-{
-    
-}
 

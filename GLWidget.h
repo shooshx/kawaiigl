@@ -48,7 +48,7 @@ public slots:
 	void setCullFace(bool b, bool update = false);
 
 	virtual void updateView(int hint) { Q_UNUSED(hint); }; // updates the opengl view according to the hints
-	void doBindTexture(int index, QImage* img);
+	void doBindTexture(int index, QImage* img, int wrapOpt = 0);
 	void doTakeTexture(int index, shared_ptr<GlTexture> tex); // same thing as do bind but take an external texture
 	void doUpdateTexture(int index, QImage* img);
 

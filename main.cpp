@@ -7,18 +7,22 @@
 #include "KawaiiGL.h"
 
 #include <iostream>
+#include "GradientDlg.h"
 
 extern QGLFormat g_format;
 
 
 int main(int argc, char *argv[])
 {
-	QApplication app(argc, argv);
+    QApplication app(argc, argv);
 
-	g_format.setSampleBuffers(true); 
+    g_format.setSampleBuffers(true); 
 
-	KawaiiGL window;
+   // GradientDlg gdlg;
+   // return gdlg.exec();
 
-	return app.exec();
+    KawaiiGL window;
+
+    return app.exec();
 }
 

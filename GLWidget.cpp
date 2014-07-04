@@ -128,7 +128,7 @@ void GLWidget::setClipValue(int percent)
 }
 
 
-void GLWidget::doBindTexture(int index, QImage* img)
+void GLWidget::doBindTexture(int index, QImage* img, int wrapOpt)
 {
 	makeCurrent();
 
@@ -144,7 +144,7 @@ void GLWidget::doBindTexture(int index, QImage* img)
 	if (img != NULL && !img->isNull())
 	{
 		// this also binds the texture
-		m_textures[index].reset(new GlTexture(context(), &img->copy(), GL_TEXTURE_2D));
+		m_textures[index].reset(new GlTexture(context(), &img->copy(), GL_TEXTURE_2D, wrapOpt));
 		// not using my GlTexture because we want mipmaps
 		// copy is ugly patch due to QT image caching bug
 	}

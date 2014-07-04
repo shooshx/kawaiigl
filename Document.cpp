@@ -52,6 +52,7 @@ Document::Document(KawaiiGL* mainc)
     ,m_confxmls(mainc, EDIT_CONF_FILE, PROG_CONF_FILE) // inits the menus
     ,m_shaderEnabled(false)
     ,m_inCalc(false)
+    ,m_kparser()
 {
     connect(&m_conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
     connect(&m_conf.materialCol, SIGNAL(changed()), this, SLOT(calcNoParse())); 
@@ -67,6 +68,7 @@ Document::Document(KawaiiGL* mainc)
     m_kparser.addFunction("sphereTri");
     m_kparser.addFunction("curveLine");
     m_kparser.addFunction("curveRotate");
+    m_kparser.addFunction("isosurface");
 
     // default empty program
     RenderPassPtr p(new RenderPass("Pass 1"));
@@ -651,9 +653,13 @@ struct FuncAdder : public MultiStringAdder
             m_doc->generateCurve(args);
         else if (sa[0] == "curveRotate")
             m_doc->generateRotObj(args);
+        else if (sa[0] == "isosurface")
+            m_doc->generateIsoSurface(args);
     }
     Document *m_doc;
 };
+
+
 
 void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
 {

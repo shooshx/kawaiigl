@@ -42,7 +42,7 @@ ColorPui::ColorPui(ParamUi *pui, const QColor& init, bool _withAlpha) : PuiCont(
     pui->moreContainer->show();
     TypeProp<QColor>* cprop = new TypeProp<QColor>(NULL, NULL, "Pick Color", init);
     prop = cprop;
-    win = new ColorSelIn(cprop, chp, withAlpha, WidgetIn::DoModal);
+    win = new ColorSelIn(cprop, chp, WidgetIn::DoModal | WidgetIn::WithAlpha);
     win->reload();
     connect(cprop, SIGNAL(changed()), this, SLOT(colorParamChanged())); // change the text
     pui->confGui->hide();

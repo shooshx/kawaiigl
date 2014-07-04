@@ -26,13 +26,13 @@ public:
 	{
 		init(target, size, depth);
 	}
-	GlTexture(const QGLContext* context, const QImage* img, uint target);
+	GlTexture(const QGLContext* context, const QImage* img, uint target, GLenum wrapOpt = 0);
 
 	~GlTexture();
 
 	void init(uint target, const QSize& size, int depth, uint internal_format = GL_RGBA8, 
 		      uint format = GL_RGBA, uint type = GL_UNSIGNED_BYTE, const void* ptr = NULL,
-			  GLenum minFilter = GL_NEAREST, GLenum magFilter = GL_NEAREST, GLenum wrap = GL_CLAMP);
+			  GLenum minFilter = GL_NEAREST, GLenum magFilter = GL_NEAREST, GLenum wrap = GL_CLAMP_TO_EDGE);
 	void destroy();
 
 	uint handle() const { return m_obj; }

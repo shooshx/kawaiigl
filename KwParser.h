@@ -65,30 +65,44 @@ struct ErrorActor
 
 template <typename Iterator>
 struct kwprog;
+template<typename T>
+struct Evalable;
+
+class Model;
 
 class KwParser
 {
 public:
-    KwParser() : m_g(NULL), m_kg(NULL) {}
+    KwParser();
+    ~KwParser();
     void addFunction(const std::string& s);
-
+    
     bool kparse(const char* iter, const char* end, bool verbose, ErrorActor* error);
 
-    bool kparseFloat(const char* iter, const char* end, const char* nameend, float& f);
+    bool kparseFloat(const char* iter, const char* end, const char* nameend, float& f);   
+    Evalable<float>* kparseFloat(const char* iter, const char* end, const char* nameend);
+
     bool kparseVec(const char* iter, const char* end, const char* nameend, IPoint*& p);
     
     bool kparseVec2(const char* iter, const char* end, Vec2& p);
     bool kparseVec4(const char* iter, const char* end, Vec4& p);
 
 
-    bool isValid() const { return m_g.get() != NULL; }
+    bool isValid() const { return m_kg.get() != NULL; }
     IPolyCreator* creator();
+    Model* model() {
+        return m_model;
+    }
+
+    // used in iso func evaluation
+    void defineFloatSym(const std::string& s);
 
 private:
     typedef const char* iterator_type;
-    std::auto_ptr<IPolyCreator> m_g;
+    std::auto_ptr<Model> m_modelOwn;
+    Model* m_model;
 
-    kwprog<iterator_type> *m_kg;
+    std::auto_ptr<kwprog<iterator_type>> m_kg;
     typedef std::vector<std::string> TFuncs;
     TFuncs m_knownFunctions;
 };
