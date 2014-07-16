@@ -59,6 +59,14 @@ struct BinaryDiv : public BinaryOp<T> {
     }
 };
 
+struct FloatPow : public BinaryOp<float> {
+    FloatPow(Evalable<float>* _left, Evalable<float>* _right) : BinaryOp(_left, _right) {}
+    virtual float eval() {
+        return pow(left->eval(), right->eval());
+    }
+};
+
+
 struct BinaryOpVec3Float : public Evalable<Vec3>
 {
     BinaryOpVec3Float(Evalable<Vec3>* _leftexpr, Evalable<float>* _rightexpr)
@@ -81,20 +89,39 @@ struct BinaryVFDiv : public BinaryOpVec3Float {
     }
 };
 
+template<typename T>
+struct UnaryOp : public Evalable<T> {
+    UnaryOp(Evalable<T>* _v) : v(_v) {}
+    Evalable<T> *v;
+};
 
 template<typename T>
-struct UnaryNeg : public Evalable<T>
-{
-    UnaryNeg(Evalable<T>* _subject)
-        : subject(_subject) 
-    {}
-
+struct UnaryNeg : public UnaryOp<T> {
+    UnaryNeg(Evalable<T>* _v) : UnaryOp(_v)  {}
     virtual T eval() {
-        return -(subject->eval());
+        return -(v->eval());
     }
-
-    Evalable<T> *subject;
 };
+
+struct FloatSin : public UnaryOp<float> {
+    FloatSin(Evalable<float>* _v) : UnaryOp(_v) {}
+    virtual float eval() {
+        return sin(v->eval());
+    }
+};
+struct FloatCos : public UnaryOp<float> {
+    FloatCos(Evalable<float>* _v) : UnaryOp(_v) {}
+    virtual float eval() {
+        return cos(v->eval());
+    }
+};
+struct FloatAbs : public UnaryOp<float> {
+    FloatAbs(Evalable<float>* _v) : UnaryOp(_v) {}
+    virtual float eval() {
+        return abs(v->eval());
+    }
+};
+
 
 template<typename T>
 struct VecVal : public Evalable<T>

@@ -108,9 +108,11 @@ struct t_ast
     {}
     t_ast(const t_ast& a) : expr(a.expr)
     {}
-    t_ast(const Vec3& expr)  : expr(new VecVal<T>(expr))
+    t_ast(const Vec3& _expr)  : expr(new VecVal<T>(_expr))
     {}
-    t_ast(const float& expr) : expr(new FloatVal<T>(expr))
+    t_ast(const float& _expr) : expr(new FloatVal<T>(_expr))
+    {}
+    t_ast(Evalable<T>* _expr) : expr(_expr) 
     {}
     t_ast(const IMVec3& v);
 
@@ -170,6 +172,14 @@ t_ast<Vec3> operator/=(const t_ast<Vec3>& lhs, const t_ast<float>& rhs)
     lhs.expr = new BinaryVFDiv(lhs.expr, rhs.expr); 
     return lhs;
 }
+
+t_ast<float> operator^=(const t_ast<float>& lhs, const t_ast<float>& rhs) 
+{
+    lhs.expr = new FloatPow(lhs.expr, rhs.expr); 
+    return lhs;
+}
+
+
 //t_ast<Vec3> operator*(const t_ast<float>& lhs, const t_ast<Vec3>& rhs) 
 //{
 //    t_ast<Vec3> r;
@@ -280,7 +290,16 @@ void add_sym_f(qi::symbols<char, float_ast>& table, Model* model, const std::str
     model->m_numsym.set(name, value.expr);
 }
 
-
+float_ast make_float_func(const string& name, const float_ast& v)
+{
+    if (name == "sin")
+        return float_ast(new FloatSin(v.expr));
+    if (name == "cos")
+        return float_ast(new FloatCos(v.expr));
+    if (name == "abs")
+        return float_ast(new FloatAbs(v.expr));
+    throw std::exception("Unknown float_func");
+}
 
 
 template <typename Iterator>
@@ -313,11 +332,15 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>
             ;
         loadmesh %= (lit("load") >> '(' >> no_close >> ')');
         loadmesh %= (lit("load") >> '(' >> '\"' >> lexeme[*(ascii::char_ - '\"')] >> '\"' >> ')');
-        miscfunc = (functions[push_back(_val, _1)] >> '(' >> no_close[push_back(_val, _1)] >> ')');
+
+        miscfunc = (functions[push_back(_val, _1)] >> (('(' >> no_close[push_back(_val, _1)] >> ')')
+                                                      | '[' >> no_square_close[push_back(_val, _1)] >> ']') )
+                 ;
 
         get_name %= raw[vecsym];
         get_numname %= raw[numsym];
         no_close %= lexeme[*(ascii::char_ - ')')];
+        no_square_close %= lexeme[*(ascii::char_ - ']')];
 
         variable = lexeme[ ascii::alpha[_val += _1] >> (*ascii::alnum[_val += _1]) ];
 
@@ -333,6 +356,7 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>
             factor                          [_val = _1]
             >> *(   ('*' >> factor          [_val *= _1])
                 |   ('/' >> factor          [_val /= _1])
+                |   ('^' >> factor          [_val ^= _1])
                 )
             ;
 
@@ -340,6 +364,7 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>
             float_                         [_val = _1]
             //|   numsym                     [_val = _1]
             |   get_numname                 [_val = phoenix::bind(&lookup_float_sym, m_model, _1) ]
+            |   (floatfuncs >> '(' >> expression >> ')') [_val = phoenix::bind(&make_float_func, _1, _2)]
             |   '(' >> expression           [_val = _1] >> ')'
             |   ('-' >> factor              [_val = -_1])
             |   ('+' >> factor              [_val = _1])
@@ -410,8 +435,9 @@ struct kwprog : public qi::grammar<Iterator, void(), ascii::space_type>
     qi::symbols<char, float_ast> numsym;
     
     qi::symbols<char, std::string> functions; // possible general purpose no-arguments (yet) functions. added by the user
+    qi::symbols<char, std::string> floatfuncs; // takes float, returns float
 
-    qi::rule<Iterator, std::string(), ascii::space_type> no_close;
+    qi::rule<Iterator, std::string(), ascii::space_type> no_close, no_square_close;
     qi::rule<Iterator, std::string(), ascii::space_type> get_name;
     qi::rule<Iterator, std::string(), ascii::space_type> get_numname;
     qi::rule<Iterator, vector<std::string>(), ascii::space_type> addpoly;
@@ -468,6 +494,10 @@ bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActo
     for(TFuncs::iterator it = m_knownFunctions.begin(); it != m_knownFunctions.end(); ++it)
         m_kg->functions.add(it->c_str(), *it);
 
+    const char* knownFloatFuncs[] = { "sin", "cos", "abs" };
+    for(auto n: knownFloatFuncs)
+        m_kg->floatfuncs.add(n, n);
+
     while(iter != end)
     {
         bool ok = phrase_parse(iter, end, *m_kg, ascii::space);
@@ -498,9 +528,25 @@ bool KwParser::kparse(const char* iter, const char* end, bool verbose, ErrorActo
     return true;
 }
 
- IPolyCreator* KwParser::creator() { 
-     return m_model; 
- }
+IPolyCreator* KwParser::creator() { 
+    return m_model; 
+}
+
+bool KwParser::kparseFloatExp(const string& expression, float& f)
+{
+    if (!isValid())
+        return false;
+    float_ast ev;
+    const char* iter = expression.data();
+    const char* end = iter + expression.size();
+    bool ok = phrase_parse(iter, end, m_kg->expression, ascii::space, ev);
+    if (ok && iter == end) {
+        f = ev.expr->eval();
+        return true;
+    }
+    return false;
+}
+
 
 // it's useful for this to be an assignment if we want to use the symbol created in later rules
 bool KwParser::kparseFloat(const char* iter, const char* end, const char* nameend, float& f)

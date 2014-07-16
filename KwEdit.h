@@ -31,35 +31,35 @@ class ProgKeep;
 
 struct KPage
 {
-	KPage() : tab(NULL), elem(NULL) {}
-	virtual ~KPage();
-	virtual void commit() {}
-	virtual void postCompile() {}
-	bool textual() const;
+    KPage() : tab(NULL), elem(NULL) {}
+    virtual ~KPage();
+    virtual void commit() {}
+    virtual void postCompile() {}
+    bool textual() const;
 
-	QWidget* tab;
-	DocElement* elem; // same as src or pass
+    QWidget* tab;
+    DocElement* elem; // same as src or pass
 };
 
 struct EditPage : public KPage
 {
-	EditPage() : src(NULL), ed(NULL), m_high(NULL) {}
-	virtual void commit(); // commit the changes in the edit widget to the DocSrc
+    EditPage() : src(NULL), ed(NULL), m_high(NULL) {}
+    virtual void commit(); // commit the changes in the edit widget to the DocSrc
 
-	DocSrc* src;
-	ProgTextEdit* ed;
-	MySyntaxHighlighter *m_high; // the edit widget deletes this.
+    DocSrc* src;
+    ProgTextEdit* ed;
+    MySyntaxHighlighter *m_high; // the edit widget deletes this.
 };
 
 // we kinda don't need this class. TBD
 struct DlgPage : public KPage
 {
-	DlgPage() : pass(NULL), dlg(NULL) {}
-	virtual void commit();
-	virtual void postCompile();
+    DlgPage() : pass(NULL), dlg(NULL) {}
+    virtual void commit();
+    virtual void postCompile();
 
-	Pass* pass;
-	ShaderConfigDlg* dlg;
+    Pass* pass;
+    ShaderConfigDlg* dlg;
 };
 
 typedef shared_ptr<KPage> KPagePtr;
@@ -70,89 +70,90 @@ typedef shared_ptr<DlgPage> DlgPagePtr;
 
 class KwEdit : public MyDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	KwEdit(QWidget *parent, DisplayConf& conf, Document* doc, T2GLWidget *view);
-	~KwEdit()
-	{
-		foreach(const KPagePtr& page, m_pages)
-			page->tab = NULL; // throw hands in air and cry out "fuck this shit"
-		m_pages.clear();
-	}
+    KwEdit(QWidget *parent, DisplayConf& conf, Document* doc, T2GLWidget *view);
+    ~KwEdit()
+    {
+        foreach(const KPagePtr& page, m_pages)
+            page->tab = NULL; // throw hands in air and cry out "fuck this shit"
+        m_pages.clear();
+    }
 
-	void addError(DocSrc* src, int start, int count);
-	void clearErrors(DocSrc* src);
-	void finishErrors(DocSrc* src);
+    void addError(DocSrc* src, int start, int count);
+    void clearErrors(DocSrc* src);
+    void finishErrors(DocSrc* src);
 
-	DisplayConf& conf() { return m_conf; }
-	T2GLWidget* view() { return m_view; }
-	bool isEnabled();
+    DisplayConf& conf() { return m_conf; }
+    T2GLWidget* view() { return m_view; }
+    bool isEnabled();
 
 public slots:
-	void readModel(DocSrc* src);
-	void readProg(ProgKeep* prog);
-	void clearingProg();
+    void readModel(DocSrc* src);
+    void readProg(ProgKeep* prog);
+    void clearingProg();
 
-	void doShadersUpdate();
-	void addModelLine(const QString& line);
+    void doShadersUpdate();
+    void addModelLine(const QString& line);
 
-	QWidget* addPage(DocElement*, int index = -1);
+    QWidget* addPage(DocElement*, int index = -1);
 
-	void removePage(DocElement* src);
+    void removePage(DocElement* src);
+    void commitAll();
 
 private slots:
-	// void on_reloadBot_clicked();
-	void on_tabs_currentChanged(int);
-	void on_tabs_tabCloseRequested(int index);
+    // void on_reloadBot_clicked();
+    void on_tabs_currentChanged(int);
+    void on_tabs_tabCloseRequested(int index);
 
-	void tabsBarClose();
-	void pageNameChanged(const QString&);
-	//void saveCurDoc();
-	void decompile();
+    void tabsBarClose();
+    void pageNameChanged(const QString&);
+    //void saveCurDoc();
+    void decompile();
 
-	void updateCursorPosLine();
-	void zoomEdits(int delta);
+    void updateCursorPosLine();
+    void zoomEdits(int delta);
 
-	void editTextChanged(int pos, int rem, int add);
-	void modificateChanged(bool modif);
+    void editTextChanged(int pos, int rem, int add);
+    void modificateChanged(bool modif);
 
 signals:
-	void changedModel(DocSrc* txt);
-	void updateShaders();
+    void changedModel(DocSrc* txt);
+    void updateShaders();
 
 public:
-	Ui::KwEdit ui;
+    Ui::KwEdit ui;
 
 private:
-	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
-	QAction* confAddProg(const QString& display, ProgKeep* prog); // taking over this.
+    QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
+    QAction* confAddProg(const QString& display, ProgKeep* prog); // taking over this.
 
-	KPagePtr findPage(int tabi);
-	KPagePtr findPage(DocElement* src);
-	EditPagePtr findEditPage(DocSrc* src);
+    KPagePtr findPage(int tabi);
+    KPagePtr findPage(DocElement* src);
+    EditPagePtr findEditPage(DocSrc* src);
 
 
-	KPagePtr addDlgPage(RenderPass* pass);
-	KPagePtr addTextPage(DocSrc* src, int& index);
-	
+    KPagePtr addDlgPage(RenderPass* pass);
+    KPagePtr addTextPage(DocSrc* src, int& index);
+    
 private:
 
-	typedef QMap<DocElement*, KPagePtr> TPages;
-	TPages m_pages;
+    typedef QMap<DocElement*, KPagePtr> TPages;
+    TPages m_pages;
 
-	weak_ptr<KPage> m_curEd;
-	QString m_lastLoadedProg;
+    weak_ptr<KPage> m_curEd;
+    QString m_lastLoadedProg;
 
-	Document *m_doc;
-	T2GLWidget *m_view;
-	int m_lastActiveTabIndex;
+    Document *m_doc;
+    T2GLWidget *m_view;
+    int m_lastActiveTabIndex;
 
-	DisplayConf &m_conf;
-	
-	QList<int> errorBlockNumbers; // move somewhere else TBD
+    DisplayConf &m_conf;
+    
+    QList<int> errorBlockNumbers; // move somewhere else TBD
 
-	friend class ConfXmls;
-	friend class ParamUi;
+    friend class ConfXmls;
+    friend class ParamUi;
 };
 
 

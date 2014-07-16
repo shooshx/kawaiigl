@@ -19,6 +19,7 @@ class ControlPanel : public QWidget //MyDialog
 public:
     ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document* doc, T2GLWidget* kview);
     //void setLightSliders(float amb, float diff, float spec);
+    void selectTexGradient(int which, bool populate);
 
 private slots:
     void on_resetBot_clicked();
@@ -28,12 +29,14 @@ private slots:
     //void coordFontSizeChanged(int v);
     void selectTexFile();
     void selectTexGradient();
+    void selectTexNone();
     void changedTexFile();
-    void gradientChanged(QImage img);
+    void gradientChanged(QImage img, QString repr);
     //void texSelChanged(int i);
 
 public slots:
     void updateTexEdits();
+    void externalGradient(int texIndex, const QString& s);
 
 signals:
     void changedRend(); // changed rendering stuff

@@ -29,6 +29,10 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
     QMenu *newShaderMenu = new QMenu("New Shader...");
     passMenu->addMenu(newShaderMenu);
 
+    newShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_MODEL), "Model", this));
+    act->setData(SRC_MODEL);
+    connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
+
     newShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_VTX), "Vertex", this));
     act->setData(SRC_VTX);
     connect(act, SIGNAL(triggered()), this, SLOT(addDoc()));
@@ -44,6 +48,7 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
     QMenu *existShaderMenu = new QMenu("Load exisiting...", passMenu);
     passMenu->addMenu(existShaderMenu);
 
+/* phasing out the concept of stand alone shader files
     existShaderMenu->addAction(act = new QAction(Document::getTypeIcon(SRC_VTX), "Vertex", this));
     act->setData(SRC_VTX);
     connect(act, SIGNAL(triggered()), this, SLOT(existingDoc()));
@@ -57,7 +62,7 @@ ProjBrowser::ProjBrowser(KawaiiGL* kw, Document *doc)
     connect(act, SIGNAL(triggered()), this, SLOT(existingDoc()));
 
     passMenu->addSeparator();
-
+*/
     passMenu->addAction(act = new QAction(QIcon(), "Add Pass", this));
     connect(act, SIGNAL(triggered()), this, SLOT(addPass()));
 
@@ -158,9 +163,19 @@ void ProjBrowser::on_saveBut_clicked() {
     QString filename = QFileDialog::getSaveFileName(this, "Save Program", QString(), "xml files (*.xml)");
     if (filename.isEmpty())
         return;
+    emit commitGuiData(); // anything edited in the gui, to commit to the document
     m_doc->m_confxmls.saveProg(*m_doc, filename);
 }
 
+/*
+void ProjBrowser::on_loadBut_clicked() {
+    QString filename = QFileDialog::getOpenFileName(this, "Open Program", QString(), "xml files (*.xml)");
+    if (filename.isEmpty())
+        return;
+
+    m_doc->m_confxmls.loadProg(*m_doc, filename);
+}
+*/
 
 void ProjBrowser::addPass()
 {

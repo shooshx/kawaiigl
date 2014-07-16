@@ -5,7 +5,9 @@
 #include <vector>
 #include "MyLib/Vec.h"
 #include "DisplayConf.h" // for UserData
-
+#include "general.h" // parseArgs
+#include <sstream>
+using namespace std;
 
 
 struct StepData : public ParamBase
@@ -25,12 +27,14 @@ struct GradData
     QVector<StepData*> steps;
 };
 
-GradientDlg::GradientDlg(QWidget *parent)
+GradientDlg::GradientDlg(bool populate, QWidget *parent)
     : QDialog(parent), m_data(new GradData)
 {
     ui.setupUi(this);
-    addStep(0.0, QColor(0,0,0));
-    addStep(1.0, QColor(255,255,255));
+    if (populate) {
+        addStep(0.0, QColor(0,0,0));
+        addStep(1.0, QColor(255,255,255));
+    }
     connect(ui.sizeSel, SIGNAL(currentTextChanged(const QString&)), this, SLOT(updateImage()));
 
     updateImage();
@@ -123,6 +127,17 @@ void GradientDlg::removeStep()
     updateImage();
 }
 
+void GradientDlg::clearSteps() 
+{
+    foreach(StepData* sd, m_data->steps) 
+    {
+        auto *w = sd->containter;
+        delete sd;
+        delete w;
+    }
+    m_data->steps.clear();
+}
+
 void setPixel(uchar* line, int i, uint rgb) {
     uint *p = (uint*)line;
     p += i;
@@ -132,8 +147,11 @@ void setPixel(uchar* line, int i, uint rgb) {
 // minor bug - last two color on the same last pixel but not the same pos, causes a miscoloring of the last pixel
 void GradientDlg::updateImage()
 {
+    stringstream text;
+    text << "gradient(";
     int resl = resolution();
     QImage img(resl, 1, QImage::Format_ARGB32);
+    text << resl; // first argument is the resolution
     uchar* bits = img.scanLine(0);
     StepData* s = getStepAfter(-0.1);
     if (s == NULL)
@@ -146,11 +164,12 @@ void GradientDlg::updateImage()
         setPixel(bits, i, col.toBgr());
     while(true)
     {
+        text << ", " << s->pos << "," << "{" << s->col.val().red() << "," << s->col.val().green() << "," << s->col.val().blue() << "}";
         lastX = x;
         lastCol = col;
         s = getStepAfter(s->pos);
         if (s == NULL)
-            break;
+            break;   
         x = (int)(s->pos * resl);
         col = Vec3(s->col);
         if (s->pos == 1.0)
@@ -165,14 +184,51 @@ void GradientDlg::updateImage()
     }
     for(int i = x; i < resl; ++i)
         setPixel(bits, i, col.toBgr());
+    text << ")";
 
     m_curImage = img;
     resizeEvent(NULL);
-    emit changed(m_curImage);
+    emit changed(m_curImage, QString(text.str().c_str()) );
 }
+
+void GradientDlg::parseText(const QString& s)
+{
+    QStringList args = s.split(QRegExp("[\\s,(){}]"), QString::SkipEmptyParts);
+    if (args.size() < 3)
+        return;
+    args.pop_front(); // func name "gradient"
+    int resl = args[0].toInt();
+    ui.sizeSel->setEditText(QString("%1").arg(resl));
+    args.pop_front(); // resolution
+
+    clearSteps();
+    while (!args.empty()) {
+        float pos = args[0].toFloat();
+        args.pop_front();
+        if (args.empty())
+            break;
+        int r = args[0].toInt();
+        args.pop_front();
+        if (args.empty())
+            break;
+        int g = args[0].toInt();
+        args.pop_front();
+        if (args.empty())
+            break;
+        int b = args[0].toInt();
+        args.pop_front();
+
+        addStep(pos, QColor(r, b, g, 255));
+    }
+
+}
+
+
 
 void GradientDlg::resizeEvent(QResizeEvent* event) 
 {
+    if (m_curImage.isNull())
+        return;
     QPixmap px = QPixmap::fromImage(m_curImage, Qt::ColorOnly).scaled(ui.gradImg->width() - 2, ui.gradImg->height() - 2);
     ui.gradImg->setPixmap(px);
 }

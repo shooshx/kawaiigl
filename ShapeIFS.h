@@ -29,114 +29,125 @@ struct IPoint;
 class MyObject // should be called MyMesh
 {
 public:
-	MyObject(MyAllocator* alloc = NULL) 
-		:m_alloc(alloc), nPolys(0), nLines(0), nPoints(0), 
-		 nakedLinesColor(0.0),  verterxNormals(false)
-	{}
+    MyObject(MyAllocator* alloc = NULL) 
+        :m_alloc(alloc), nPolys(0), nLines(0), nPoints(0), 
+         nakedLinesColor(0.0),  verterxNormals(false)
+    {}
 
-	~MyObject()
-	{
-	}
+    ~MyObject()
+    {
+    }
 
+    MyPolygon* AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs = NULL, Texture *tex = NULL, int count = 4); //copy needed vertices, add poly
+    MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
+                       TexAnchor *ancs = NULL, Texture *tex = NULL);
 
-	QVector<MyPolygon*> poly; // array sized nPoly of pointers to polygons
-	QVector<MyLine> lines;   // array sized nLines
-	QVector<MyPoint*> points; // array sized numPoint of pointers to the points
-	QVector<MyPolygon*> triangles; // polygons of poly that are triangles (a subset of poly)
+    void AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double inB, MyLine::ELineType type);
+    void setNakedLineColor(float color) { nakedLinesColor = color; }
+    void vectorify();
+    bool clacNormals(bool vtxNormals);
+    bool subdivide(bool smooth);
 
-	int nPolys, nLines, nPoints;
+    enum ESaveWhat { SaveTriangles, SaveQuads, SaveEdges };
+    void saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat = SaveTriangles);
+    void detachPoints();
+    void makePointNei();
+    Vec3 findVtxCenter();
+    Vec3 findBoxCenter();
 
-	float nakedLinesColor; // color of the lines when the object is on its own (not in grpdef)
-	bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
+    // add a point directly to the points repository, without duplicacy check.
+    inline void basicAddPoint(MyPoint *pnt);
 
-	MyPolygon* AddPoly(Vec3 *inplst, const Vec3& col, TexAnchor *ancs = NULL, Texture *tex = NULL, int count = 4); //copy needed vertices, add poly
-	MyPolygon* AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p3, const IPoint *p4,
-					   TexAnchor *ancs = NULL, Texture *tex = NULL);
+    MyPoint* addPoint(const Vec3& coord);
+    void addTri(MyPoint* a, MyPoint* b, MyPoint* c);
 
-	void AddLine(Vec3 *inp1, Vec3 *inp2, double inR, double inG, double inB, MyLine::ELineType type);
-	void setNakedLineColor(float color) { nakedLinesColor = color; }
-	void vectorify();
-	bool clacNormals(bool vtxNormals);
-	bool subdivide(bool smooth);
+    MyPoint* CopyCheckPoint(const Vec3 *p, const string* name = NULL);
 
-	enum ESaveWhat { SaveTriangles, SaveQuads, SaveEdges };
-	void saveAs(QTextStream& out, const QString& format, ESaveWhat saveWhat = SaveTriangles);
-	void detachPoints();
-	void makePointNei();
-	Vec3 findVtxCenter();
-	Vec3 findBoxCenter();
+    void arrayify();
 
-	// add a point directly to the points repository, without duplicacy check.
-	inline void basicAddPoint(MyPoint *pnt);
-	
-private:
-	///////////////////// structures for startup
-	MyPoint* CopyCheckPoint(const Vec3 *p, const string* name = NULL);
+public:
+    QVector<MyPolygon*> poly; // array sized nPoly of pointers to polygons
+    QVector<MyLine> lines;   // array sized nLines
+    QVector<MyPoint*> points; // array sized numPoint of pointers to the points
+    QVector<MyPolygon*> triangles; // polygons of poly that are triangles (a subset of poly)
 
-	typedef QList<MyPolygon*> TPolyList;
-	typedef QLinkedList<MyLine> TLineList;
-	typedef QList<MyPoint*> TPointsList;
-	TPolyList plylst; 
-	TLineList lnlst;
-	TPointsList pntlst; // points can come either from the list or the map.
+    int nPolys, nLines, nPoints;
 
-	MyAllocator *m_alloc; // used to allocate points, polygons and halfedges
+    float nakedLinesColor; // color of the lines when the object is on its own (not in grpdef)
+    bool verterxNormals; // use normals for every vertex (belongs more in the ifs.. but object is the drawing unit)
 
-	// needed for comparison of points (what you don't want is an operator=(MyPoint*, MyPoint*) )
-	// shallow wrapper to the pointer
-	struct MyPointWrapper 
-	{
-		explicit MyPointWrapper(MyPoint *p) :ptr(p) {}
-		void detach(MyAllocator *m_alloc) const;
-		mutable MyPoint *ptr; 
-		// this is a workaround the constness of the set. we know the hash code is not
-		// going to change due to the detach
-	};
+    vector<Vec3> arrVtx;
+    vector<Vec3> arrNormal;
+    vector<VecI> arrTriIndex;
 
-	typedef QSet<MyPointWrapper> TPointsSet;
-	TPointsSet m_tmppoints; // used in startup to accumilate points. 
-
-	friend uint qHash(const MyObject::MyPointWrapper &pnt);
-	friend bool operator==(const MyObject::MyPointWrapper &p1, const MyObject::MyPointWrapper &p2);
 
 private:
+    ///////////////////// structures for startup
 
-	// add a polygon made of points in the repository, without duplicacy checks.
-	inline void basicAddPoly(MyPoint *inparr[], TexAnchor *ancs = NULL, Texture *tex = NULL);
+    typedef QList<MyPolygon*> TPolyList;
+    typedef QLinkedList<MyLine> TLineList;
+    typedef QList<MyPoint*> TPointsList;
+    TPolyList plylst; 
+    TLineList lnlst;
+    TPointsList pntlst; // points can come either from the list or the map.
 
-	typedef QVector<HalfEdge*> THalfEdgeList;
-	bool buildHalfEdges(THalfEdgeList& lst);
+    MyAllocator *m_alloc; // used to allocate points, polygons and halfedges
+
+    // needed for comparison of points (what you don't want is an operator=(MyPoint*, MyPoint*) )
+    // shallow wrapper to the pointer
+    struct MyPointWrapper 
+    {
+        explicit MyPointWrapper(MyPoint *p) :ptr(p) {}
+        void detach(MyAllocator *m_alloc) const;
+        mutable MyPoint *ptr; 
+        // this is a workaround the constness of the set. we know the hash code is not
+        // going to change due to the detach
+    };
+
+    typedef QSet<MyPointWrapper> TPointsSet;
+    TPointsSet m_tmppoints; // used in startup to accumilate points. 
+
+    friend uint qHash(const MyObject::MyPointWrapper &pnt);
+    friend bool operator==(const MyObject::MyPointWrapper &p1, const MyObject::MyPointWrapper &p2);
+
+private:
+
+    // add a polygon made of points in the repository, without duplicacy checks.
+    inline void basicAddPoly(MyPoint *inparr[], TexAnchor *ancs = NULL, Texture *tex = NULL);
+
+    typedef QVector<HalfEdge*> THalfEdgeList;
+    bool buildHalfEdges(THalfEdgeList& lst);
 
 };
 
 
 struct MyAllocator
 {
-	MyAllocator() {}
-	MyAllocator(int points, int poly, int he)
-		:m_pointsPool(points), m_polyPool(poly), m_hePool(he) {}
-	bool isNull()
-	{
-		return m_pointsPool.isNull();
-	}
-	void init(int points, int poly, int he);
-	void clear()
-	{
-		m_pointsPool.clear();
-		m_polyPool.clear();
-		m_hePool.clear();
-	}
-	void clearMaxAlloc()
-	{
-		m_pointsPool.clearMaxAlloc();
-		m_polyPool.clearMaxAlloc();
-		m_hePool.clearMaxAlloc();
-	}
-	void checkMaxAlloc() const;
+    MyAllocator() {}
+    MyAllocator(int points, int poly, int he)
+        :m_pointsPool(points), m_polyPool(poly), m_hePool(he) {}
+    bool isNull()
+    {
+        return m_pointsPool.isNull();
+    }
+    void init(int points, int poly, int he);
+    void clear()
+    {
+        m_pointsPool.clear();
+        m_polyPool.clear();
+        m_hePool.clear();
+    }
+    void clearMaxAlloc()
+    {
+        m_pointsPool.clearMaxAlloc();
+        m_polyPool.clearMaxAlloc();
+        m_hePool.clearMaxAlloc();
+    }
+    void checkMaxAlloc() const;
 
-	Pool<MyPoint> m_pointsPool; //(671100); //168100);
-	Pool<MyPolygon> m_polyPool; //(891000); // TBD - divide to levels, for each subdivision
-	Pool<HalfEdge> m_hePool; //(5000);
+    Pool<MyPoint> m_pointsPool; //(671100); //168100);
+    Pool<MyPolygon> m_polyPool; //(891000); // TBD - divide to levels, for each subdivision
+    Pool<HalfEdge> m_hePool; //(5000);
 
 };
 
@@ -144,24 +155,24 @@ struct MyAllocator
 class ShapeIFS  
 {
 public:
-	ShapeIFS() {}
-	virtual ~ShapeIFS() {}
+    ShapeIFS() {}
+    virtual ~ShapeIFS() {}
 
-	MyObject& operator[](uint i) 
-	{ 
-		TObjectsMap::iterator it = m_objects.find(i);
-		if (it == m_objects.end())
-			it = m_objects.insert(i, MyObject()); // does the find again...  TBD-sort of redundant by now
-		return *it; 
-	}
+    MyObject& operator[](uint i) 
+    { 
+        TObjectsMap::iterator it = m_objects.find(i);
+        if (it == m_objects.end())
+            it = m_objects.insert(i, MyObject()); // does the find again...  TBD-sort of redundant by now
+        return *it; 
+    }
 
 
-	void vectorify();
+    void vectorify();
 
 // used directly via const iterators by drawIFS
-	// TBD: VECTOR!
-	typedef QHash<uint, MyObject> TObjectsMap;
-	TObjectsMap m_objects;
+    // TBD: VECTOR!
+    typedef QHash<uint, MyObject> TObjectsMap;
+    TObjectsMap m_objects;
 
 };
 

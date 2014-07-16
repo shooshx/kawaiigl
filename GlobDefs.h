@@ -25,6 +25,6 @@ using namespace std;
 
 // this points to the main widget. This pointer should be used Only as parent for QMessageBoxs
 // and for nothing else otherwise. This pointer is set in the main() and instantiated in main.cpp
-class QWidget;
-extern QWidget* g_main;
+//class QWidget;
+//extern QWidget* g_main;
 

@@ -43,15 +43,19 @@ ControlPanel::ControlPanel(DisplayConf* _conf, KawaiiGL* parent, Document *doc, 
         texFileAct->setUserData(0, new UserData<int>(i));
         QAction *texGradAct = new QAction("Gradient...", this);
         texGradAct->setUserData(0, new UserData<int>(i));
+        QAction *texNoneAct = new QAction("None", this);
+        texNoneAct->setUserData(0, new UserData<int>(i));
         QMenu *texBotMenu = new QMenu(this);
         texBotMenu->addAction(texFileAct);
         texBotMenu->addAction(texGradAct);
+        texBotMenu->addAction(texNoneAct);
         m_W_Tex[i].bot->setUserData(0, new UserData<int>(i));
         m_W_Tex[i].bot->setMenu(texBotMenu);
         m_W_Tex[i].label->hide();
 
         connect(texFileAct, SIGNAL(triggered()), this, SLOT(selectTexFile()));
         connect(texGradAct, SIGNAL(triggered()), this, SLOT(selectTexGradient()));
+        connect(texNoneAct, SIGNAL(triggered()), this, SLOT(selectTexNone()));
         (new WidgetTIn<QString>::LineEditIn(conf->texFile[i], m_W_Tex[i].file))->reload();
         connect(conf->texFile[i], SIGNAL(changed()), this, SLOT(changedTexFile()));
         *conf->texImage[i] = QImage();
@@ -191,26 +195,55 @@ void ControlPanel::selectTexFile()
     (*conf->texImage[which]) = QImage();
 }
 
+void ControlPanel::externalGradient(int texIndex, const QString& s)
+{
+    selectTexGradient(texIndex, false);
+    W_Tex& wt = m_W_Tex[texIndex];
+    ((GradientDlg*)wt.picker)->parseText(s);
+}
+
 void ControlPanel::selectTexGradient()
 {
     int which = ((UserData<int>*)sender()->userData(0))->i;
+    selectTexGradient(which, true);
+}
+
+void ControlPanel::selectTexNone()
+{
+    int which = ((UserData<int>*)sender()->userData(0))->i;
+    W_Tex& wt = m_W_Tex[which];
+
+    wt.label->hide();
+    wt.file->setText("");
+    wt.file->show();
+    if (wt.picker != NULL) {
+        wt.picker->hide();
+    }
+
+    (*conf->texFile[which]) = "";
+    (*conf->texImage[which]) = QImage();
+}
+
+void ControlPanel::selectTexGradient(int which, bool populate)
+{
     W_Tex& wt = m_W_Tex[which];
     if (wt.picker == NULL) {
-        wt.picker = new GradientDlg(this);
+        wt.picker = new GradientDlg(populate, this);
         wt.picker->setUserData(0, new UserData<int>(which));
-        connect(wt.picker, SIGNAL(changed(QImage)), this, SLOT(gradientChanged(QImage)));
+        connect(wt.picker, SIGNAL(changed(QImage, QString)), this, SLOT(gradientChanged(QImage, QString)));
     }
-    ((GradientDlg*)wt.picker)->updateImage();
+    wt.file->hide();
     wt.picker->show();
     wt.label->show();
-    wt.file->hide();
+    ((GradientDlg*)wt.picker)->updateImage();
 }
 
 
-void ControlPanel::gradientChanged(QImage img)
+void ControlPanel::gradientChanged(QImage img, QString repr)
 {
     int which = ((UserData<int>*)sender()->userData(0))->i;
     (*conf->texImage[which]) = img;
+    (*conf->texFile[which]) = repr;
 }
 
 void ControlPanel::changedTexFile()

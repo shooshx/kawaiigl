@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>211</width>
+    <width>246</width>
     <height>459</height>
    </rect>
   </property>
@@ -64,7 +64,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Load Model</string>
+        <string>Model</string>
        </property>
       </widget>
      </item>
@@ -77,7 +77,7 @@
         </size>
        </property>
        <property name="text">
-        <string>Load Shaders</string>
+        <string>Shaders</string>
        </property>
       </widget>
      </item>

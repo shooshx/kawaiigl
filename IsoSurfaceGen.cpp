@@ -80,11 +80,23 @@ private:
     int m_width, m_height;
 };
 
+struct VecIPair {
+    VecIPair(const VecI& a, const VecI& b) :first(a), second(b) {}
+    VecI first, second;
+};
+
+bool operator==(const VecIPair& a, const VecIPair& b) {
+    return (a.first == b.first) && (a.second == b.second);
+}
+uint qHash(const VecIPair& v) {
+    return ((v.first.x) ^ (v.first.y << 8) ^ (v.first.z << 16) ^
+            (v.second.x << 4) ^ (v.second.y << 12) ^ (v.second.z << 20));
+}
 
 struct VoxState
 {
     VoxState()
-        :isect(8,8)
+        :isect(8,8), xflip(false), yflip(false), zflip(false)
     {}
     void sortLimits() {
         sortMinMax(x0, x1);
@@ -104,25 +116,40 @@ struct VoxState
 
     float fval[8];
     bool fneg[8];
+    VecI ic[8]; // grid indices of the values
 
     MyObject *obj;
     Vec3 color;
 
-    Mat<Vec3> isect;
+    Mat<MyPoint*> isect; //8x8
+    bool xflip, yflip, zflip;
+
+    QHash<VecIPair, MyPoint*> addedPoints;
 };
 
 Vec3 VoxState::getCorner(int i) {
-    switch(i) {
-    case 0: return Vec3(xp,yp,zv);
-    case 1: return Vec3(xv,yp,zv);
-    case 2: return Vec3(xv,yp,zp);
-    case 3: return Vec3(xp,yp,zp);
-    case 4: return Vec3(xp,yv,zv);
-    case 5: return Vec3(xv,yv,zv);
-    case 6: return Vec3(xv,yv,zp);
-    case 7: return Vec3(xp,yv,zp);
+    float xA=xp,xB=xv;
+    if (xflip) 
+        swap(xA, xB);
+    float yA=yp, yB=yv;
+    if (yflip)
+        swap(yA, yB);
+    float zA=zv, zB=zp;
+    if (zflip)
+        swap(zA, zB);
+    switch(i) { // X flip
+    case 0: return Vec3(xA,yA,zA);
+    case 1: return Vec3(xB,yA,zA);
+    case 2: return Vec3(xB,yA,zB);
+    case 3: return Vec3(xA,yA,zB);
+    case 4: return Vec3(xA,yB,zA);
+    case 5: return Vec3(xB,yB,zA);
+    case 6: return Vec3(xB,yB,zB);
+    case 7: return Vec3(xA,yB,zB);
     }
+
     throw std::exception("unexpected corner");
+
 }
 
 
@@ -152,17 +179,15 @@ void runCube(VoxState& v) {
 
 void addTri(VoxState& v, int from, int t1, int t2, int t3) 
 {
-    Vec3 q[3] = { v.isect.get(from, t1), 
-                  v.isect.get(from, t2), 
-                  v.isect.get(from, t3) };
-    v.obj->AddPoly(q, v.color, NULL, NULL, 3);
+    //Vec3 q[3] = { v.isect.get(from, t1), v.isect.get(from, t2), v.isect.get(from, t3) };
+    //v.obj->AddPoly(q, v.color, NULL, NULL, 3);
+    v.obj->addTri(v.isect.get(from, t1), v.isect.get(from, t2), v.isect.get(from, t3));
 }
 void addTri(VoxState& v, int f1, int t1, int f2, int t2, int f3, int t3) 
 {
-    Vec3 q[3] = { v.isect.get(f1, t1), 
-                  v.isect.get(f2, t2), 
-                  v.isect.get(f3, t3) };
-    v.obj->AddPoly(q, v.color, NULL, NULL, 3);
+    //Vec3 q[3] = { v.isect.get(f1, t1), v.isect.get(f2, t2), v.isect.get(f3, t3) };
+    //v.obj->AddPoly(q, v.color, NULL, NULL, 3);
+    v.obj->addTri(v.isect.get(f1, t1), v.isect.get(f2, t2), v.isect.get(f3, t3));
 }
 
 
@@ -188,32 +213,34 @@ void runTetra(VoxState& v, int a, int b, int c, int d)
     bool d_bd = nb!=nd, d_db=d_bd;
     bool d_cd = nc!=nd, d_dc=d_cd;
 
+    bool gflip =  v.xflip ^ v.yflip ^ v.zflip;
+
     if (d_ab && d_ac && d_ad) {// a is different
-        if (na)
+        if (na ^ gflip)
             addTri(v, a, b, d, c);
         else
             addTri(v, a, c, d, b);
     }
     else if (d_ba && d_bc && d_bd) { // b is different
-        if (nb)
+        if (nb ^ gflip)
             addTri(v, b, c, d, a); 
         else
             addTri(v, b, a, d, c); 
     }
     else if (d_ca && d_cb && d_cd) { // c is different
-        if (nc)
+        if (nc ^ gflip)
             addTri(v, c, a, d, b); 
         else
             addTri(v, c, b, d, a); 
     }
     else if (d_da && d_db && d_cd) { // d is different
-        if (nd)
+        if (nd ^ gflip)
             addTri(v, d, b, c, a); 
         else
             addTri(v, d, a, c, b); 
     }
     else if (d_ab && d_bc && d_ad && d_cd) { // bd is cut
-        if (nb) {
+        if (nb ^ gflip) {
             addTri(v, a, b, b, c, a, d); //ab bc ad
             addTri(v, b, c, c, d, a, d); //bc cd ad
         }
@@ -223,7 +250,7 @@ void runTetra(VoxState& v, int a, int b, int c, int d)
         }
     }
     else if (d_ad && d_ac && d_bc && d_bd) { //ab is cut
-        if (nb) {
+        if (nb ^ gflip) {
             addTri(v, a, c, b, c, b, d); //ac bc bd
             addTri(v, a, c, b, d, a, d); //ac bd ad
         }
@@ -233,7 +260,7 @@ void runTetra(VoxState& v, int a, int b, int c, int d)
         }
     }
     else if (d_ab && d_ac && d_bd && d_cd) { //bc is cut
-        if (nb) {
+        if (nb ^ gflip) {
             addTri(v, a, b, a, c, c, d); // ab ac cd
             addTri(v, a, b, c, d, b, d); // ab cd bd
         }
@@ -246,12 +273,14 @@ void runTetra(VoxState& v, int a, int b, int c, int d)
 }
 
 // pairs of cube corners that might have a root we want to add
-struct { int first, second; } g_doIsects[] = 
+struct { 
+    int first, second; 
+} g_doIsects[] = // {smaller,larger}
 { {0,1}, {1,5}, {4,5}, {1,4},
   {1,2}, {2,6}, {5,6}, {1,6},
   {2,3}, {3,7}, {6,7}, {3,6},
-  {3,0}, {0,4}, {7,4}, {3,4},
-  {4,6}, {3,1} 
+  {0,3}, {0,4}, {4,7}, {3,4},
+  {4,6}, {1,3} 
 };
 
 // isosurface(func, voxSz, x0,x1, y0,y1, z0,z1)
@@ -261,7 +290,6 @@ void Document::generateIsoSurface(const vector<string>& args)
         cout << "isosurface reuquires 8 arguments" << endl;
         return;
     }
-
 
     // prepare function
     string name = "isofunc666";
@@ -284,78 +312,129 @@ void Document::generateIsoSurface(const vector<string>& args)
 
     // voxel sample
     VoxState v;
-    v.obj = m_frameObj;
-    v.voxsz = toFloat(args[1]);
-    v.x0 = toFloat(args[2]); v.x1 = toFloat(args[3]);
-    v.y0 = toFloat(args[4]); v.y1 = toFloat(args[5]);
-    v.z0 = toFloat(args[6]); v.z1 = toFloat(args[7]);
+    v.obj = m_frameObj.get();
+    if (!m_kparser.kparseFloatExp(args[1], v.voxsz) || 
+        !m_kparser.kparseFloatExp(args[2], v.x0) || !m_kparser.kparseFloatExp(args[3], v.x1) ||
+        !m_kparser.kparseFloatExp(args[4], v.y0) || !m_kparser.kparseFloatExp(args[5], v.y1) ||
+        !m_kparser.kparseFloatExp(args[6], v.z0) || !m_kparser.kparseFloatExp(args[7], v.z1))
+    {
+        return;
+    }
+    if (v.voxsz == 0.0)
+        return;
     v.sortLimits();
     v.color = Vec3(m_conf.materialCol);
 
     Mat<float> m0(v.xn+1, v.yn+1), m1(v.xn+1, v.yn+1);
-    samplePlane(v.z0, v, ef, m0);
+    vector<Mat<float>*> zm(v.zn+1);
+    for(int zi = 0; zi <= v.zn; ++zi)
+        zm[zi] = ((zi % 2) == 0)?&m0:&m1;
+
+    samplePlane(v.z0, v, ef, *zm[0]);
 
     v.zp = v.z0;
-    for(int zi = 1; zi <= v.zn; ++zi) {
+    v.zflip = false;
+    for(int zi = 1; zi <= v.zn; ++zi) 
+    {
         v.zv = v.z0 + v.voxsz * zi;
-        samplePlane(v.zv, v, ef, m1);
+        samplePlane(v.zv, v, ef, *zm[zi]);
+        v.yflip = false;
         v.yp = v.y0;
         for(int yi = 1; yi <= v.yn; ++yi) 
         {
             v.yv = v.y0 + v.voxsz * yi;
+            v.xflip = false; 
             v.xp = v.x0;
             for(int xi = 1; xi <= v.xn; ++xi) 
             {
                 v.xv = v.x0 + v.voxsz * xi;
                 
-                v.fval[0] = m1.get(xi-1, yi - 1); // xp,yp,zv
-                v.fval[1] = m1.get(xi, yi - 1);   // xv,yp,zv
-                v.fval[2] = m0.get(xi, yi - 1);   // xv,yp,zp
-                v.fval[3] = m0.get(xi-1, yi - 1); // xp,yp,zp
-                v.fval[4] = m1.get(xi-1, yi);     // xp,yv,zv
-                v.fval[5] = m1.get(xi, yi);       // xv,yv,zv
-                v.fval[6] = m0.get(xi, yi);       // xv,yv,zp
-                v.fval[7] = m0.get(xi-1, yi);     // xp,yv,zp
+                int xiA=xi-1, xiB=xi;
+                if (v.xflip) 
+                    swap(xiA, xiB);
+                int yiA=yi-1, yiB=yi;
+                if (v.yflip)
+                    swap(yiA, yiB);
+                int ziA=zi, ziB=zi-1;
+                if (v.zflip)
+                    swap(ziA, ziB);
+                
+                v.ic[0] = VecI(xiA, yiA, ziA);
+                v.ic[1] = VecI(xiB, yiA, ziA);
+                v.ic[2] = VecI(xiB, yiA, ziB);
+                v.ic[3] = VecI(xiA, yiA, ziB);
+                v.ic[4] = VecI(xiA, yiB, ziA);
+                v.ic[5] = VecI(xiB, yiB, ziA);
+                v.ic[6] = VecI(xiB, yiB, ziB);
+                v.ic[7] = VecI(xiA, yiB, ziB);
+                
+
+                Mat<float> *mA=zm[ziA], *mB=zm[ziB];
+
+                v.fval[0] = mA->get(xiA, yiA); // xp,yp,zv
+                v.fval[1] = mA->get(xiB, yiA);   // xv,yp,zv
+                v.fval[2] = mB->get(xiB, yiA);   // xv,yp,zp
+                v.fval[3] = mB->get(xiA, yiA); // xp,yp,zp
+                v.fval[4] = mA->get(xiA, yiB);     // xp,yv,zv
+                v.fval[5] = mA->get(xiB, yiB);       // xv,yv,zv
+                v.fval[6] = mB->get(xiB, yiB);       // xv,yv,zp
+                v.fval[7] = mB->get(xiA, yiB);     // xp,yv,zp
                 for(int i = 0; i < 8; ++i)
                     v.fneg[i] = v.fval[i] < 0;
 
                 bool b = v.fneg[0];
                 if (v.fneg[1]!=b || v.fneg[2]!=b || v.fneg[3]!=b || v.fneg[4]!=b || v.fneg[5]!=b || v.fneg[6]!=b || v.fneg[7]!=b)
                 {
-                    for(int ii = 0; ii < _countof(g_doIsects); ++ii) {
+                    for(int ii = 0; ii < _countof(g_doIsects); ++ii) 
+                    {
                         int i = g_doIsects[ii].first, j = g_doIsects[ii].second;
-                        float fi = v.fval[i];
-                        float fj = v.fval[j];
-                        float t = abs(fi - fj);
-                        fi = abs(fi)/t;
-                        fj = abs(fj)/t;
-                        Vec3 ci = v.getCorner(i);
-                        Vec3 cj = v.getCorner(j);
-                        Vec3 vis = (fj * ci + fi * cj);
-                        v.isect.setr(i,j, vis);
-                        v.isect.setr(j,i, vis);
+                        if (v.fneg[i] == v.fneg[j])
+                            continue;
+                        MyPoint* p = NULL;
+                        auto it = v.addedPoints.find(VecIPair(v.ic[i], v.ic[j]));
+                        if (it == v.addedPoints.end())
+                        {
+                            float fi = v.fval[i];
+                            float fj = v.fval[j];
+                            float t = abs(fi - fj);
+                            fi = abs(fi)/t;
+                            fj = abs(fj)/t;
+                            Vec3 ci = v.getCorner(i);
+                            Vec3 cj = v.getCorner(j);
+                            Vec3 vis = (fj * ci + fi * cj);
+
+                            //auto p = v.obj->CopyCheckPoint(&vis);
+                            p = v.obj->addPoint(vis);
+                            p->col = v.color;
+
+                            v.addedPoints.insert(VecIPair(v.ic[i], v.ic[j]), p);
+                            v.addedPoints.insert(VecIPair(v.ic[j], v.ic[i]), p);
+                        }
+                        else {
+                            p = *it;
+                        }
+
+                        v.isect.setr(i,j, p);
+                        v.isect.setr(j,i, p);
                     }
 
-                    if (true) {
-                        runTetra(v, 0, 1, 4, 3);
-                        runTetra(v, 2, 3, 6, 1);
-                        runTetra(v, 5, 4, 1, 6);
-                        runTetra(v, 7, 6, 3, 4);
+                    runTetra(v, 0, 1, 4, 3);
+                    runTetra(v, 2, 3, 6, 1);
+                    runTetra(v, 5, 4, 1, 6);
+                    runTetra(v, 7, 6, 3, 4);
 
-                        runTetra(v, 4, 6, 3, 1);
-                    }
-                    else {
-                        runCube(v);
-                    }
+                    runTetra(v, 4, 6, 3, 1);
                 }
                 v.xp = v.xv;
+                v.xflip = !v.xflip;
             }
             v.yp = v.yv;
+            v.yflip = !v.yflip;
         }
-
         v.zp = v.zv;
-        m0.swap(m1);
+        v.zflip = !v.zflip;
+        //m0.swap(m1);
     }
 
-
+    v.obj->arrayify();
 }

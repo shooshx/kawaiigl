@@ -96,6 +96,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
     connect(m_doc, SIGNAL(modelChanged()), m_kView, SLOT(updateGL()));
     connect(m_doc, SIGNAL(progChanged()), m_kView, SLOT(redoFrameBuffers()));
     connect(m_kView, SIGNAL(changedFBOs()), m_contDlg, SLOT(updateTexEdits()));
+    connect(m_kView, SIGNAL(makeGradientTex(int, const QString&)), m_contDlg, SLOT(externalGradient(int, const QString&)));
 
     connect(m_doc, SIGNAL(progParamChanged()), m_kView, SLOT(updateGL()));
     connect(m_doc, SIGNAL(addModelLine(const QString&)), m_edDlg, SLOT(addModelLine(const QString&)));
@@ -112,6 +113,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
 
     connect(m_browse, SIGNAL(openDocText(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
     connect(m_browse, SIGNAL(openPassConf(DocElement*)), m_edDlg, SLOT(addPage(DocElement*)) );
+    connect(m_browse, SIGNAL(commitGuiData()), m_edDlg, SLOT(commitAll()));
 
     connect(m_doc, SIGNAL(goingToClearProg()), m_edDlg, SLOT(clearingProg()));
     connect(m_doc, SIGNAL(didReadProg(ProgKeep*)), m_edDlg, SLOT(readProg(ProgKeep*)) );
@@ -148,6 +150,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
     view->addAction(editVis);
     m_edDlg->connectAction(editVis);
 
+    m_kView->connectedInit();
 
     processCmdArgs();
 }

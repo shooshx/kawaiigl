@@ -12,8 +12,10 @@ class GradientDlg : public QDialog
 {
     Q_OBJECT
 public:
-    GradientDlg(QWidget *parent = 0);
+    GradientDlg(bool populate, QWidget *parent = 0);
     ~GradientDlg();
+    void parseText(const QString& s);
+    void clearSteps();
 
 protected:
     virtual void resizeEvent(QResizeEvent* event);
@@ -24,7 +26,7 @@ public slots:
     void updateImage();
 
 signals:
-    void changed(QImage img);
+    void changed(QImage img, QString repr);
 
 private:
     void addStep(float pos, QColor col);

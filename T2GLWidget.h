@@ -27,6 +27,7 @@ class T2GLWidget : public GLWidget // no context menu! right click drags!
 public:
     T2GLWidget(KawaiiGL *parent, Document* doc);
     Document* doc() { return m_doc; }
+    void connectedInit();
 
 protected:
     void myPaintGLx();
@@ -72,8 +73,11 @@ signals:
     void mouseMove(QMouseEvent* event);
     void message(const QString& s);
     void changedFBOs();
+    void makeGradientTex(int texIndex, const QString& s);
 
 private:
+    void drawObjectArrays(const MyObject& obj, bool colorize);
+
     void drawObject(const MyObject& obj, bool colorize);
     void drawObjectPoints(const MyObject& obj);
     void drawMesh(const Mesh* rmesh, bool colorize);

@@ -9,6 +9,7 @@
 #include "KawaiiGL.h"
 #include "Pass.h"
 #include "Document.h"
+#include "GlobDefs.h"
 
 
 ConfXmls::ConfXmls(KawaiiGL* mainc, const QString& modelsFile, const QString& progFiles) 
@@ -569,6 +570,11 @@ bool saveParam(QDomDocument& xml, QDomElement& xmlprm, const ParamInput& prm) {
 
 bool ConfXmls::saveProg(const Document& doc, const QString& filename)
 {
+    bool saveTextures = false;
+    bool saveModels = true;
+    if (!MyInputDlg::getValues("Save Textures", "Save Models", saveTextures, saveModels, "Save What?", m_parent))
+        return false;
+
     QDomDocument xml("prog");
     QDomElement main = xml.createElement("program");
     xml.appendChild(main);
@@ -626,6 +632,18 @@ bool ConfXmls::saveProg(const Document& doc, const QString& filename)
         return false;
     }
 
+    if (saveTextures) {
+        for(int i = 0; i < 4; ++i) {
+            QString v = *m_conf.texFile[i];
+            if (v.isEmpty())
+                continue;
+            QDomElement xmlarg = xml.createElement("arg");
+            main.appendChild(xmlarg);
+            xmlarg.setAttribute("name", QString("texFile%1").arg(i));
+            xmlarg.appendChild(xml.createTextNode(v));
+        }
+    }
+
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly))
     {
@@ -638,3 +656,6 @@ bool ConfXmls::saveProg(const Document& doc, const QString& filename)
 
     return true;
 }
+
+
+

@@ -12,32 +12,32 @@ class ProjBrowser;
 
 class KawaiiGL : public QMainWindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	KawaiiGL(QWidget *parent = 0);
-	~KawaiiGL() {}
+    KawaiiGL(QWidget *parent = 0);
+    ~KawaiiGL() {}
 
-	KwSettings& sett() { return m_sett; }
-	T2GLWidget* view() { return m_kView; }
-	void processCmdArgs();
+    KwSettings& sett() { return m_sett; }
+    T2GLWidget* view() { return m_kView; }
+    void processCmdArgs();
 protected:
-	virtual void closeEvent(QCloseEvent *event);
+    virtual void closeEvent(QCloseEvent *event);
 
 public slots:
-	void message(const QString& s);
+    void message(const QString& s);
 
 private:
-	Ui::KawaiiGLClass ui;
+    Ui::KawaiiGLClass ui;
 
-	KwSettings m_sett;
+    KwSettings m_sett;
 
-	T2GLWidget *m_kView;
-	KwEdit *m_edDlg;
-	ControlPanel *m_contDlg; // this is actually render configuration
-	ProjBrowser *m_browse;
-	MyDialog *m_control;
-	Document *m_doc;
+    T2GLWidget *m_kView;
+    KwEdit *m_edDlg;
+    ControlPanel *m_contDlg; // this is actually render configuration
+    ProjBrowser *m_browse;
+    MyDialog *m_control;
+    Document *m_doc;
 
 public:
     QMenu *m_progMenu, *m_modelsMenu;

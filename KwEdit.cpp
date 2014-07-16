@@ -127,6 +127,14 @@ void DlgPage::postCompile()
     dlg->pparamsContainer()->postCompile();
 }
 
+void KwEdit::commitAll() 
+{
+    foreach(const KPagePtr& page, m_pages)
+    {
+        page->commit();
+    }
+}
+
 
 void KwEdit::doShadersUpdate()
 {
@@ -134,10 +142,7 @@ void KwEdit::doShadersUpdate()
     if (m_doc->m_shaderEnabled)
     {
         // go over all opened docs and commit the change in the GUI to the document
-        foreach(const KPagePtr& page, m_pages)
-        {
-            page->commit();
-        }
+        commitAll();
         // commits all texts the the Pass instance
         // and params
     }
@@ -299,7 +304,7 @@ void KwEdit::finishErrors(DocSrc* src)
 void KwEdit::decompile()
 {
     //MyObject* obj = m_doc->m_frameObj;
-    MyObject* obj = m_doc->m_obj;
+    MyObject* obj = m_doc->m_obj.get();
     
     QString s;
     QTextStream out(&s);

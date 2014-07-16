@@ -75,5 +75,6 @@ inline void mySwap(T& a, T& b)
 	b = tmp;
 }
 
+QStringList parseArgs(const QString& s);
 
 #endif

@@ -89,6 +89,22 @@ MyPolygon* MyObject::AddPoly(const IPoint *p1, const IPoint *p2, const IPoint *p
     return nply;
 }
 
+MyPoint* MyObject::addPoint(const Vec3& coord) {
+    MyPoint* p = m_alloc->m_pointsPool.allocate();
+    p->p = coord;
+    pntlst.push_back(p);
+    return p;
+}
+void MyObject::addTri(MyPoint* a, MyPoint* b, MyPoint* c) {
+    MyPolygon *nply = m_alloc->m_polyPool.allocate();
+    nply->pnum = 3;
+    nply->vtx[0] = a;
+    nply->vtx[1] = b;
+    nply->vtx[2] = c;
+    nply->vtx[3] = NULL;
+    plylst.push_back(nply);
+}
+
 
 
 inline void MyObject::basicAddPoint(MyPoint *pnt) 
@@ -141,9 +157,49 @@ void MyObject::detachPoints()
     }
 }
 
+Vec3 calcTriNorm(MyPolygon*pl) {
+    Vec3 a = pl->vtx[0]->p.to(pl->vtx[1]->p);
+    Vec3 b = pl->vtx[0]->p.to(pl->vtx[2]->p);
+    a.unitize();
+    b.unitize();
+    return a.crossProd(b);
+}
+
+void MyObject::arrayify() // also calcs normals
+{
+    int insPoint = 0;
+    arrVtx.resize(pntlst.size());
+    arrNormal.resize(pntlst.size());
+    for (auto plit = pntlst.constBegin(); plit != pntlst.constEnd(); ++plit)
+    {
+        MyPoint *p = *plit;
+        p->index = insPoint;
+        arrVtx[insPoint] = p->p; 
+        insPoint++;
+    }
+    int insPoly = 0;
+    arrTriIndex.resize(plylst.size());
+    for (auto lit = plylst.constBegin(); lit != plylst.constEnd(); ++lit)
+    {
+         MyPolygon *pl = *lit;
+         arrTriIndex[insPoly] = VecI(pl->vtx[0]->index, pl->vtx[1]->index, pl->vtx[2]->index);
+         //pl->calcNorm();
+         Vec3 n = calcTriNorm(pl);
+         float area = pl->triangleArea();
+         for(int i = 0; i < 3; ++i)
+             arrNormal[pl->vtx[i]->index] += n * area; // normalize by area
+         insPoly++;
+    }
+    for(int i = 0; i < arrNormal.size(); ++i) {
+        arrNormal[i].unitize();
+    }
+}
 
 void MyObject::vectorify()
 {
+    if (arrVtx.size() > 0)
+        return; // already arrayified
+
     int insPoly = 0, insLines = 0, insPoint = 0;
     // points
     nPoints = m_tmppoints.count() + pntlst.count();
@@ -202,8 +258,15 @@ void MyObject::vectorify()
 
 }
 
+#define DO_TANGENTS 0
+
+
+
 bool MyObject::clacNormals(bool vtxNorms)
 {
+    if (arrNormal.size() > 0)
+        return true; // already arrayified
+
     verterxNormals = vtxNorms;
     int pn;
     for (pn = 0; pn < nPoints; ++pn)
@@ -215,8 +278,9 @@ bool MyObject::clacNormals(bool vtxNorms)
     for (int i = 0; i < nPolys; ++i)
     {
         MyPolygon *pol = poly[i];
+#ifdef DO_TANGENTS
         pol->calcTangents();
-
+#endif
         if (!pol->calcNorm())
             ret = false; // but continue
         else
@@ -227,8 +291,10 @@ bool MyObject::clacNormals(bool vtxNorms)
                 {
                     MyPoint *p = pol->vtx[pn];
                     p->n += pol->center;
+#ifdef DO_TANGENTS
                     p->tangent += pol->tangent;
                     p->bitangent += pol->bitangent;
+#endif
                 }
             }
         }
@@ -241,13 +307,13 @@ bool MyObject::clacNormals(bool vtxNorms)
         {
             MyPoint *p = points[pn];
             p->n.unitize();
+#ifdef DO_TANGENTS
             //p->tangent.unitize();
-            Vec3 &n = p->n;
+            Vec3 &n = p->n;           
             Vec3 &t = p->tangent;
             t = (t - n * Vec3::dotProd(n, t)).unitized(); // this still has a few problems.
-
             p->bitangent.unitize();
-
+#endif
         }
     }
     return ret;

@@ -63,6 +63,8 @@ private:
     Q_DISABLE_COPY(DocElement);
 };
 
+class ModelDocument; // from Document
+
 // DocSrc doesn't know in which Pass he is!
 class DocSrc :  public DocElement
 {
@@ -89,6 +91,7 @@ public:
     }
 
     QString text;
+    shared_ptr<ModelDocument> modelData; // for model DocSrc
 
 private:
     bool changedSinceLoad;

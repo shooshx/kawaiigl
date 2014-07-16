@@ -18,42 +18,43 @@ class Document;
 
 class ConfXmls : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	ConfXmls(KawaiiGL* mainc, const QString& modelsFile, const QString& progFiles);
+    ConfXmls(KawaiiGL* mainc, const QString& modelsFile, const QString& progFiles);
 
-	void loadModelsFile(const QString& filename, QMenu* menu);
-	void loadProgramsFile(const QString& filename, QMenu* menu);
+    void loadModelsFile(const QString& filename, QMenu* menu);
+    void loadProgramsFile(const QString& filename, QMenu* menu);
 
-	void loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe);
+    void loadPassElement(ProgKeep::RenderPassKeep* pass, QDomElement &pe);
     void loadProgramElement(const QString& display, QDomElement &pe, ProgKeep *prog);
-	void loadProgramsElement(QMenu* menu, QDomElement &pe);
+    void loadProgramsElement(QMenu* menu, QDomElement &pe);
 
-	void activateAction(const QString& name);
+    void activateAction(const QString& name);
 
     void parseProgFile(const QString& filename, ProgKeep* prog);
     bool saveProg(const Document& doc, const QString& filename);
 
+
 private:
-	QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
-	QAction* confAddProg(const QString& display, ProgKeep* prog);
+    QAction* confAddModel(const QString& display, const QString& filename, bool isMesh);
+    QAction* confAddProg(const QString& display, ProgKeep* prog);
 
 private slots:
-	void myreadProg();
-	void myreadModel();
+    void myreadProg();
+    void myreadModel();
 
 signals:
-	void readProg(ProgKeep* prog);
-	void readModel(const QString& action, const ModelData& md);
+    void readProg(ProgKeep* prog);
+    void readModel(const QString& action, const ModelData& md);
 
 private:
-	DisplayConf &m_conf;
-	QWidget *m_parent;
+    DisplayConf &m_conf;
+    QWidget *m_parent;
 
-	QList<ProgKeep*> m_progrep;
+    QList<ProgKeep*> m_progrep;
 
-	typedef QMap<QString, QAction*> TActionMap;
-	TActionMap m_userActions;
+    typedef QMap<QString, QAction*> TActionMap;
+    TActionMap m_userActions;
 
 
 };

@@ -28,67 +28,70 @@ typedef Vec2 TexAnchor;
 
 inline bool operator==(const TexAnchor& a, const TexAnchor& b)
 {
-	return (a.x == b.x) && (a.y == b.y);
+    return (a.x == b.x) && (a.y == b.y);
 }
 
 class MyPolygon  
 {
 public:
 
-	MyPolygon(MyPoint* inVtx[], TexAnchor *inAncs, Texture *_tex)
-	 : he(NULL), f(NULL), pnum(0)
-	  ,tex(_tex)
-	{	// point are shallow and anchors are deep copied
-		init(inVtx, inAncs, _tex);
-		++g_ctorCount;
-	}
+    MyPolygon(MyPoint* inVtx[], TexAnchor *inAncs, Texture *_tex)
+     : he(NULL), f(NULL), pnum(0)
+      ,tex(_tex)
+    {	// point are shallow and anchors are deep copied
+        init(inVtx, inAncs, _tex);
+        ++g_ctorCount;
+    }
 
-	MyPolygon() { ++g_ctorCount; } // doesn't do anything. waste of time.
-	~MyPolygon() { ++g_dtorCount; }
+    MyPolygon() { ++g_ctorCount; } // doesn't do anything. waste of time.
+    ~MyPolygon() { ++g_dtorCount; }
 
-	// two versions, to help the branch prediction :)
-	void init(MyPoint* inVtx[], TexAnchor *inAncs, Texture *_tex)
-	{
-		for(int i = 0; i < 4; ++i)
-		{
-			vtx[i] = inVtx[i];
-			texAncs[i] = inAncs[i];
-		}
-		tex = _tex;
-		pnum = (vtx[3] != NULL)?4:3;
-	}
+    // two versions, to help the branch prediction :)
+    void init(MyPoint* inVtx[], TexAnchor *inAncs, Texture *_tex)
+    {
+        for(int i = 0; i < 4; ++i)
+        {
+            vtx[i] = inVtx[i];
+            texAncs[i] = inAncs[i];
+        }
+        tex = _tex;
+        pnum = (vtx[3] != NULL)?4:3;
+    }
 
-	void init(TexAnchor *inAncs, Texture *_tex)
-	{
-		if (inAncs != NULL)
-		{
-			for(int i = 0; i < 4; ++i)
-			{
-				texAncs[i] = inAncs[i];
-			}
-		}
-		tex = _tex;
-	}
+    void init(TexAnchor *inAncs, Texture *_tex)
+    {
+        if (inAncs != NULL)
+        {
+            for(int i = 0; i < 4; ++i)
+            {
+                texAncs[i] = inAncs[i];
+            }
+        }
+        tex = _tex;
+    }
 
-	bool calcNorm();
-	bool calcTangents();
+    bool calcNorm();
+    bool calcTangents();
 
-	MyPoint *vtx[4]; // a vector list of it's points in their order
-	int pnum; // number of points
-	
-	Vec3 center; // normal of polygon
+    float triangleArea();
 
-	TexAnchor texAncs[4]; // texture ancors by the order of 0,0 - 1,0 - 1,1 - 0,1
-	Texture *tex; 
-	// relevant only to half-textured pieces per-polygon texture, use sort for this to be efficient
-	// NULL to disable texturing
-	Vec3 tangent, bitangent;
+public:
+    MyPoint *vtx[4]; // a vector list of it's points in their order
+    int pnum; // number of points
+    
+    Vec3 center; // normal of polygon
 
-	// TBD- move away from here.
-	HalfEdge *he;	
-	MyPoint *f; // the center of polygon point. (temporary TBD?)
+    TexAnchor texAncs[4]; // texture ancors by the order of 0,0 - 1,0 - 1,1 - 0,1
+    Texture *tex; 
+    // relevant only to half-textured pieces per-polygon texture, use sort for this to be efficient
+    // NULL to disable texturing
+    Vec3 tangent, bitangent;
 
-	static int g_ctorCount, g_dtorCount;
+    // TBD- move away from here.
+    HalfEdge *he;	
+    MyPoint *f; // the center of polygon point. (temporary TBD?)
+
+    static int g_ctorCount, g_dtorCount;
 
 };
 

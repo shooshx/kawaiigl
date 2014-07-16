@@ -204,7 +204,7 @@ public:
 
 public:
     ErrorActor *m_errAct; // for syntax error highlighting
-    MyObject *m_frameObj, *m_obj;
+    shared_ptr<MyObject> m_frameObj, m_obj;
     QVector<shared_ptr<Mesh> > m_meshs;
     QVector<shared_ptr<Renderable> > m_rends;
 
@@ -238,5 +238,14 @@ public:
     bool m_shaderEnabled;
 
 };
+
+
+class ModelDocument 
+{
+public:
+
+};
+
+
 
 #endif // DOCUMENT_H_INCLUDED

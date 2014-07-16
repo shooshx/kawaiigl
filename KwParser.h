@@ -79,13 +79,19 @@ public:
     
     bool kparse(const char* iter, const char* end, bool verbose, ErrorActor* error);
 
+    // float assignment
     bool kparseFloat(const char* iter, const char* end, const char* nameend, float& f);   
     Evalable<float>* kparseFloat(const char* iter, const char* end, const char* nameend);
 
+    // Vec3 assignment
     bool kparseVec(const char* iter, const char* end, const char* nameend, IPoint*& p);
     
+    // Vec2,4 expression
     bool kparseVec2(const char* iter, const char* end, Vec2& p);
     bool kparseVec4(const char* iter, const char* end, Vec4& p);
+
+    // float expresssion
+    bool kparseFloatExp(const std::string& expression, float& f);
 
 
     bool isValid() const { return m_kg.get() != NULL; }

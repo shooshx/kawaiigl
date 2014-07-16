@@ -68,7 +68,7 @@ Document::Document(KawaiiGL* mainc)
     m_kparser.addFunction("sphereTri");
     m_kparser.addFunction("curveLine");
     m_kparser.addFunction("curveRotate");
-    m_kparser.addFunction("isosurface");
+    m_kparser.addFunction("plot");
 
     // default empty program
     RenderPassPtr p(new RenderPass("Pass 1"));
@@ -207,7 +207,7 @@ void Document::readProg(ProgKeep* prog)
 
 void Document::addNewShader(RenderPass* pass, ElementType type)
 {
-    DocSrc *d = new DocSrc("Shader", false, type);
+    DocSrc *d = new DocSrc("", "Doc", type);
     pass->shaders.append(shared_ptr<DocSrc>(d));
 }
 
@@ -238,10 +238,11 @@ void Document::removeShader(RenderPass* pass, DocSrc* src)
 
 void Document::addNewPass()
 {
-    RenderPassPtr p(new RenderPass(QString("Pass %1").arg(m_passes.size() + 1) ));
-    p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Vertex Shader", false, SRC_VTX)));
+    int i = m_passes.size() + 1;
+    RenderPassPtr p(new RenderPass(QString("Pass %1").arg(i) ));
+    p->shaders.append(shared_ptr<DocSrc>(new DocSrc("// Vertex Shader", QString("Vertex Shader %1").arg(i), SRC_VTX)));
 //	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
-    p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Fragment Shader", false, SRC_FRAG)));
+    p->shaders.append(shared_ptr<DocSrc>(new DocSrc("// Fragment Shader", QString("Fragment Shader %1").arg(i), SRC_FRAG)));
     addPass(p);
 }
 
@@ -653,7 +654,7 @@ struct FuncAdder : public MultiStringAdder
             m_doc->generateCurve(args);
         else if (sa[0] == "curveRotate")
             m_doc->generateRotObj(args);
-        else if (sa[0] == "isosurface")
+        else if (sa[0] == "plot")
             m_doc->generateIsoSurface(args);
     }
     Document *m_doc;
@@ -669,7 +670,7 @@ void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
     m_inCalc = true; 
 
     g_alloc.clear();
-    m_frameObj = new MyObject(&g_alloc);
+    m_frameObj.reset(new MyObject(&g_alloc));
 
     m_rends.clear();
 
@@ -706,7 +707,7 @@ void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
     //m_kparser.creator()->printTree();
     
 
-    MyObjAdder adder(m_frameObj, m_conf, purgePointCache);
+    MyObjAdder adder(m_frameObj.get(), m_conf, purgePointCache);
     m_kparser.creator()->createPolygons(&adder);
     //updateParams(m_onCalcEvals); // if there's a prog active, it might depend on the variables.
 
@@ -721,18 +722,23 @@ void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
     m_frameObj->vectorify();
     m_frameObj->clacNormals(m_conf.bVtxNormals);
 
-    delete m_obj;
-    m_obj = new MyObject(*m_frameObj); // copy it
-    m_obj->detachPoints();
-
-    for (int i = 0; i < m_conf.numberOfPasses; ++i)
+    if (m_conf.numberOfPasses > 0) 
     {
-        if (!m_obj->subdivide(*m_conf.passRound[i]))
-            break; // stop it
+        m_obj.reset(new MyObject(*m_frameObj)); // copy it
+        m_obj->detachPoints();
+
+        for (int i = 0; i < m_conf.numberOfPasses; ++i)
+        {
+            if (!m_obj->subdivide(*m_conf.passRound[i]))
+                break; // stop it
+        }
+        m_obj->clacNormals(m_conf.bVtxNormals);
+    }
+    else {
+        m_obj = m_frameObj;
     }
     m_nPoly = m_obj->nPolys;
     m_nPoints = m_obj->nPoints;
-    m_obj->clacNormals(m_conf.bVtxNormals);
 
 
 

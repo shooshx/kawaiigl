@@ -13,6 +13,7 @@
 #include "Renderable.h"
 #include "NoiseGenerator.h"
 #include "GaussianGenerator.h"
+#include "general.h"
 
 #include <QRubberBand>
 
@@ -148,10 +149,7 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
 
     //setAutoBufferSwap(false);
 
-    for(int i = 0; i < N_TEX; ++i)
-    {
-        setTexture(i);
-    }
+
 
     if (!GLEW_EXT_framebuffer_blit)
     {
@@ -159,6 +157,15 @@ T2GLWidget::T2GLWidget(KawaiiGL *parent, Document *doc)
     }
     
 }
+
+// some more initialization after all the signals are connected. called from KawaiiGL c'tor
+void T2GLWidget::connectedInit()
+{
+    for(int i = 0; i < N_TEX; ++i) {
+        setTexture(i);
+    }
+}
+
 
 void T2GLWidget::reconfLight()
 {
@@ -256,7 +263,7 @@ void T2GLWidget::fpsTimeout()
 
 shared_ptr<GlTexture> T2GLWidget::makeNoise(const QString& cmd)
 {
-    QStringList args = cmd.split(QRegExp("[\\s,()]"), QString::SkipEmptyParts);
+    QStringList args = parseArgs(cmd);
     if (args.isEmpty())
         return shared_ptr<GlTexture>();
     int size = 128, startFrequency = 4;
@@ -316,11 +323,10 @@ void T2GLWidget::setTexture(int which)
             doTakeTexture(which, ntex);
         else
             doBindTexture(which, NULL);
-
     }
     else if (isGaus || isCheck)
     {
-        QStringList args = filename.split(QRegExp("[\\s,()]"), QString::SkipEmptyParts);
+        QStringList args = parseArgs(filename);
         int size = 128;
         if (args.size() > 1)
             size = args[1].toInt();
@@ -332,6 +338,10 @@ void T2GLWidget::setTexture(int which)
             ntex.reset(CheckersGen::make3D(size));
 
         doTakeTexture(which, ntex);
+    }
+    else if (filename.startsWith("gradient"))
+    {
+        emit makeGradientTex(which, filename);
     }
     else // it probably is a filename
     {
@@ -841,8 +851,25 @@ public:
     }
 };
 
+void T2GLWidget::drawObjectArrays(const MyObject& obj, bool colorize) 
+{
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_NORMAL_ARRAY);
+    glVertexPointer(3, GL_FLOAT, 0, &obj.arrVtx[0]);
+    glNormalPointer(GL_FLOAT, 0, &obj.arrNormal[0]);
+    if (colorize) {
+        glColor3fv(Vec3(m_doc->dispConf().materialCol).ptr());
+    }
+    glDrawElements(GL_TRIANGLES, obj.arrTriIndex.size()*3, GL_UNSIGNED_INT, &obj.arrTriIndex[0]);
+}
+
 void T2GLWidget::drawObject(const MyObject& obj, bool colorize)
 {
+    if (obj.arrVtx.size() > 0) {
+        drawObjectArrays(obj, colorize);
+        return;
+    }
+
     bool hasTex = true; //false;
     bool triangulate = conf.bTriangulate;
     bool lines = conf.linePoly;
