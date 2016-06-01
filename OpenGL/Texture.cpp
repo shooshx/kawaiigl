@@ -23,6 +23,10 @@ void GlTexture::init(GLenum target, const QSize& size, int depth, GLenum interna
     }
     else if (target == GL_TEXTURE_2D)
     {
+        // see http://www.opengl.org/wiki/Common_Mistakes     
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
         glTexImage2D(target, 0, internal_format, size.width(), size.height(), 0, format, type, ptr);
         mglCheckErrorsC("tex2d");
     }
@@ -32,11 +36,11 @@ void GlTexture::init(GLenum target, const QSize& size, int depth, GLenum interna
         mglCheckErrorsC("tex3d");
     }
 
-    if (minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_NEAREST_MIPMAP_LINEAR ||
+/*    if (minFilter == GL_LINEAR_MIPMAP_LINEAR || minFilter == GL_NEAREST_MIPMAP_LINEAR ||
         minFilter == GL_LINEAR_MIPMAP_NEAREST || minFilter == GL_NEAREST_MIPMAP_NEAREST)
     {
         glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-    }
+    }*/
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
@@ -54,6 +58,9 @@ GlTexture::GlTexture(const QGLContext* context, const QImage* img, uint target, 
     m_obj = m_fromContext->bindTexture(*img, target);
     m_target = target;
     m_size = Vec3(img->width(), img->height(), 1.0);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
     if (wrapOpt == 0)
         wrapOpt = GL_CLAMP_TO_EDGE;

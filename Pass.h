@@ -91,7 +91,7 @@ public:
     }
 
     QString text;
-    shared_ptr<ModelDocument> modelData; // for model DocSrc
+    shared_ptr<ModelDocument> modelDoc; // for model DocSrc
 
 private:
     bool changedSinceLoad;

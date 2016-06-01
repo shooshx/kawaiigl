@@ -12,5 +12,7 @@
 		<file display="Plus">model.plus.txt</file>
 		<file display="Screen-Quad">model.screenQuad.txt</file>
 		<file display="Curve Rotation">model.curveRot.txt</file>
+        <file display="Dodeca">model.dodeca.txt</file>
+        <file display="Scale-Cube">model.scaleCube.txt</file>
 	</shapes_edit>
 </conf>

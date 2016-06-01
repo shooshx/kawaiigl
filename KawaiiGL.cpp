@@ -82,7 +82,7 @@ KawaiiGL::KawaiiGL(QWidget *parent)
     m_control->move(pos() + QPoint(-30, 20));
     m_control->resize(100, 100); // make it as small as possible
 
-    m_doc->m_errAct = new ErrorHighlight(m_edDlg);
+    m_doc->model()->m_errAct = new ErrorHighlight(m_edDlg);
 
     connect(m_kView, SIGNAL(message(const QString&)), this, SLOT(message(const QString&)));
 

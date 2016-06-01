@@ -176,6 +176,17 @@
 			<param name="space" type="floatRange" gui="1,30">20.0</param>
 			<param name="colorRatio" type="floatRange">0.5</param>
 		</program>
+		<program display="3d-from-2d">
+			<vtxtext>tex3d.vtx.txt</vtxtext>
+			<fragtext>tex3d.frag.txt</fragtext>
+			<param name="noisef" type="texture">1</param>
+			<param name="colorA" type="vec3color">{0.8, 0.7, 0.0}</param>
+			<param name="colorB" type="vec3color">{0.6, 0.1, 0.0}</param>
+			<param name="Scale" type="floatRange" gui="0,2">1.0</param>
+			<param name="time" type="floatTime">0.0</param>
+			<arg name="texFile1">c:\temp\tex2d.jpg</arg>
+			<arg name="texAct">0</arg>
+		</program>        
 	</group>
 	<program display="Deform">
 		<vtxtext>vtx.deform.glsl.txt</vtxtext>

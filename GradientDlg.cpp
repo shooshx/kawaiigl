@@ -218,7 +218,7 @@ void GradientDlg::parseText(const QString& s)
         int b = args[0].toInt();
         args.pop_front();
 
-        addStep(pos, QColor(r, b, g, 255));
+        addStep(pos, QColor(r, g, b, 255));
     }
 
 }

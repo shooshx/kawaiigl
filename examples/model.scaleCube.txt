@@ -1,0 +1,18 @@
+
+d = 1
+a1={d,d,d}
+a2={d,-d,d}
+a3={-d,-d,d}
+a4={-d,d,d}
+add(a4,a3,a2,a1)
+
+b1={d,d,-d}
+b2={d,-d,-d}
+b3={-d,-d,-d}
+b4={-d,d,-d}
+add(b1,b2,b3,b4)
+
+add(a2,b2,b1,a1)
+add(a1,b1,b4,a4)
+add(a3,b3,b2,a2)
+add(a4,b4,b3,a3)

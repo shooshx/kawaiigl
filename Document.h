@@ -50,7 +50,7 @@ public:
 
     int numPoly() { return m_nPoly; }
     int numPoints() { return m_nPoints; }
-    bool isValid() { return m_kparser.isValid(); }
+    //bool isValid() { return m_kparser.isValid(); }
 
     void emitProgChanged() { emit progChanged(); }
 
@@ -87,12 +87,7 @@ public:
     const DisplayConf& dispConf() { return m_conf; }
 
     KwSettings& sett();
-    void generateTorus(const std::vector<std::string>& args);
-    void generateCurve(const std::vector<std::string>& args);
-    void generateRotObj(const std::vector<std::string>& args);
-    void generateQuadSphere(const std::vector<std::string>& sep);
-    void generateTriSphere(const std::vector<std::string>& sep);
-    void generateIsoSurface(const std::vector<std::string>& args);
+
 
 public slots:
     void calc(DocSrc* qstr, bool doParse = true, bool purgePointCache = false);
@@ -202,20 +197,19 @@ public:
     static void readToString(const QString& filename, QString& into);
     static void writeToFile(const QString& text, const QString filename);
 
+
+    ModelDocument* model() {
+        return m_currentModel.get();
+    }
+
 public:
-    ErrorActor *m_errAct; // for syntax error highlighting
-    shared_ptr<MyObject> m_frameObj, m_obj;
-    QVector<shared_ptr<Mesh> > m_meshs;
-    QVector<shared_ptr<Renderable> > m_rends;
-
-    AddTracker m_addTrack;
-
-    typedef QMap<QString, shared_ptr<Mesh> > TMeshIndex;
+    shared_ptr<ModelDocument> m_currentModel;
+    QVector<shared_ptr<ModelDocument>> m_allModels;
+    DisplayConf& m_conf;
 
 private:
     int m_nPoly, m_nPoints;
-    DisplayConf &m_conf;
-    KawaiiGL *m_main;
+    KawaiiGL* m_main;
 
     QVector<shared_ptr<AttribEval> > m_attribEval;
 
@@ -232,8 +226,6 @@ private:
 public:
     typedef QList<PassPtr> TPasses;
     TPasses m_passes;
-    TMeshIndex m_meshIndex;
-    KwParser m_kparser;
     ConfXmls m_confxmls;
     bool m_shaderEnabled;
 
@@ -243,7 +235,30 @@ public:
 class ModelDocument 
 {
 public:
+    ModelDocument(Document* doc);
 
+    void generateTorus(const std::vector<std::string>& args);
+    void generateCurve(const std::vector<std::string>& args);
+    void generateRotObj(const std::vector<std::string>& args);
+    void generateQuadSphere(const std::vector<std::string>& sep);
+    void generateTriSphere(const std::vector<std::string>& sep);
+    void generateIsoSurface(const std::vector<std::string>& args);
+
+public:
+    shared_ptr<MyObject> m_frameObj, m_obj;
+    QVector<shared_ptr<Mesh> > m_meshs;
+    QVector<shared_ptr<Renderable> > m_rends;
+
+    ErrorActor *m_errAct; // for syntax error highlighting
+    AddTracker m_addTrack;
+
+    typedef QMap<QString, shared_ptr<Mesh> > TMeshIndex;
+
+
+    KwParser m_kparser;
+    TMeshIndex m_meshIndex;
+
+    DisplayConf& m_conf;
 };
 
 

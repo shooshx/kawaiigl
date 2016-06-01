@@ -36,15 +36,16 @@ feature list:
 
 
 Models language
-torus(radius-outer, radius-inner, outer-slices, inner-slices)
-sphereTri(radius, subdivision)
-curveLine
-curveRotate
-wholeScreenQuad
-arrow
+  torus(radius-outer, radius-inner, outer-slices, inner-slices)
+  sphereTri(radius, subdivision)
+  curveLine
+  curveRotate
+  wholeScreenQuad
+  arrow
+  sphereQuads - not
 
-sphereQuads - not
-
+texture language
+  noise(size, ampStart, ampFactor, startFrequency)
 
 
 author:

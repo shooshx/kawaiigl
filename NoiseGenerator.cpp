@@ -290,17 +290,17 @@ void saveto2D(uchar *data, int n, int depth, int inArow)
 	for(int z = 0; z < depth; ++z) {
 		for(int y = 0; y < n; ++y) {
 			for(int x = 0; x < n; ++x) {
-				uchar d = data[(x + y*n + z*nn) * 4]; // take just the first
+				uchar *d = &data[(x + y*n + z*nn) * 4]; // take just the first
 				int di = (x + rowX + (y + rowY)*iwidth)*4;
-				ni[di] = d;
-				ni[di+1] = d;
-				ni[di+2] = d;
-				ni[di+3] = 0xff;
+				ni[di] = *d;
+				ni[di+1] = *(d+0);
+				ni[di+2] = *(d+0);
+				ni[di+3] = *(d+0);
 
-				if (d < dmin)
-					dmin = d;
-				if (d > dmax)
-					dmax = d;
+				if (*d < dmin)
+					dmin = *d;
+				if (*d > dmax)
+					dmax = *d;
 			}
 		}
 		rowX += n;
@@ -315,13 +315,20 @@ void saveto2D(uchar *data, int n, int depth, int inArow)
 	QImage img(ni, iwidth, iheight, QImage::Format_ARGB32);
 
 	img.save("c:/temp/tex2d.jpg");
-	printf("%d - %d = %d\n", dmax, dmin, dmax - dmin);
+
+    img = img.mirrored(false, true);
+    img.save("c:/temp/tex2d_flipped.jpg");
+
+    // measure the difference for changing N_FACT
+	printf("IntDelta= %d - %d = %d\n", dmax, dmin, dmax - dmin);
 }
 
-#define NUM_OCT 1 // 4
-#define N_FACT 2.2
+#define NUM_OCT 1
+#define N_FACT 2.3
+//#define N_FACT 1.0
 
 // copied from the orange book
+bool doNormalize = true;
 GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv, int startFrequency)
 {
 	int noise3DTexSize = size;
@@ -336,7 +343,6 @@ GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv, i
 	GLubyte *ptr;
 	double amp = ampStart;
 
-	double minn = 100.0, maxn = -100.0;
 
 	uint bufsize = noise3DTexSize * noise3DTexSize * noise3DTexSize * 4;
 	if ((noise3DTexPtr = (GLubyte *) malloc(bufsize)) == NULL)
@@ -351,42 +357,56 @@ GlTexture* NoiseGenerator::make3Dnoise(int size, float ampStart, float ampDiv, i
 	for (f = 0, inc = 0; f < numOctaves; ++f, frequency *= 2, ++inc, amp *= ampDiv)
 	{
 		setNoiseFrequency(frequency);
-		ptr = noise3DTexPtr;
-		ni[0] = ni[1] = ni[2] = 0;
 
-		inci = 1.0 / (noise3DTexSize / frequency);
-		for (i = 0; i < noise3DTexSize; ++i, ni[0] += inci)
-		{
+        double normOffset = 0.0, normMult = 1.0;
 
-			pdlg.setValue(noise3DTexSize * f + i);
-			QApplication::processEvents();
-			if (pdlg.wasCanceled())
-				return NULL;
+        for(int iter = 0; iter < 2; ++iter) // once for finding min-max, second time to save normalized values
+        {
+            ptr = noise3DTexPtr;
+            ni[0] = ni[1] = ni[2] = 0;
+            double minn = 100.0, maxn = -100.0;
+
+		    inci = 1.0 / (noise3DTexSize / frequency);
+		    for (i = 0; i < noise3DTexSize; ++i, ni[0] += inci)
+		    {
+
+			    pdlg.setValue(noise3DTexSize * f + i);
+			    QApplication::processEvents();
+			    if (pdlg.wasCanceled())
+				    return NULL;
 
 
-			incj = 1.0 / (noise3DTexSize / frequency);
-			for (j = 0; j < noise3DTexSize; ++j, ni[1] += incj)
-			{
-				inck = 1.0 / (noise3DTexSize / frequency);
-				for (k = 0; k < noise3DTexSize; ++k, ni[2] += inck, ptr+= 4)
-				{
-					double ns = noise3(ni) * N_FACT;
-					*(ptr+inc) = (GLubyte)(((ns+1.0) * amp)*255.0);
-					if (ns > maxn)
-						maxn = ns;
-					if (ns < minn)
-						minn = ns;
-				}
-			}
-		}
+			    incj = 1.0 / (noise3DTexSize / frequency);
+			    for (j = 0; j < noise3DTexSize; ++j, ni[1] += incj)
+			    {
+				    inck = 1.0 / (noise3DTexSize / frequency);
+				    for (k = 0; k < noise3DTexSize; ++k, ni[2] += inck, ptr+= 4)
+				    {
+					    double ns = noise3(ni) + 1.0;// * N_FACT;
+                        ns = (ns + normOffset) * normMult;
+					    *(ptr+inc) = (GLubyte)(((ns) * amp)*128.0); // 128.0
+					    if (ns > maxn)
+						    maxn = ns;
+					    if (ns < minn)
+						    minn = ns;
+				    }
+			    }
+		    }
+
+            printf("DblDelta= %lf - %lf = %lf\n", maxn, minn, maxn - minn);
+            if (!doNormalize)
+                break;
+
+            normOffset = -minn;
+            normMult = 2.0 / (maxn - minn); // 2 since we multiply by 128
+        }
 	}
 
 	GlTexture *tex = new GlTexture();
 	tex->init(GL_TEXTURE_3D, QSize(size, size), size, GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE, 
 			 noise3DTexPtr, GL_LINEAR, GL_LINEAR, GL_REPEAT); //GL_NEAREST
 
-	printf("%lf - %lf = %lf\n", maxn, minn, maxn - minn);
-	saveto2D(noise3DTexPtr, size, size/4, 8);
+	saveto2D(noise3DTexPtr, size, size, 8); 
 
 	free(noise3DTexPtr);
 

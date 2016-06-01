@@ -284,7 +284,7 @@ struct {
 };
 
 // isosurface(func, voxSz, x0,x1, y0,y1, z0,z1)
-void Document::generateIsoSurface(const vector<string>& args)
+void ModelDocument::generateIsoSurface(const vector<string>& args)
 {
     if (args.size() != 8) {
         cout << "isosurface reuquires 8 arguments" << endl;

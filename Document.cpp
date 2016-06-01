@@ -40,27 +40,9 @@ EParamType getBaseType(EParamType t)
     return EPFloat;
 }
 
-
-#define EDIT_CONF_FILE ("conf.edit.xml")
-#define PROG_CONF_FILE ("conf.programs.xml")
-
-
-Document::Document(KawaiiGL* mainc)
-    :m_nPoly(0), m_nPoints(0), m_errAct(NULL), m_frameObj(NULL), m_obj(NULL)
-    ,m_conf(mainc->sett().disp), m_main(mainc)
-    //,m_inputUnit(-1), m_outputUnit(-1),
-    ,m_confxmls(mainc, EDIT_CONF_FILE, PROG_CONF_FILE) // inits the menus
-    ,m_shaderEnabled(false)
-    ,m_inCalc(false)
-    ,m_kparser()
+ModelDocument::ModelDocument(Document* doc)
+    : m_errAct(NULL), m_frameObj(NULL), m_obj(NULL), m_conf(doc->m_conf)
 {
-    connect(&m_conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
-    connect(&m_conf.materialCol, SIGNAL(changed()), this, SLOT(calcNoParse())); 
-
-    connect(&m_confxmls, SIGNAL(readProg(ProgKeep*)), this, SLOT(readProg(ProgKeep*)));
-    connect(&m_confxmls, SIGNAL(readModel(const QString&, const ModelData&)), this, SLOT(readModel(const QString&, const ModelData&)));
-
-
     m_kparser.addFunction("wholeScreenQuad");
     m_kparser.addFunction("torus");
     m_kparser.addFunction("arrow");
@@ -69,12 +51,36 @@ Document::Document(KawaiiGL* mainc)
     m_kparser.addFunction("curveLine");
     m_kparser.addFunction("curveRotate");
     m_kparser.addFunction("plot");
+    m_kparser.addFunction("axis");
+
+}
+
+
+#define EDIT_CONF_FILE ("conf.edit.xml")
+#define PROG_CONF_FILE ("conf.programs.xml")
+
+
+Document::Document(KawaiiGL* mainc)
+    :m_nPoly(0), m_nPoints(0)
+    ,m_conf(mainc->sett().disp), m_main(mainc)
+    //,m_inputUnit(-1), m_outputUnit(-1),
+    ,m_confxmls(mainc, EDIT_CONF_FILE, PROG_CONF_FILE) // inits the menus
+    ,m_shaderEnabled(false)
+    ,m_inCalc(false)
+{
+    connect(&m_conf.addFace, SIGNAL(changed()), this, SLOT(setAddTrack()));
+    connect(&m_conf.materialCol, SIGNAL(changed()), this, SLOT(calcNoParse())); 
+
+    connect(&m_confxmls, SIGNAL(readProg(ProgKeep*)), this, SLOT(readProg(ProgKeep*)));
+    connect(&m_confxmls, SIGNAL(readModel(const QString&, const ModelData&)), this, SLOT(readModel(const QString&, const ModelData&)));
+
+    m_currentModel.reset(new ModelDocument(this));
 
     // default empty program
     RenderPassPtr p(new RenderPass("Pass 1"));
     p->model = shared_ptr<DocSrc>(new DocSrc("", "Model", SRC_MODEL));
+    p->model->modelDoc = m_currentModel;
     p->shaders.append(shared_ptr<DocSrc>(new DocSrc("", "Vertex Shader", SRC_VTX)));
-//	p->shaders.append(shared_ptr<DocSrc>(new DocSrc("Geometry Shader", false, SRC_GEOM)));
     p->shaders.append(shared_ptr<DocSrc>(new DocSrc("", "Fragment Shader", SRC_FRAG)));
     addPass(p);
 }
@@ -298,7 +304,7 @@ struct GatherPoints : public PointActor
 QString Document::dedicatedProcess()
 {
     GatherPoints orig;
-    m_kparser.creator()->foreachPoints(orig);
+    model()->m_kparser.creator()->foreachPoints(orig);
 
     QString prog;
     prog += "d=1\nr=1\n";
@@ -484,7 +490,7 @@ QString Document::getTypeName(ElementType t)
 
 void Document::setAddTrack()
 {
-    m_addTrack.reset();
+    model()->m_addTrack.reset();
 }
 
 void Document::calcNoParse() 
@@ -508,7 +514,9 @@ void Document::calcSave()
 
     sett().gui.saveDir = QFileInfo(filename).path();
 
-    if (!m_obj)
+    ModelDocument* mdoc = model();
+
+    if (!mdoc->m_obj)
         calc(NULL, false); // can this happen?
 
     
@@ -524,12 +532,12 @@ void Document::calcSave()
 
     if (selectedFilter == FILTER_OBJ)
     {
-        m_obj->saveAs(out, "obj");
+        mdoc->m_obj->saveAs(out, "obj");
     }
     else if (selectedFilter == FILTER_JSON_TRI)
     {
-        m_obj->saveAs(out, "json", MyObject::SaveTriangles);
-        foreach(const shared_ptr<Mesh>& mesh, m_meshs)
+        mdoc->m_obj->saveAs(out, "json", MyObject::SaveTriangles);
+        foreach(const shared_ptr<Mesh>& mesh, mdoc->m_meshs)
         {
             JsonWriter writer(mesh.get());
             writer.write(out);
@@ -537,11 +545,11 @@ void Document::calcSave()
     }
     else if (selectedFilter == FILTER_JSON_QUADS)
     {
-        m_obj->saveAs(out, "json", MyObject::SaveQuads);
+        mdoc->m_obj->saveAs(out, "json", MyObject::SaveQuads);
     }
     else if (selectedFilter == FILTER_JSON_LINES)
     {
-        m_obj->saveAs(out, "json", MyObject::SaveEdges);	
+        mdoc->m_obj->saveAs(out, "json", MyObject::SaveEdges);	
     }
     else
     {
@@ -589,7 +597,7 @@ TexAnchor MyObjAdder::constAncs[4] = { TexAnchor(0,0), TexAnchor(1,0), TexAnchor
 
 struct MeshAdder : public StringAdder
 {
-    MeshAdder(Document* doc) : m_doc(doc), m_index(0) {}
+    MeshAdder(ModelDocument* doc) : m_doc(doc), m_index(0) {}
     virtual void operator()(const string& s)
     {
         QString filename = QString(s.c_str()).toLower();
@@ -621,13 +629,13 @@ struct MeshAdder : public StringAdder
         m_doc->m_meshs.append(mesh);
         ++m_index;
     }
-    Document *m_doc;
+    ModelDocument *m_doc;
     int m_index;
 };
 
 struct FuncAdder : public MultiStringAdder
 {
-    FuncAdder(Document* doc) : m_doc(doc) {}
+    FuncAdder(ModelDocument* doc) : m_doc(doc) {}
     virtual void operator()(const vector<string>& sa)
     {
         vector<string> args;
@@ -656,8 +664,24 @@ struct FuncAdder : public MultiStringAdder
             m_doc->generateRotObj(args);
         else if (sa[0] == "plot")
             m_doc->generateIsoSurface(args);
+        else if (sa[0] == "axis") {
+            float sz = 1.0; 
+            if (args.size() == 1)
+                sz = QString(args[0].c_str()).toFloat();
+            shared_ptr<ArrowRenderable> xa(new ArrowRenderable());
+            xa->init(Vec3(0,0,0), Vec3(sz,0,0), Vec3(1,0,0));
+            m_doc->m_rends.append(shared_ptr<Renderable>(xa));
+
+            shared_ptr<ArrowRenderable> ya(new ArrowRenderable());
+            ya->init(Vec3(0,0,0), Vec3(0,sz,0), Vec3(0,1,0));
+            m_doc->m_rends.append(shared_ptr<Renderable>(ya));
+
+            shared_ptr<ArrowRenderable> za(new ArrowRenderable());
+            za->init(Vec3(0,0,0), Vec3(0,0,sz), Vec3(0,0,1));
+            m_doc->m_rends.append(shared_ptr<Renderable>(za));
+        }
     }
-    Document *m_doc;
+    ModelDocument *m_doc;
 };
 
 
@@ -670,45 +694,47 @@ void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
     m_inCalc = true; 
 
     g_alloc.clear();
-    m_frameObj.reset(new MyObject(&g_alloc));
 
-    m_rends.clear();
+    ModelDocument* mdoc = model();
+
+    mdoc->m_frameObj.reset(new MyObject(&g_alloc));
+
+    mdoc->m_rends.clear();
 
     if (doParse)
     {
-        m_meshs.clear();
-        m_addTrack.reset(); // don't want to continue to point to smething that's going to disappear
+        mdoc->m_meshs.clear();
+        mdoc->m_addTrack.reset(); // don't want to continue to point to smething that's going to disappear
 
         QByteArray ba;
-        if (src != NULL)
-        {
+        if (src != NULL) {
             ba = src->text.toLatin1();
         } // otherwise it's empty
 
         const char* iter = ba.data();
         const char* end = ba.data() + ba.size();
-        m_errAct->clear(src);
-        m_kparser.kparse(iter, end, false, m_errAct);
-        m_errAct->finish();
+        mdoc->m_errAct->clear(src);
+        mdoc->m_kparser.kparse(iter, end, false, mdoc->m_errAct);
+        mdoc->m_errAct->finish();
 
-        m_kparser.creator()->addMeshes(&MeshAdder(this));
+        mdoc->m_kparser.creator()->addMeshes(&MeshAdder(mdoc));
 
         emit loaded();
     }
     else
     {
-        if (!m_kparser.isValid())
+        if (!mdoc->m_kparser.isValid())
             return;
     }
 
     // this is here because the torus is not part of the parsed record so it needs to be recreated
-    m_kparser.creator()->callFuncs(&FuncAdder(this));
+    mdoc->m_kparser.creator()->callFuncs(&FuncAdder(mdoc));
 
     //m_kparser.creator()->printTree();
     
 
-    MyObjAdder adder(m_frameObj.get(), m_conf, purgePointCache);
-    m_kparser.creator()->createPolygons(&adder);
+    MyObjAdder adder(mdoc->m_frameObj.get(), m_conf, purgePointCache);
+    mdoc->m_kparser.creator()->createPolygons(&adder);
     //updateParams(m_onCalcEvals); // if there's a prog active, it might depend on the variables.
 
     //	currentDecompile.clear();
@@ -719,26 +745,26 @@ void Document::calc(DocSrc* src, bool doParse, bool purgePointCache)
     //	if (bSymLoad)
     //		updateSelPointColor();// take the color from the text
 
-    m_frameObj->vectorify();
-    m_frameObj->clacNormals(m_conf.bVtxNormals);
+    mdoc->m_frameObj->vectorify();
+    mdoc->m_frameObj->clacNormals(m_conf.bVtxNormals);
 
     if (m_conf.numberOfPasses > 0) 
     {
-        m_obj.reset(new MyObject(*m_frameObj)); // copy it
-        m_obj->detachPoints();
+        mdoc->m_obj.reset(new MyObject(*mdoc->m_frameObj)); // copy it
+        mdoc->m_obj->detachPoints();
 
         for (int i = 0; i < m_conf.numberOfPasses; ++i)
         {
-            if (!m_obj->subdivide(*m_conf.passRound[i]))
+            if (!mdoc->m_obj->subdivide(*m_conf.passRound[i]))
                 break; // stop it
         }
-        m_obj->clacNormals(m_conf.bVtxNormals);
+        mdoc->m_obj->clacNormals(m_conf.bVtxNormals);
     }
     else {
-        m_obj = m_frameObj;
+        mdoc->m_obj = mdoc->m_frameObj;
     }
-    m_nPoly = m_obj->nPolys;
-    m_nPoints = m_obj->nPoints;
+    m_nPoly = mdoc->m_obj->nPolys;
+    m_nPoints = mdoc->m_obj->nPoints;
 
 
 
@@ -754,27 +780,29 @@ void Document::updateTrack(IPoint* sel)
     if (!m_conf.addFace)
         return;
 
-    if (m_addTrack.add(sel))
+    auto* mdoc = model();
+
+    if (mdoc->m_addTrack.add(sel))
     {
-        int size = m_addTrack.m_added.size();
+        int size = mdoc->m_addTrack.m_added.size();
         if (size == 3 || size == 4)
         {
             QString line;
             line += "add(";
-            line += m_addTrack.m_added[0]->getName().c_str();
-            for(int i = 1; i < m_addTrack.m_added.size(); ++i)
+            line += mdoc->m_addTrack.m_added[0]->getName().c_str();
+            for(int i = 1; i < mdoc->m_addTrack.m_added.size(); ++i)
             {
-                IPoint *p = m_addTrack.m_added[i];
+                IPoint *p = mdoc->m_addTrack.m_added[i];
                 line += ", ";
                 line += p->getName().c_str();
             }
             line += ")\n";
 
-            m_addTrack.reset();
+            mdoc->m_addTrack.reset();
             emit addModelLine(line);
         }
 
-        m_addTrack.reset();
+        mdoc->m_addTrack.reset();
         
     }
 
@@ -797,7 +825,7 @@ void Document::clearPasses()
 
 void Document::compileShaders()
 {
-    if (!isValid())
+    if (!model()->m_kparser.isValid())
     { // we did not parse any model yet so the parser is invalid. wake it up.
         calc(NULL);
     }
@@ -934,6 +962,9 @@ bool Document::parseParam(const ParamInput& pi)
     if (pi.mypass != NULL)
         prog = &pi.mypass->prog;
 
+
+    ModelDocument* mdoc = model();
+    // TBD: iterate all models
     bool ok = true;
     switch(pi.type) // ADDTYPE
     {
@@ -942,7 +973,7 @@ bool Document::parseParam(const ParamInput& pi)
     case EPFloatTime:
         {
             float f = 0.0f;
-            if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
+            if (ok = mdoc->m_kparser.kparseFloat(iter, end, nameend, f))
             {
                 if (prog)
                     prog->setUniform(f, pi.index);
@@ -952,7 +983,7 @@ bool Document::parseParam(const ParamInput& pi)
     case EPInt:
         {
             float f = 0.0f;
-            if (ok = m_kparser.kparseFloat(iter, end, nameend, f))
+            if (ok = mdoc->m_kparser.kparseFloat(iter, end, nameend, f))
             {
                 int i = (int)f;
                 if (prog)
@@ -963,7 +994,7 @@ bool Document::parseParam(const ParamInput& pi)
     case EPVec2:
         {
             Vec2 v;
-            if (ok = m_kparser.kparseVec2(nameend + 1, end, v))
+            if (ok = mdoc->m_kparser.kparseVec2(nameend + 1, end, v))
             {
                 if (prog)
                     prog->setUniform(v, pi.index);
@@ -974,7 +1005,7 @@ bool Document::parseParam(const ParamInput& pi)
     case EPVec3Color:
         {
             IPoint *v = NULL;
-            if (ok = m_kparser.kparseVec(iter, end, nameend, v))
+            if (ok = mdoc->m_kparser.kparseVec(iter, end, nameend, v))
             {
                 shared_ptr<ParamAdapter> pa(new VecParamAdapter(v, pi.prop, pi.index));
                 //m_onCalcEvals[uniqueParamId(pi)] = pa;
@@ -987,7 +1018,7 @@ bool Document::parseParam(const ParamInput& pi)
     case EPVec4Color:
         {
             Vec4 v;
-            if (ok = m_kparser.kparseVec4(nameend + 1, end, v))
+            if (ok = mdoc->m_kparser.kparseVec4(nameend + 1, end, v))
             {
                 if (prog)
                     prog->setUniform(v, pi.index);

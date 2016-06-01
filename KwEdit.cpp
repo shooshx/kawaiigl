@@ -304,7 +304,7 @@ void KwEdit::finishErrors(DocSrc* src)
 void KwEdit::decompile()
 {
     //MyObject* obj = m_doc->m_frameObj;
-    MyObject* obj = m_doc->m_obj.get();
+    MyObject* obj = m_doc->model()->m_obj.get();
     
     QString s;
     QTextStream out(&s);

@@ -83,7 +83,7 @@ static void generateRotate(Gen& gen, const vector<string>& sep, MyObject& obj, c
     }
 }
 
-void Document::generateTorus(const vector<string>& sep)
+void ModelDocument::generateTorus(const vector<string>& sep)
 {
     TorusVtxGen gen;
     MyObject& obj = *m_frameObj;
@@ -119,7 +119,7 @@ private:
 };
 
 
-void Document::generateQuadSphere(const vector<string>& sep)
+void ModelDocument::generateQuadSphere(const vector<string>& sep)
 {
     // This doesn't work because generateRotate is specific for thr generation of the torus.
 //	SphereVtxGen gen;
@@ -198,7 +198,7 @@ void WINAPI vertexData( GLfloat *vertex, void *userData ) {
 }
 
 
-void Document::generateCurve(const vector<string>& args)
+void ModelDocument::generateCurve(const vector<string>& args)
 {	
     if (args.size() < 3) // need atleast 2 points
         return;
@@ -230,7 +230,7 @@ static Vec3 rotateAround(const Vec3 &p, const Vec3& lp, const Vec3& vc, float th
 }
 
 // curveRotate(curvSame, circSamp, p1, p2, p3, ...)
-void Document::generateRotObj(const std::vector<std::string>& args)
+void ModelDocument::generateRotObj(const std::vector<std::string>& args)
 {
     if (args.size() < 4)
         return;
@@ -426,7 +426,7 @@ void SphereTriGen::gen()
 
 }
 
-void Document::generateTriSphere(const vector<string>& sep)
+void ModelDocument::generateTriSphere(const vector<string>& sep)
 {
     MyObject& obj = *m_frameObj;
     SphereTriGen gen(obj, Vec3(m_conf.materialCol));

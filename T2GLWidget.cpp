@@ -430,7 +430,7 @@ void T2GLWidget::paintFlat()
 
         if (conf.bLines)
         {
-            drawObject(*m_doc->m_frameObj, false);
+            drawObject(*m_doc->model()->m_frameObj, false);
         }
 
         if (m_bBackFaceCulling)
@@ -455,7 +455,7 @@ void T2GLWidget::paintFlat()
         drawPointCoords();
     }
 
-    drawAddTracker(m_doc->m_addTrack);
+    drawAddTracker(m_doc->model()->m_addTrack);
 
 
 
@@ -493,13 +493,13 @@ void T2GLWidget::paintPoly()
 
 void T2GLWidget::drawSolids(bool colorize)
 {
-    if (m_doc->m_obj != NULL)
-        drawObject(*m_doc->m_obj, colorize);
-    foreach(shared_ptr<Mesh> mesh, m_doc->m_meshs)
+    if (m_doc->model()->m_obj != NULL)
+        drawObject(*m_doc->model()->m_obj, colorize);
+    foreach(shared_ptr<Mesh> mesh, m_doc->model()->m_meshs)
     {
         drawMesh(mesh.get(), colorize);
     }
-    foreach(shared_ptr<Renderable> r, m_doc->m_rends)
+    foreach(shared_ptr<Renderable> r, m_doc->model()->m_rends)
         r->render(this);
 }
 
@@ -543,7 +543,7 @@ void T2GLWidget::paint3DScene(bool clearBack)
             glDisable(GL_DEPTH_TEST);
     }
 
-    if (!m_doc->isValid())
+    if (!m_doc->model()->m_kparser.isValid())
         return;
 
     // set up texture
@@ -1110,15 +1110,15 @@ void T2GLWidget::drawPointDots()
 
     glBegin(GL_POINTS);
 
-    m_doc->m_kparser.creator()->foreachPoints(PointVertexDrawer(conf, this));
+    m_doc->model()->m_kparser.creator()->foreachPoints(PointVertexDrawer(conf, this));
 
     glEnd();
 
     if (conf.bAllPolyPoints)
     {
-        if (m_doc->m_obj != NULL)
-            drawObjectPoints(*m_doc->m_obj);
-        foreach(shared_ptr<Mesh> mesh, m_doc->m_meshs)
+        if (m_doc->model()->m_obj != NULL)
+            drawObjectPoints(*m_doc->model()->m_obj);
+        foreach(shared_ptr<Mesh> mesh, m_doc->model()->m_meshs)
         {
             drawMeshPoints(mesh.get());
         }
@@ -1163,7 +1163,7 @@ struct PointTextDrawer : public PointDrawer
 
 void T2GLWidget::drawPointCoords()
 {
-    m_doc->m_kparser.creator()->foreachPoints(PointTextDrawer(conf, this));
+    m_doc->model()->m_kparser.creator()->foreachPoints(PointTextDrawer(conf, this));
 }
 
 struct PointNameDrawer : public PointDrawer
@@ -1203,7 +1203,7 @@ struct PointNameDrawer : public PointDrawer
 
 void T2GLWidget::drawTargets(bool inChoise)
 {
-    if (!m_doc->isValid())
+    if (!m_doc->model()->m_kparser.isValid())
         return;
 
     if (m_bBackFaceCulling)
@@ -1211,7 +1211,7 @@ void T2GLWidget::drawTargets(bool inChoise)
 
     glColor3f(0.0f, 0.0f, 1.0f);
 
-    m_doc->m_kparser.creator()->foreachPoints(PointNameDrawer(conf, this));
+    m_doc->model()->m_kparser.creator()->foreachPoints(PointNameDrawer(conf, this));
 
     if (m_bBackFaceCulling)
         glEnable(GL_CULL_FACE);
@@ -1336,7 +1336,7 @@ void T2GLWidget::mouseMoveEvent(QMouseEvent *event)
 
             (*it)->setCoord(v);
         }
-        m_doc->m_kparser.creator()->cacheVecs(); // TBD - wasteful. need only cache the one that changed!
+        m_doc->model()->m_kparser.creator()->cacheVecs(); // TBD - wasteful. need only cache the one that changed!
         m_doc->calcNoParse();
         updateGL();
     }

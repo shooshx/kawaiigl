@@ -13,38 +13,42 @@ class Document;
 class Renderable
 {
 public:
-	Renderable() {}
-	virtual ~Renderable() {}
-	
-	virtual void render(GLWidget *m_glw) = 0;
+    Renderable() {}
+    virtual ~Renderable() {}
+    
+    virtual void render(GLWidget *m_glw) = 0;
 };
 
 
 class WholeScreenQuad : public Renderable
 {
 public:
-	WholeScreenQuad(int _texUnit, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0)) 
-		: backCol(_backCol), texUnit(_texUnit) {}
+    WholeScreenQuad(int _texUnit, const Vec3& _backCol = Vec3(1.0, 1.0, 1.0)) 
+        : backCol(_backCol), texUnit(_texUnit) {}
 
-	WholeScreenQuad(const Vec3& _backCol = Vec3(1.0, 1.0, 1.0), int _texUnit = 1) 
-		: backCol(_backCol), texUnit(_texUnit) {}
+    WholeScreenQuad(const Vec3& _backCol = Vec3(1.0, 1.0, 1.0), int _texUnit = 1) 
+        : backCol(_backCol), texUnit(_texUnit) {}
 
-	virtual void render(GLWidget *glw);
+    virtual void render(GLWidget *glw);
 
-	Vec3 backCol;
-	uint texUnit;
+    Vec3 backCol;
+    uint texUnit;
 };
+
+class ModelDocument;
 
 class ArrowRenderable : public Renderable
 {
 public:
-	ArrowRenderable();
-	bool init(const vector<string>& sep, Document* doc);
-	virtual void render(GLWidget *glw);
+    ArrowRenderable();
+    bool init(const vector<string>& sep, ModelDocument* doc);
+    void init(const Vec3 _from, const Vec3& _to, const Vec3 _color);
 
-	Vec3 from, to, color;
-	float barRadius, tipRadius, tipLen, barLen;
-	int slices;
+    virtual void render(GLWidget *glw);
+
+    Vec3 from, to, color;
+    float barRadius, tipRadius, tipLen, barLen;
+    int slices;
 };
 
 
